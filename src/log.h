@@ -12,8 +12,6 @@ void log_info(const char* msg, ...);
 void log_success(const char* msg, ...);
 void log_error(const char* msg, ...);
 
-void print_engine_info();
-
 /* OpenGL related */
 void log_glshader(uint32_t shader);
 void log_glprogram(uint32_t program);

@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "config.h"
+#include "log.h"
 #include "platform.h"
 #include "time.h"
 
@@ -129,7 +130,15 @@ Platform* platform_get() {
 }
 
 void platform_log_info() {
-    
+    log_greeting("======  Interlope Engine  ======");
+    log_info("ENGINE VERSION: %s", ENGINE_VERSION);
+    log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
+    log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
+    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
+    log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
+    log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
+    log_info("WIN VSYNC: %i", WINDOW_VSYNC);
+    log_info("------");
 }
 
 void platform_draw_frame(__on_draw_calback) {

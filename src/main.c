@@ -4,7 +4,6 @@
 #include "platform.h"
 
 
-
 static
 void draw() {
     if (input_is_keyp(IL_KEY_ESC)) {
@@ -13,7 +12,6 @@ void draw() {
 
     gfx_draw();
 }
-
 
 void main() {
     platform_init();

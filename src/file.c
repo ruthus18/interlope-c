@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../config.h"
+#include "config.h"
 
 
-char* read_text_file(const char* path) {
+const char* read_text_file(const char* path) {
     char* buffer = 0;
     long len;
     FILE * file = fopen(path, "rb");
@@ -28,7 +28,7 @@ char* read_text_file(const char* path) {
 const char* path_to_shader(const char* rel_path) {
     int size = strlen(DIR_SHADERS) + strlen(rel_path) + 1;
 
-    char*  path = malloc(DIR_SHADERS);
+    char*  path = malloc(size);
     strcpy(path, DIR_SHADERS);
     strcat(path, rel_path);
     return path;

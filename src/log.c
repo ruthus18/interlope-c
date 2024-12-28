@@ -6,9 +6,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "logging.h"
-
-#include "../config.h"
+#include "log.h"
+#include "config.h"
 
 
 void log_greeting(const char* msg, ...) {
@@ -33,7 +32,7 @@ void log_info(const char* msg, ...) {
 
 
 void log_success(const char* msg, ...) {
-    fprintf(stdout, "%s[+] ", TERM_GREEN);
+    fprintf(stdout, "%s[*] ", TERM_GREEN);
 
     va_list argp;
     va_start(argp, msg);
@@ -55,21 +54,6 @@ void log_error(const char* msg, ...) {
     fprintf(stderr, "%s\n", TERM_RESET);
 }
 
-
-void print_engine_info() {
-    log_greeting("======  Interlope Engine  ======");
-    log_info("ENGINE VERSION: %s", ENGINE_VERSION);
-    log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
-    log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
-    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
-    log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
-    log_info("SHADERS DIR: %s", SHADERS_DIR);
-    log_info("RESOLUTION: %i x %i", SCREEN_WIDTH, SCREEN_HEIGHT);
-    log_info("");
-    log_info("------");
-}
-
-
 void log_glshader(uint32_t shader) {
     int log_len = 0;
     int ch = 0;
@@ -84,7 +68,6 @@ void log_glshader(uint32_t shader) {
         free(log);
     }
 }
-
 
 void log_glprogram(uint32_t program) {
     int log_len = 0;

@@ -14,7 +14,9 @@ gcc \
     -lcglm \
     -o interlope\
     \
+    ${SRC}/file.c \
     ${SRC}/gfx.c \
+    ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/platform.c \
     ${SRC}/time.c \

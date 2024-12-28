@@ -9,7 +9,7 @@ typedef struct Shader {
 
 typedef struct GFX {
     struct {
-        Shader* world_geometry;
+        Shader* basic;
     } shaders;
 } GFX;
 

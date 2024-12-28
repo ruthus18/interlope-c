@@ -2,20 +2,18 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define sconst_ static const
 
+#define ENGINE_VERSION  "0.0.1"
 
-const char* ENGINE_VERSION = "0.0.1";
+#define WINDOW_WIDTH  1366
+#define WINDOW_HEIGHT  768
+#define WINDOW_XPOS  0
+#define WINDOW_YPOS 0
+#define WINDOW_BORDER false
+#define WINDOW_FULLSC false
 
-const int  WINDOW_WIDTH = 1366;
-const int  WINDOW_HEIGHT = 768;
-const int  WINDOW_XPOS = 0;
-const int  WINDOW_YPOS = 0;
-const bool  WINDOW_BORDER = false;
-const bool  WINDOW_FULLSC = false;
+#define WINDOW_TITLE "Interlope Engine"
+#define WINDOW_VSYNC true
 
-const char* WINDOW_TITLE = "Interlope Engine";
-const bool  WINDOW_VSYNC = true;
-
-const char* DIR_SHADERS = "shaders/";
-const char* DIR_ASSETS = "assets/";
+#define DIR_SHADERS "shaders/"
+#define DIR_ASSETS "assets/"
