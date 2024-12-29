@@ -81,8 +81,8 @@ void input_destroy(Input* input) {
 }
 
 
-static bool __skip = true;  // flag to skip 1st iteration
-static double __new_px, __new_py, __new_dx, __new_dy;
+bool __skip = true;
+double __new_px, __new_py, __new_dx, __new_dy;
 
 static
 void input_update(Window* window, Input* input) {
@@ -117,6 +117,8 @@ void platform_init() {
     self = malloc(sizeof(Platform));
     self->window = window_create();
     self->input = input_create(self->window);
+
+    platform_log_info();
 }
 
 void platform_destroy() {
@@ -141,12 +143,12 @@ void platform_log_info() {
     log_info("------");
 }
 
-void platform_draw_frame(__on_draw_calback) {
+void platform_draw_frame(__on_draw_callback) {
     time_update();
     glfwPollEvents();
     input_update(self->window, self->input);
 
-    on_draw_calback();
+    on_draw_callback();
     glfwSwapBuffers(self->window);
 }
 
@@ -158,6 +160,8 @@ void platform_stop() {
     self->should_stop = true;
 }
 
+
+/* ------------------------------------------------------------------------ */
 
 bool input_is_keyp(int key) {
     return _input_is_keyp(self->window, key);

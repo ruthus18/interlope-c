@@ -1,4 +1,5 @@
 #pragma once
+#include "camera.h"
 #include "platform.h"
 
 
@@ -9,7 +10,7 @@ typedef struct Shader {
 
 typedef struct GFX {
     struct {
-        Shader* basic;
+        Shader* object;
     } shaders;
 } GFX;
 
@@ -17,4 +18,5 @@ typedef struct GFX {
 void gfx_init();
 void gfx_destroy();
 GFX* gfx_get();
-void gfx_draw();
+
+void gfx_draw(Camera* camera);

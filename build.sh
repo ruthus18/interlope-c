@@ -14,6 +14,7 @@ gcc \
     -lcglm \
     -o interlope\
     \
+    ${SRC}/camera.c \
     ${SRC}/file.c \
     ${SRC}/gfx.c \
     ${SRC}/log.c \
