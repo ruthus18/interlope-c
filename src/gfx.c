@@ -1,8 +1,3 @@
-/*
-    gfx.c - Graphics backend
-
-    Resposible for drawing stuff on screen. Incapsulating OpenGL work.
-*/
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -11,6 +6,7 @@
 #include <cglm/cglm.h>
 
 #include "config.h"
+#include "cgm.h"
 #include "gfx.h"
 #include "log.h"
 #include "platform.h"
@@ -36,7 +32,7 @@ void shader_compile(int program, const char* rel_path, int shader_type) {
     uint32_t shader_id = glCreateShader(shader_type);
 
     const char* path = path_to_shader(rel_path);
-    const char* file_buffer = read_text_file(path);
+    const char* file_buffer = file_read_text(path);
 
     glShaderSource(shader_id, 1, &file_buffer, NULL);
     free((void*) path);
@@ -80,6 +76,7 @@ Shader* shader_create(const char* vert_p, const char* frag_p) {
         log_glprogram(program);
     }
 
+    log_success("Shader created: %s | %s", vert_p, frag_p);
     shader->program_id = program;
     return shader;
 }
@@ -116,8 +113,7 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
 static Gfx* self;
 
 
-static inline
-Window* window_create() {
+void window_init() {
     if (!glfwInit()) {
         printf("GLFW Initialization Error!\n");
         exit(0);
@@ -151,8 +147,10 @@ Window* window_create() {
     }
 
     glfwSwapInterval(WINDOW_VSYNC);
-    return window;
+    self->window = window;
 }
+
+Window* window_get() { return self->window; }
 
 
 static inline
@@ -180,15 +178,16 @@ void init_shaders() {
 void gfx_init() {
     self = malloc(sizeof(Gfx));
     self->stop_ = false;
-    self->window = window_create();
-    log_startup_info();
 
+    window_init();
+    log_startup_info();
     init_shaders();
 
     glPointSize(6);
     glLineWidth(2);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+
 }
 
 
@@ -200,9 +199,6 @@ void gfx_destroy() {
     free(self);
 }
 
-Window* gfx_get_window() {
-    return self->window;
-}
 
 bool gfx_need_stop() {
     glfwWindowShouldClose(self->window) || self->stop_;
@@ -210,40 +206,46 @@ bool gfx_need_stop() {
 
 void gfx_stop() {
     self->stop_ = true;
+    log_info("Enfine stopped");
 }
 
 
-GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw) {
-    GfxMesh* gfx_mesh = malloc(sizeof(GfxMesh));
+GfxMesh* gfx_mesh_load(
+    float* vtx_buf, int* ind_buf, size_t vtx_count, bool cw, char* name
+) {
+    GfxMesh* mesh = malloc(sizeof(GfxMesh));
+    mesh->vtx_count = vtx_count;
+    mesh->ind_count = len(ind_buf);
+    mesh->cw = cw;
 
     shader_use(self->shaders.object);
 
-    // -- VAO --
-    glGenVertexArrays(1, &(gfx_mesh->vao));
-    glBindVertexArray(gfx_mesh->vao);
+    /* -- VAO -- */
+    glGenVertexArrays(1, &(mesh->vao));
+    glBindVertexArray(mesh->vao);
 
-    // -- VBO --
-    glGenBuffers(1, &(gfx_mesh->vbo));
-    glBindBuffer(GL_ARRAY_BUFFER, gfx_mesh->vbo);
+    /* -- VBO -- */
+    glGenBuffers(1, &(mesh->vbo));
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
     glBufferData(
-        GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW
+        GL_ARRAY_BUFFER, sizeof(vtx_buf), vtx_buf, GL_STATIC_DRAW
     );
 
-    // -- IBO --
-    glGenBuffers(1, &(gfx_mesh->ibo));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gfx_mesh->ibo);
+    /* -- IBO -- */
+    glGenBuffers(1, &(mesh->ibo));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
     glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW
+        GL_ELEMENT_ARRAY_BUFFER, sizeof(ind_buf), ind_buf, GL_STATIC_DRAW
     );
 
-    // -- Attributes --
+    /* -- Vertex Attributes -- */
     // Vertex buffer format: (v1, v2, ..., vn1, vn2, ..., vt1, vt2, ...)
     //
     // More about formats: https://stackoverflow.com/a/39684775
-    //
-    GLintptr v_offset  = sizeof(float) * 0;
-    GLintptr vn_offset = sizeof(float) * 3;
-    GLintptr vt_offset = sizeof(float) * 5;
+
+    GLintptr v_offset  = 0;
+    GLintptr vn_offset = sizeof_vec3 * vtx_count;
+    GLintptr vt_offset = sizeof_vec3 * vtx_count * 2;
 
     // attr = 0
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)v_offset);
@@ -257,56 +259,58 @@ GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw) {
     glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, (void*)vt_offset);
     glEnableVertexAttribArray(2);
 
-    // -- Cleanup --
+    /* -- Cleanup -- */
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     shader_use(NULL);
 
-    gfx_mesh->cw = cw;
-    return gfx_mesh;
+    log_success("Mesh loaded: %s", name);
+    return mesh;
 }
 
 
-void gfx_unload_mesh(GfxMesh* gfx_mesh) {
+void gfx_mesh_unload(GfxMesh* gfx_mesh) {
     free(gfx_mesh);
 }
 
 
-// static int face_orient;
-
-
-void gfx_draw(Camera* camera, GfxMesh** meshes, mat4* mm_models) {
+void gfx_draw(Camera* camera, GfxMesh* mesh, mat4 model_mat) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
-    // ----------------
+    /* ---------------- */
+    /* OBJECT SHADER */
     shader_use(self->shaders.object);
 
     camera_update_gfx_data(camera);
     uniform_set_mat4(self->shaders.object, "m_persp", camera->gfx_data.m_persp);
     uniform_set_mat4(self->shaders.object, "m_view", camera->gfx_data.m_view);
 
+    // Current model state
+    // GfxMesh* mesh;
+    // mat4 m_model;
 
-    for (int i = 0; i <= (sizeof(meshes) / sizeof(GfxMesh)); i++) {
+    // for (int i = 0; i <= len(scene->pholders); i++) {
+        /* Set current model state */
+        // mesh = scene->meshes[scene->pholders[i].mesh_idx].gfx_data;
+        // glm_mat4_copy(scene->pholders[i].m_model, m_model);
 
-        uniform_set_mat4(self->shaders.object, "m_model", mm_models[i]);
+        /* Draw current model */
+        uniform_set_mat4(self->shaders.object, "m_model", model_mat);
+        
+        glBindVertexArray(mesh->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
 
-        glBindVertexArray(meshes[i]->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, meshes[i]->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[i]->ibo);
+        glFrontFace(mesh->cw ? GL_CW : GL_CCW);
+        glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
+    // }
 
-        int orient;
-        if (meshes[i]->cw)  orient = GL_CW;
-        else                orient = GL_CCW;
-
-        glFrontFace(orient);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-    }
-
-    // ----------------
-    shader_use(NULL); // Cleanup
+    /* ---------------- */
+    /* CLEANUP */
+    shader_use(NULL);
 
     glfwSwapBuffers(self->window);
 }

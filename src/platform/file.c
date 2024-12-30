@@ -5,7 +5,7 @@
 #include "../config.h"
 
 
-const char* read_text_file(const char* path) {
+const char* file_read_text(const char* path) {
     char* buffer = 0;
     long len;
     FILE * file = fopen(path, "rb");

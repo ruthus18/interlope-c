@@ -43,4 +43,3 @@
 /* Fancy functions for easy living */
 
 #define len(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
-#define radian(x) (x / (180.0 / GLM_PI))

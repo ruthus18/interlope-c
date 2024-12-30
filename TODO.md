@@ -15,3 +15,4 @@
 * Hashmap world storage
 * Editor shader
 * Refactor `time.platform` module
+* Improve docstrings and docs management (check linux kernel src + sphinx)

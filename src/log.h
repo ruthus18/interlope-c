@@ -1,6 +1,6 @@
 #pragma once
 
-// Terminal colors
+/* Terminal colors */
 #define TERM_RED      "\033[0;31m"
 #define TERM_GREEN    "\033[0;32m"
 #define TERM_CYAN_BG  "\033[0;104m"

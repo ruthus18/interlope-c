@@ -13,7 +13,6 @@
 
 Camera* camera_create() {
     Camera* cam = malloc(sizeof(Camera));
-
     cam->yaw = 0.0;
     cam->pitch = 0.0;
     glm_vec3_zero(cam->v_front);

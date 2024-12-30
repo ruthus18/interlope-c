@@ -12,7 +12,7 @@
 
 
 void log_greeting(const char* msg, ...) {
-    fprintf(stdout, "%s", TERM_CYAN_BG);
+    fprintf(stdout, TERM_CYAN_BG);
 
     va_list argp;
     va_start(argp, msg);
@@ -33,7 +33,7 @@ void log_info(const char* msg, ...) {
 
 
 void log_success(const char* msg, ...) {
-    fprintf(stdout, "%s[*] ", TERM_GREEN);
+    fprintf(stdout, TERM_GREEN);
 
     va_list argp;
     va_start(argp, msg);
@@ -45,7 +45,7 @@ void log_success(const char* msg, ...) {
 
 
 void log_error(const char* msg, ...) {
-    fprintf(stderr, "%s[X] ", TERM_RED);
+    fprintf(stderr, TERM_RED);
 
     va_list argp;
     va_start(argp, msg);

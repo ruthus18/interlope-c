@@ -3,29 +3,30 @@
 #include <GLFW/glfw3.h>
 
 #include "../config.h"
+#include "../gfx.h"
 #include "../log.h"
 #include "../platform.h"
 
 
-int keyp_storage[8];  // TODO: place inside `Input`
+#define __KEY_EMPTY - 1
 
 
 Input* self;
 
-void input_init(Window* window) {
+void input_init() {
     self = malloc(sizeof(Input));
-    self->window = window;
+    self->window = window_get();
 
     double px, py;
-    glfwGetCursorPos(window, &px, &py);
+    glfwGetCursorPos(self->window, &px, &py);
 
     self->mouse_px = px;
     self->mouse_py = py;
     self->mouse_dx = 0.0;
     self->mouse_dy = 0.0;
 
-    for (int i = 0; i < len(keyp_storage); i++) {
-        keyp_storage[i] = -1;
+    for (int i = 0; i < len(self->keyp_storage); i++) {
+        self->keyp_storage[i] = __KEY_EMPTY;
     }
 }
 
@@ -36,47 +37,49 @@ void input_destroy() {
 
 
 bool __1st_iter = true;
-double __new_px, __new_py, __new_dx, __new_dy;
 
 void input_update() {
-    glfwGetCursorPos(self->window, &__new_px, &__new_py);
+    double new_px, new_py, new_dx, new_dy;
 
-    __new_dx = (__new_px - self->mouse_px) / WINDOW_WIDTH;
-    __new_dy = (__new_py - self->mouse_py) / WINDOW_HEIGHT;
+    glfwGetCursorPos(self->window, &new_px, &new_py);
+    new_dx = (new_px - self->mouse_px) / WINDOW_WIDTH;
+    new_dy = (new_py - self->mouse_py) / WINDOW_HEIGHT;
 
     if (!__1st_iter) {
-        self->mouse_dx = __new_dx;
-        self->mouse_dy = __new_dy;
+        self->mouse_dx = new_dx;
+        self->mouse_dy = new_dy;
     }
     else __1st_iter = false;
 
-    self->mouse_px = __new_px;
-    self->mouse_py = __new_py;
+    self->mouse_px = new_px;
+    self->mouse_py = new_py;
 }
 
 
+/* Is key pressed once
+*/
 bool input_is_keyp(int key) {
     int state = glfwGetKey(self->window, key);
 
     if (state == GLFW_PRESS) {
-        for (int i = 0; i < len(keyp_storage); i++) {
+        for (int i = 0; i < len(self->keyp_storage); i++) {
 
-            if (keyp_storage[i] == -1) {
-                keyp_storage[i] = key;
+            if (self->keyp_storage[i] == __KEY_EMPTY) {
+                self->keyp_storage[i] = key;
                 return true;
             }
 
-            if (keyp_storage[i] == key) {
+            if (self->keyp_storage[i] == key) {
                 return false;
             }
         }
         log_error("GLFW_PRESS - OUT OF LOOP! MORE THAN 8 KEYS AT ONCE ???");
     }
     else if (state == GLFW_RELEASE) {
-        for (int i = 0; i < len(keyp_storage); i++) {
+        for (int i = 0; i < len(self->keyp_storage); i++) {
 
-            if (keyp_storage[i] == key) {
-                keyp_storage[i] = -1;
+            if (self->keyp_storage[i] == key) {
+                self->keyp_storage[i] = __KEY_EMPTY;
                 return false;
             }
         }
@@ -85,8 +88,10 @@ bool input_is_keyp(int key) {
 }
 
 
+/* Is key repeated
+*/
 bool input_is_keyrp(int key) {
-
+    return glfwGetKey(self->window, key) == GLFW_PRESS;
 }
 
 
