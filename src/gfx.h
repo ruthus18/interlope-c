@@ -8,15 +8,25 @@ typedef struct Shader {
 } Shader;
 
 
-typedef struct GFX {
+typedef struct GfxMesh {
+    int vao;
+    int vbo;
+    int ibo;
+    bool cw;
+} GfxMesh;
+
+
+typedef struct Gfx {
     struct {
         Shader* object;
     } shaders;
-} GFX;
+} Gfx;
 
 
 void gfx_init();
 void gfx_destroy();
-GFX* gfx_get();
+Gfx* gfx_get();
 
-void gfx_draw(Camera* camera);
+GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw);
+void gfx_unload_mesh(GfxMesh*);
+void gfx_draw(Camera* camera, GfxMesh** meshes, mat4* mm_models);

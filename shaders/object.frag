@@ -13,8 +13,8 @@ out vec4 fragColor;
 
 
 void main() {
-
-    fragColor = texture(texture_diff, texcoords);
+    fragColor = vec4(1.0, 0.0, 0.0, 0.0);
+    // fragColor = texture(texture_diff, texcoords);
     // fragColor = texture(texture_diff, texcoords) * vec4(light.color + material.diffuse_color, 1.0);
     // fragColor = texture(texture_diff, texcoords) * vec4(light.color + material.diffuse_color + 1.0, 1.0);
 }

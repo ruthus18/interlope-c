@@ -17,6 +17,7 @@ gcc \
     ${SRC}/camera.c \
     ${SRC}/file.c \
     ${SRC}/gfx.c \
+    ${SRC}/input2.c \
     ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/platform.c \

@@ -112,11 +112,11 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
 /* ------------------------------------------------------------------------ */
 /* GFX - Main Rendering Logic */
 
-static GFX* self;
+static Gfx* self;
 
 
 void gfx_init() {
-    self = malloc(sizeof(GFX));
+    self = malloc(sizeof(Gfx));
 
     self->shaders.object = shader_create(
         "object.vert", "object.frag"
@@ -133,14 +133,75 @@ void gfx_destroy() {
     free(self);
 }
 
-GFX* gfx_get() {
+Gfx* gfx_get() {
     return self;
 }
 
+GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw) {
+    GfxMesh* gfx_mesh = malloc(sizeof(GfxMesh));
+
+    shader_use(self->shaders.object);
+
+    // -- VAO --
+    glGenVertexArrays(1, &(gfx_mesh->vao));
+    glBindVertexArray(gfx_mesh->vao);
+
+    // -- VBO --
+    glGenBuffers(1, &(gfx_mesh->vbo));
+    glBindBuffer(GL_ARRAY_BUFFER, gfx_mesh->vbo);
+    glBufferData(
+        GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW
+    );
+
+    // -- IBO --
+    glGenBuffers(1, &(gfx_mesh->ibo));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gfx_mesh->ibo);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW
+    );
+
+    // -- Attributes --
+    // Vertex buffer format: (v1, v2, ..., vn1, vn2, ..., vt1, vt2, ...)
+    //
+    // More about formats: https://stackoverflow.com/a/39684775
+    //
+    GLintptr v_offset  = sizeof(float) * 0;
+    GLintptr vn_offset = sizeof(float) * 3;
+    GLintptr vt_offset = sizeof(float) * 5;
+
+    // attr = 0
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)v_offset);
+    glEnableVertexAttribArray(0);
+
+    // attr = 1
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, (void*)vn_offset);
+    glEnableVertexAttribArray(1);
+
+    // attr = 2
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, (void*)vt_offset);
+    glEnableVertexAttribArray(2);
+
+    // -- Cleanup --
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    shader_use(NULL);
+
+    gfx_mesh->cw = cw;
+    return gfx_mesh;
+}
+
+void gfx_unload_mesh(GfxMesh* gfx_mesh) {
+    free(gfx_mesh);
+}
+
+
 #define COLOR_BG (float)29 / 255, (float)32 / 255, (float)33 / 255, 1.0
 
+static int face_orient;
 
-void gfx_draw(Camera* camera) {
+void gfx_draw(Camera* camera, GfxMesh** meshes, mat4* mm_models) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(COLOR_BG);
 
@@ -150,6 +211,22 @@ void gfx_draw(Camera* camera) {
     camera_recalc(camera);
     uniform_set_mat4(self->shaders.object, "m_persp", camera->gfx_data.m_persp);
     uniform_set_mat4(self->shaders.object, "m_view", camera->gfx_data.m_view);
+
+
+    for (int i = 0; i <= (sizeof(meshes) / sizeof(GfxMesh)); i++) {
+
+        uniform_set_mat4(self->shaders.object, "m_model", mm_models[i]);
+
+        glBindVertexArray(meshes[i]->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, meshes[i]->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[i]->ibo);
+
+        if (meshes[i]->cw)  face_orient = GL_CW;
+        else                face_orient = GL_CCW;
+
+        glFrontFace(face_orient);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+    }
 
     // ----------------
     shader_use(NULL); // Cleanup

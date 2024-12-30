@@ -1,3 +1,7 @@
+/*
+    platform.c - handling 
+*/
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,12 +117,24 @@ bool _input_is_keyp(Window* window, int key) {
 static Platform* self;
 
 
+static
+void _log_platform_info() {
+    log_greeting("======  Interlope Engine  ======");
+    log_info("ENGINE VERSION: %s", ENGINE_VERSION);
+    log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
+    log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
+    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
+    log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
+    log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
+    log_info("WIN VSYNC: %i", WINDOW_VSYNC);
+    log_info("------");
+}
+
 void platform_init() {
     self = malloc(sizeof(Platform));
     self->window = window_create();
     self->input = input_create(self->window);
-
-    platform_log_info();
+    _log_platform_info();
 }
 
 void platform_destroy() {
@@ -129,18 +145,6 @@ void platform_destroy() {
 
 Platform* platform_get() {
     return self;
-}
-
-void platform_log_info() {
-    log_greeting("======  Interlope Engine  ======");
-    log_info("ENGINE VERSION: %s", ENGINE_VERSION);
-    log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
-    log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
-    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
-    log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
-    log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
-    log_info("WIN VSYNC: %i", WINDOW_VSYNC);
-    log_info("------");
 }
 
 void platform_draw_frame(__on_draw_callback) {
@@ -158,6 +162,18 @@ bool platform_should_stop() {
 
 void platform_stop() {
     self->should_stop = true;
+}
+
+bool cursor_is_visible() {
+    return glfwGetInputMode(self->window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL;
+}
+
+void cursor_set_visible(bool visible) {
+    int mode;
+    if (visible) mode = GLFW_CURSOR_NORMAL;
+    else         mode = GLFW_CURSOR_DISABLED;
+
+    glfwSetInputMode(self->window, GLFW_CURSOR, mode);
 }
 
 
