@@ -5,6 +5,7 @@
 #include <string.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cglm/cglm.h>
 
 #include "log.h"
 #include "config.h"
@@ -82,4 +83,16 @@ void log_glprogram(uint32_t program) {
         log_info("Program log: %s", log);
         free(log);
     }
+}
+
+
+void log_mat4(mat4 src) {
+    int i,j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            printf("%f   ", src[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 }

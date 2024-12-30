@@ -3,10 +3,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "time.h"
-
-#define __DEBUG__PRINT_FPS false
-#define __DEBUG__PRINT_TIME_UPDATE false
+#include "../config.h"
+#include "../platform.h"
 
 
 static double current_time, last_time, dt, timer_sec;

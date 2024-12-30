@@ -1,5 +1,17 @@
+-- Main Goal --
+  [0.0.1a] - Load GLTF model with texture on screen
+
+
+-- Tasks --
+* GLTF model loading (get impl from interlope-cpp)
+
+
+-- Future --
+
+* Solve existential problems with `static` and `inline`
 * Fix time module (check py impl)
-* Shaders loading
-* GLTF model loading
-* Logging
+* Canvas shader (GUI, editor, other 2D stuff)
 * Memory management
+* Hashmap world storage
+* Editor shader
+* Refactor `time.platform` module

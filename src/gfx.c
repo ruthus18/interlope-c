@@ -10,12 +10,13 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
-#include "file.h"
+#include "config.h"
 #include "gfx.h"
 #include "log.h"
 #include "platform.h"
 
 
+/* ------------------------------------------------------------------------ */
 /* Shaders Routines */
 
 static
@@ -115,12 +116,74 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
 static Gfx* self;
 
 
-void gfx_init() {
-    self = malloc(sizeof(Gfx));
+static inline
+Window* window_create() {
+    if (!glfwInit()) {
+        printf("GLFW Initialization Error!\n");
+        exit(0);
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    if (!WINDOW_BORDER) {
+        glfwWindowHint(GLFW_DECORATED, false);
+    }
+
+    GLFWmonitor* monitor = NULL;
+    if (WINDOW_FULLSC)
+        monitor = glfwGetPrimaryMonitor();
+
+    Window* window = glfwCreateWindow(
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        WINDOW_TITLE,
+        monitor,
+        NULL
+    );
+    glfwSetWindowPos(window, WINDOW_XPOS, WINDOW_YPOS);
+    glfwMakeContextCurrent(window);
+
+    int glew_status = glewInit();
+    if (glew_status != GLEW_OK) {
+        printf("GLEW Initialization Error!\n");
+        exit(0);
+    }
+
+    glfwSwapInterval(WINDOW_VSYNC);
+    return window;
+}
+
+
+static inline
+void log_startup_info() {
+    log_greeting("======  Interlope Engine  ======");
+    log_info("ENGINE VERSION: %s", ENGINE_VERSION);
+    log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
+    log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
+    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
+    log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
+    log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
+    log_info("WIN VSYNC: %i", WINDOW_VSYNC);
+    log_info("------");
+}
+
+
+static inline
+void init_shaders() {
     self->shaders.object = shader_create(
         "object.vert", "object.frag"
     );
+}
+
+
+void gfx_init() {
+    self = malloc(sizeof(Gfx));
+    self->stop_ = false;
+    self->window = window_create();
+    log_startup_info();
+
+    init_shaders();
 
     glPointSize(6);
     glLineWidth(2);
@@ -128,14 +191,27 @@ void gfx_init() {
     glEnable(GL_DEPTH_TEST);
 }
 
+
 void gfx_destroy() {
     free(self->shaders.object);
+    glfwDestroyWindow(self->window);
+
+    glfwTerminate();
     free(self);
 }
 
-Gfx* gfx_get() {
-    return self;
+Window* gfx_get_window() {
+    return self->window;
 }
+
+bool gfx_need_stop() {
+    glfwWindowShouldClose(self->window) || self->stop_;
+}
+
+void gfx_stop() {
+    self->stop_ = true;
+}
+
 
 GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw) {
     GfxMesh* gfx_mesh = malloc(sizeof(GfxMesh));
@@ -192,23 +268,23 @@ GfxMesh* gfx_load_mesh(float* vertices, int* indices, bool cw) {
     return gfx_mesh;
 }
 
+
 void gfx_unload_mesh(GfxMesh* gfx_mesh) {
     free(gfx_mesh);
 }
 
 
-#define COLOR_BG (float)29 / 255, (float)32 / 255, (float)33 / 255, 1.0
+// static int face_orient;
 
-static int face_orient;
 
 void gfx_draw(Camera* camera, GfxMesh** meshes, mat4* mm_models) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(COLOR_BG);
+    glClearColor(WINDOW_BG_COLOR);
 
     // ----------------
     shader_use(self->shaders.object);
 
-    camera_recalc(camera);
+    camera_update_gfx_data(camera);
     uniform_set_mat4(self->shaders.object, "m_persp", camera->gfx_data.m_persp);
     uniform_set_mat4(self->shaders.object, "m_view", camera->gfx_data.m_view);
 
@@ -221,13 +297,16 @@ void gfx_draw(Camera* camera, GfxMesh** meshes, mat4* mm_models) {
         glBindBuffer(GL_ARRAY_BUFFER, meshes[i]->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshes[i]->ibo);
 
-        if (meshes[i]->cw)  face_orient = GL_CW;
-        else                face_orient = GL_CCW;
+        int orient;
+        if (meshes[i]->cw)  orient = GL_CW;
+        else                orient = GL_CCW;
 
-        glFrontFace(face_orient);
+        glFrontFace(orient);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     }
 
     // ----------------
     shader_use(NULL); // Cleanup
+
+    glfwSwapBuffers(self->window);
 }

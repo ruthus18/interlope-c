@@ -14,13 +14,13 @@ gcc \
     -lcglm \
     -o interlope\
     \
+    ${SRC}/platform/file.c \
+    ${SRC}/platform/input.c \
+    ${SRC}/platform/time.c \
     ${SRC}/camera.c \
-    ${SRC}/file.c \
+    ${SRC}/cgm.c \
     ${SRC}/gfx.c \
-    ${SRC}/input2.c \
     ${SRC}/log.c \
     ${SRC}/main.c \
-    ${SRC}/platform.c \
-    ${SRC}/time.c \
 
 echo "[build.sh] Compiling Done"

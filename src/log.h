@@ -15,3 +15,6 @@ void log_error(const char* msg, ...);
 /* OpenGL related */
 void log_glshader(uint32_t shader);
 void log_glprogram(uint32_t program);
+
+/* Other */
+void log_mat4(mat4 src);

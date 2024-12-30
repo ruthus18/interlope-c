@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
+#include "../config.h"
 
 
 const char* read_text_file(const char* path) {
