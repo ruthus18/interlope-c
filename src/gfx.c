@@ -88,11 +88,7 @@ void shader_destroy(Shader* shader) {
 
 static
 void shader_use(Shader* shader) {
-    int program = 0;
-    if (shader != NULL)
-        program = shader->program_id;
-
-    glUseProgram(program);
+    glUseProgram((shader != NULL) ? shader->program_id : 0);
 }
 
 static
@@ -277,7 +273,8 @@ void gfx_mesh_unload(GfxMesh* gfx_mesh) {
 
 
 void gfx_draw(Camera* camera, GfxMesh* mesh, mat4 model_mat) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
     /* ---------------- */
@@ -285,6 +282,12 @@ void gfx_draw(Camera* camera, GfxMesh* mesh, mat4 model_mat) {
     shader_use(self->shaders.object);
 
     camera_update_gfx_data(camera);
+
+    // log_info("MODEL:");
+    // glm_mat4_print(model_mat, stdout);
+    // log_info("VIEW:");
+    // glm_mat4_print(camera->gfx_data.m_view, stdout);
+
     uniform_set_mat4(self->shaders.object, "m_persp", camera->gfx_data.m_persp);
     uniform_set_mat4(self->shaders.object, "m_view", camera->gfx_data.m_view);
 
@@ -298,8 +301,9 @@ void gfx_draw(Camera* camera, GfxMesh* mesh, mat4 model_mat) {
         // glm_mat4_copy(scene->pholders[i].m_model, m_model);
 
         /* Draw current model */
-        uniform_set_mat4(self->shaders.object, "m_model", model_mat);
         
+        uniform_set_mat4(self->shaders.object, "m_model", model_mat);
+
         glBindVertexArray(mesh->vao);
         glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);

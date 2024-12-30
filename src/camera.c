@@ -25,7 +25,7 @@ void camera_destroy(Camera* cam) {
 }
 
 void camera_set_position(Camera* cam, vec3 pos) {
-    glm_vec3_copy(cam->position, pos);
+    glm_vec3_copy(pos, cam->position);
 }
 
 
@@ -57,7 +57,6 @@ void camera_update_gfx_data(Camera* cam) {
     }
 
     cgm_view_mat(cam->position, cam->v_front, cam->gfx_data.m_view);
-    
 }
 
 

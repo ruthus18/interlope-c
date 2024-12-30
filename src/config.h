@@ -27,8 +27,7 @@
 #define MOUSE_SENSITIVITY 150.0
 
 /* Camera */
-#define CAMERA_DEFAULT_FOV 75.0
-
+#define CAMERA_DEFAULT_FOV 60.0
 
 
 /* ------------------------------------------------------------------------- */

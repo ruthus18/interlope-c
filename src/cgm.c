@@ -2,6 +2,7 @@
 
 #include "cgm.h"
 #include "config.h"
+#include "log.h"
 
 
 vec3 v_up__x = {1.0, 0.0, 0.0};
@@ -10,9 +11,8 @@ vec3 v_up__z = {0.0, 1.0, 1.0};
 
 
 void cgm_persp_mat(float fov, mat4 dest) {
-    double aspect = WINDOW_WIDTH / WINDOW_HEIGHT;
-
-    glm_perspective(fov, aspect, 0.1, 1000.0, dest);
+    double aspect = (double)WINDOW_WIDTH / (double)WINDOW_HEIGHT;
+    glm_perspective(radian(fov), aspect, 0.01, 100.0, dest);
 }
 
 
@@ -24,15 +24,21 @@ void cgm_view_mat(vec3 pos, vec3 v_front, mat4 dest) {
 }
 
 
-void cgm_model_mat(vec3 pos, vec3 rot, vec3 sc, mat4 dest) {
-    vec3 v_view = {-pos[0], -pos[1], -pos[2]};
-    mat4 m_rot;
-    cgm_rotation_mat(rot, m_rot);
 
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void cgm_model_mat(vec3 pos, vec3 rot, vec3 sc, mat4 dest) {
     glm_mat4_identity(dest);
+
+    vec3 v_view = {pos[0], pos[1], pos[2]};
     glm_translate(dest, v_view);
-    glm_mat4_mul(dest, m_rot, dest);
-    glm_scale(dest, sc);
+
+    // mat4 m_rot;
+    // cgm_rotation_mat(rot, m_rot);
+    // glm_mat4_mul(dest, m_rot, dest);
+    // glm_mat4_scale(dest, sc);
 }
 
 
@@ -51,7 +57,7 @@ void cgm_rotation_mat(vec3 rot, mat4 dest) {
 void cgm_front_vec(double yaw, double pitch, vec3 dest) {
     glm_vec3_copy(
         (vec3){
-            cos(radian(yaw) * cos(radian(pitch))),
+            cos(radian(yaw)) * cos(radian(pitch)),
             sin(radian(pitch)),
             sin(radian(yaw)) * cos(radian(pitch))
         },

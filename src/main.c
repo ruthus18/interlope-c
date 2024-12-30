@@ -1,6 +1,7 @@
 #include <stdbool.h>
 
 #include "camera.h"
+#include "config.h"
 #include "gfx.h"
 #include "log.h"
 #include "platform.h"
@@ -31,9 +32,11 @@ void main() {
     gfx_init();
     input_init();
 
+    log_info("%i", len(cube_vtx_buf));
+
     /* ------ */
     camera = camera_create();
-    camera_set_position(camera, (vec3){0.0, 1.5, 0.0});
+    camera_set_position(camera, (vec3){0.0, 1.7, 0.0});
 
     // float vtx_buf[] = {};
     // int ind_buf[] = {};
@@ -42,9 +45,9 @@ void main() {
     GfxMesh* mesh;
     mat4 model_mat;
 
-    mesh = gfx_mesh_load(cube_vtx_buf, cube_ind_buf, cube_vtx_count, true, "cube");
+    mesh = gfx_mesh_load(cube_vtx_buf, cube_ind_buf, cube_vtx_count, false, "cube");
     cgm_model_mat(
-        (vec3){0.0, 0.0, 0.0},  // pos
+        (vec3){0.0, -3.0, 0.0},  // pos
         (vec3){0.0, 0.0, 0.0},  // rot
         (vec3){1.0, 1.0, 1.0},  // sc
         model_mat
