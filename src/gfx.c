@@ -96,10 +96,22 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     int uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == -1) {
-        log_error("Not found shader uniform: %f", name);
+        log_error("Not found shader uniform: %s", name);
         exit(0);
     }
     glUniformMatrix4fv(uniform_id, 1, GL_FALSE, (float*)data);
+}
+
+
+static
+void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
+    int uniform_id = glGetUniformLocation(shader->program_id, name);
+
+    if (uniform_id == -1) {
+        log_error("Not found shader uniform: %s", name);
+        exit(0);
+    }
+    glUniform3f(uniform_id, data[0], data[1], data[2]);
 }
 
 
@@ -165,10 +177,13 @@ void log_startup_info() {
 
 static inline
 void init_shaders() {
-    self->shaders.object = shader_create(
-        "object.vert", "object.frag"
+    self->shaders.failback = shader_create(
+        "failback.vert", "failback.frag"
     );
 }
+
+
+int vao;
 
 
 void gfx_init() {
@@ -183,16 +198,45 @@ void gfx_init() {
     glLineWidth(2);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-
+    
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 }
 
-
 void gfx_destroy() {
-    free(self->shaders.object);
+    free(self->shaders.failback);
     glfwDestroyWindow(self->window);
 
     glfwTerminate();
     free(self);
+}
+
+
+#define __GFX_FAILBACK_SHADER_ENABLED true
+
+
+void gfx_draw(GfxCamera* camera, vec3 pos, mat4 m_model) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(WINDOW_BG_COLOR);
+
+    /* ---------------- */
+    /* FAILBACK SHADER */
+    #if __GFX_FAILBACK_SHADER_ENABLED
+
+    shader_use(self->shaders.failback);
+
+    uniform_set_mat4(self->shaders.failback, "m_persp", camera->m_persp);
+    uniform_set_mat4(self->shaders.failback, "m_view", camera->m_view);
+    uniform_set_mat4(self->shaders.failback, "m_model", m_model);
+    uniform_set_vec3(self->shaders.failback, "position", pos);
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    #endif
+    /* ---------------- */
+    /* CLEANUP */
+    shader_use(NULL);
+
+    glfwSwapBuffers(self->window);
 }
 
 
@@ -203,118 +247,4 @@ bool gfx_need_stop() {
 void gfx_stop() {
     self->stop_ = true;
     log_info("Enfine stopped");
-}
-
-
-GfxMesh* gfx_mesh_load(
-    float* vtx_buf, int* ind_buf, size_t vtx_count, bool cw, char* name
-) {
-    GfxMesh* mesh = malloc(sizeof(GfxMesh));
-    mesh->vtx_count = vtx_count;
-    mesh->ind_count = len(ind_buf);
-    mesh->cw = cw;
-
-    shader_use(self->shaders.object);
-
-    /* -- VAO -- */
-    glGenVertexArrays(1, &(mesh->vao));
-    glBindVertexArray(mesh->vao);
-
-    /* -- VBO -- */
-    glGenBuffers(1, &(mesh->vbo));
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBufferData(
-        GL_ARRAY_BUFFER, sizeof(vtx_buf), vtx_buf, GL_STATIC_DRAW
-    );
-
-    /* -- IBO -- */
-    glGenBuffers(1, &(mesh->ibo));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, sizeof(ind_buf), ind_buf, GL_STATIC_DRAW
-    );
-
-    /* -- Vertex Attributes -- */
-    // Vertex buffer format: (v1, v2, ..., vn1, vn2, ..., vt1, vt2, ...)
-    //
-    // More about formats: https://stackoverflow.com/a/39684775
-
-    GLintptr v_offset  = 0;
-    GLintptr vn_offset = sizeof_vec3 * vtx_count;
-    GLintptr vt_offset = sizeof_vec3 * vtx_count * 2;
-
-    // attr = 0
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)v_offset);
-    glEnableVertexAttribArray(0);
-
-    // attr = 1
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, (void*)vn_offset);
-    glEnableVertexAttribArray(1);
-
-    // attr = 2
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, (void*)vt_offset);
-    glEnableVertexAttribArray(2);
-
-    /* -- Cleanup -- */
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    shader_use(NULL);
-
-    log_success("Mesh loaded: %s", name);
-    return mesh;
-}
-
-
-void gfx_mesh_unload(GfxMesh* gfx_mesh) {
-    free(gfx_mesh);
-}
-
-
-void gfx_draw(Camera* camera, GfxMesh* mesh, mat4 model_mat) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glClearColor(WINDOW_BG_COLOR);
-
-    /* ---------------- */
-    /* OBJECT SHADER */
-    shader_use(self->shaders.object);
-
-    camera_update_gfx_data(camera);
-
-    // log_info("MODEL:");
-    // glm_mat4_print(model_mat, stdout);
-    // log_info("VIEW:");
-    // glm_mat4_print(camera->gfx_data.m_view, stdout);
-
-    uniform_set_mat4(self->shaders.object, "m_persp", camera->gfx_data.m_persp);
-    uniform_set_mat4(self->shaders.object, "m_view", camera->gfx_data.m_view);
-
-    // Current model state
-    // GfxMesh* mesh;
-    // mat4 m_model;
-
-    // for (int i = 0; i <= len(scene->pholders); i++) {
-        /* Set current model state */
-        // mesh = scene->meshes[scene->pholders[i].mesh_idx].gfx_data;
-        // glm_mat4_copy(scene->pholders[i].m_model, m_model);
-
-        /* Draw current model */
-        
-        uniform_set_mat4(self->shaders.object, "m_model", model_mat);
-
-        glBindVertexArray(mesh->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-
-        glFrontFace(mesh->cw ? GL_CW : GL_CCW);
-        glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
-    // }
-
-    /* ---------------- */
-    /* CLEANUP */
-    shader_use(NULL);
-
-    glfwSwapBuffers(self->window);
 }

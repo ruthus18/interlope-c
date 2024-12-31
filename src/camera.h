@@ -1,5 +1,6 @@
 #pragma once
 #include <cglm/cglm.h>
+#include "gfx.h"
 
 
 typedef struct Camera {
@@ -9,10 +10,7 @@ typedef struct Camera {
 
     vec3 v_front;
 
-    struct {
-        mat4 m_persp;
-        mat4 m_view;
-    } gfx_data;
+    GfxCamera gfxd;  // Camera GFX data
 
 } Camera;
 

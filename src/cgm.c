@@ -18,8 +18,8 @@ void cgm_persp_mat(float fov, mat4 dest) {
 
 void cgm_view_mat(vec3 pos, vec3 v_front, mat4 dest) {
     vec3 v_center;
-
     glm_vec3_add(pos, v_front, v_center);
+
     glm_lookat(pos, v_center, v_up__y, dest);
 }
 

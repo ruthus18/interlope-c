@@ -11,11 +11,18 @@
 #include "log.h"
 
 
+#define min(a,b) (((a)<(b))?(a):(b))
+#define max(a,b) (((a)>(b))?(a):(b))
+
+
 Camera* camera_create() {
     Camera* cam = malloc(sizeof(Camera));
-    cam->yaw = 0.0;
+    // point to [0;0] if pos on -Z axis
+    cam->yaw = -270.0;
     cam->pitch = 0.0;
-    glm_vec3_zero(cam->v_front);
+
+    glm_vec3_copy((vec3){0.0, 1.7, 0.0}, cam->position);
+    glm_vec3_copy((vec3){0.0, 0.0, 1.0},  cam->v_front);
 
     return cam;
 }
@@ -52,11 +59,11 @@ bool __persp_mat = false;
 
 void camera_update_gfx_data(Camera* cam) {
     if (!__persp_mat) {
-        cgm_persp_mat(CAMERA_DEFAULT_FOV, cam->gfx_data.m_persp);
+        cgm_persp_mat(CAMERA_DEFAULT_FOV, cam->gfxd.m_persp);
         __persp_mat = true;
     }
 
-    cgm_view_mat(cam->position, cam->v_front, cam->gfx_data.m_view);
+    cgm_view_mat(cam->position, cam->v_front, cam->gfxd.m_view);
 }
 
 
