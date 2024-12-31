@@ -35,7 +35,7 @@ void main() {
 
 /* ----------------------- */
 
-Camera* camera;
+Camera* cam;
 mat4 m_model;
 
 vec3 pos = {0.0, 1.5, 3.0};
@@ -43,8 +43,8 @@ vec3 pos = {0.0, 1.5, 3.0};
 
 static
 void on_init__() {
-    camera = camera_create();
-    camera_update_gfx_data(camera);
+    cam = camera_create();
+    camera_set_position(cam, (vec3){0.0, 1.7, 0.0});
 
     glm_mat4_identity(m_model);
 }
@@ -62,15 +62,14 @@ void on_update__() {
     }
 
     if (!cursor_is_visible()) {
-        camera_player_control(camera);
-        camera_update_gfx_data(camera);
+        camera_player_control(cam);
     }
 
-    gfx_draw(&(camera->gfxd), pos, m_model);
+    gfx_draw(&(cam->gfxd), pos, m_model);
 }
 
 
 static
 void on_destroy__() {
-    camera_destroy(camera);
+    camera_destroy(cam);
 }
