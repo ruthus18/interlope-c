@@ -82,9 +82,6 @@ void camera_rotate(Camera* cam, double yaw_delta, double pitch_delta) {
 }
 
 
-#define CAMERA_SPEED 4
-
-
 void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
     /* Rotation Handling */
 
@@ -115,8 +112,15 @@ void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
     if (a)  glm_vec3_sub(v_delta, v_movement_slide, v_delta);
     if (d)  glm_vec3_add(v_delta, v_movement_slide, v_delta);
 
-    if (!glm_vec3_eq(v_delta, 0.0))  glm_vec3_norm(v_delta);
-
-    glm_vec3_scale(v_delta, (double)(CAMERA_SPEED * 0.01), v_delta);
+    if (!glm_vec3_eq(v_delta, 0.0)) {
+        glm_vec3_normalize(v_delta);
+    }
+    glm_vec3_scale(v_delta, 0.01 * CAMERA_MOVEMENT_SPEED, v_delta);
     camera_transform(cam, v_delta);
+
+    if (__DEBUG__LOG_CAMERA_POSITION)
+        log_info("CAM[POS]  %f  %f  %f", cam->position[0], cam->position[1], cam->position[2]);
+
+    if (__DEBUG__LOG_CAMERA_POSITION_DELTA)
+        log_info("CAM[POS Δ]  %f  %f  %f", v_delta[0], v_delta[1], v_delta[2]);
 }   

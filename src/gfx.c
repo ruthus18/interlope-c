@@ -91,15 +91,19 @@ void shader_use(Shader* shader) {
     glUseProgram((shader != NULL) ? shader->program_id : 0);
 }
 
+
+#define __NOT_FOUND -1
+
+
 static
 void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     int uniform_id = glGetUniformLocation(shader->program_id, name);
 
-    if (uniform_id == -1) {
+    if (uniform_id == __NOT_FOUND) {
         log_error("Not found shader uniform: %s", name);
-        exit(0);
+        gfx_stop();
     }
-    glUniformMatrix4fv(uniform_id, 1, GL_FALSE, (float*)data);
+    glUniformMatrix4fv(uniform_id, 1, false, (float*)data);
 }
 
 
@@ -107,12 +111,15 @@ static
 void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
     int uniform_id = glGetUniformLocation(shader->program_id, name);
 
-    if (uniform_id == -1) {
+    if (uniform_id == __NOT_FOUND) {
         log_error("Not found shader uniform: %s", name);
-        exit(0);
+        gfx_stop();
     }
     glUniform3f(uniform_id, data[0], data[1], data[2]);
 }
+
+
+
 
 
 /* ------------------------------------------------------------------------ */
@@ -184,6 +191,11 @@ void init_shaders() {
 
 
 int vao;
+int vbo;
+float vtx_buf[] = {0.0, 0.0, 0.0,    0.0, 0.5, 0.0,    0.5, 0.5, 0.0};
+
+
+#define sizeof_vec3 (sizeof(float) * 3)
 
 
 void gfx_init() {
@@ -199,8 +211,19 @@ void gfx_init() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     
+    shader_use(self->shaders.failback);
+    /* Init render data */
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vtx_buf), vtx_buf, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof_vec3, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_POLYGON : GL_LINE);
 }
 
 void gfx_destroy() {
@@ -215,7 +238,7 @@ void gfx_destroy() {
 #define __GFX_FAILBACK_SHADER_ENABLED true
 
 
-void gfx_draw(GfxCamera* camera, vec3 pos, mat4 m_model) {
+void gfx_draw(GfxCamera* camera, mat4 m_model) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
@@ -224,18 +247,18 @@ void gfx_draw(GfxCamera* camera, vec3 pos, mat4 m_model) {
     #if __GFX_FAILBACK_SHADER_ENABLED
 
     shader_use(self->shaders.failback);
+    glBindVertexArray(vao);
 
     uniform_set_mat4(self->shaders.failback, "m_persp", camera->m_persp);
     uniform_set_mat4(self->shaders.failback, "m_view", camera->m_view);
     uniform_set_mat4(self->shaders.failback, "m_model", m_model);
-    uniform_set_vec3(self->shaders.failback, "position", pos);
-    glDrawArrays(GL_POINTS, 0, 1);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     #endif
     /* ---------------- */
     /* CLEANUP */
     shader_use(NULL);
-
     glfwSwapBuffers(self->window);
 }
 
@@ -246,5 +269,5 @@ bool gfx_need_stop() {
 
 void gfx_stop() {
     self->stop_ = true;
-    log_info("Enfine stopped");
+    log_info("Engine stopped");
 }

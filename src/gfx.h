@@ -44,4 +44,4 @@ void gfx_init();
 void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
-void gfx_draw(GfxCamera* camera, vec3 pos, mat4 m_model);
+void gfx_draw(GfxCamera* camera, mat4 m_model);

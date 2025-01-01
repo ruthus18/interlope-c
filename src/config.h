@@ -19,6 +19,9 @@
 #define WINDOW_TITLE "Interlope Engine"
 #define WINDOW_BG_COLOR (float)29 / 255, (float)32 / 255, (float)33 / 255, 1.0
 
+/* GFX */
+#define GFX_WIREFRAME_MODE true
+
 /* Paths & Dirs */
 #define DIR_SHADERS "shaders/"
 #define DIR_ASSETS "assets/"
@@ -27,7 +30,8 @@
 #define MOUSE_SENSITIVITY 150.0
 
 /* Camera */
-#define CAMERA_DEFAULT_FOV 60.0
+#define CAMERA_DEFAULT_FOV 75.0
+#define CAMERA_MOVEMENT_SPEED 5
 
 
 /* ------------------------------------------------------------------------- */
@@ -36,6 +40,8 @@
 #define __DEBUG__PRINT_FPS false
 #define __DEBUG__PRINT_TIME_UPDATE false
 #define __DEBUG__LOG_CAMERA_ROTATION false
+#define __DEBUG__LOG_CAMERA_POSITION false
+#define __DEBUG__LOG_CAMERA_POSITION_DELTA false
 
 
 /* ------------------------------------------------------------------------- */

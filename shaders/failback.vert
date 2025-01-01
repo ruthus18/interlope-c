@@ -1,12 +1,11 @@
 #version 460
 
 
-uniform vec3 position;
+layout (location=0) in vec3 position;
+
 uniform mat4 m_persp;
 uniform mat4 m_view;
 uniform mat4 m_model;
-
-out mat4 test;
 
 
 void main() {

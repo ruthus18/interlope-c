@@ -4,7 +4,6 @@
 
 
 #define radian(x) (x / (180.0 / GLM_PI))
-#define sizeof_vec3 (sizeof(float) * 3)
 
 void cgm_persp_mat(float fov, mat4 dest);
 void cgm_view_mat(vec3 pos, vec3 v_front, mat4 dest);

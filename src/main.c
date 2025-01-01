@@ -37,15 +37,13 @@ void main() {
 Camera* cam;
 mat4 m_model;
 
-vec3 pos = {0.0, 1.5, 3.0};
-
 
 static
 void on_init__() {
     cam = camera_create();
     camera_set_position(cam, (vec3){0.0, 1.7, 0.0});
 
-    glm_mat4_identity(m_model);
+    cgm_model_mat((vec3){0.0, 1.0, 3.0}, NULL, NULL, m_model);
 }
 
 
@@ -65,10 +63,11 @@ void on_update__() {
         bool s = input_is_keyrp(IN_KEY_S);
         bool a = input_is_keyrp(IN_KEY_A);
         bool d = input_is_keyrp(IN_KEY_D);
+
         camera_player_control(cam, w, s, a, d);
     }
 
-    gfx_draw(&(cam->gfxd), pos, m_model);
+    gfx_draw(&(cam->gfxd), m_model);
 }
 
 
