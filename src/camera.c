@@ -46,6 +46,12 @@ void camera_set_position(Camera* cam, vec3 pos) {
 }
 
 
+void camera_transform(Camera* cam, vec3 pos_delta) {
+    glm_vec3_add(cam->position, pos_delta, cam->position);
+    camera_update_view_mat(cam);
+}
+
+
 void camera_set_rotation(Camera* cam, double yaw, double pitch) {
     cam->yaw = yaw;
     cam->pitch = pitch;
@@ -76,7 +82,12 @@ void camera_rotate(Camera* cam, double yaw_delta, double pitch_delta) {
 }
 
 
-void camera_player_control(Camera* cam) {
+#define CAMERA_SPEED 4
+
+
+void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
+    /* Rotation Handling */
+
     vec2 mouse_delta;
     double yaw_delta, pitch_delta;
 
@@ -89,4 +100,23 @@ void camera_player_control(Camera* cam) {
 
     if (__DEBUG__LOG_CAMERA_ROTATION)
         log_info("CAM[YAW:PITCH]  %f | %f", cam->yaw, cam->pitch);
-}
+
+    /* Movement Handling */
+
+    vec3 v_movement_forwd = {cam->v_front[0], 0.0, cam->v_front[2]};
+    vec3 v_movement_slide;
+    glm_vec3_cross(v_movement_forwd, (vec3){0.0, 1.0, 0.0}, v_movement_slide);
+
+    vec3 v_delta;
+    glm_vec3_zero(v_delta);
+
+    if (w)  glm_vec3_add(v_delta, v_movement_forwd, v_delta);
+    if (s)  glm_vec3_sub(v_delta, v_movement_forwd, v_delta);
+    if (a)  glm_vec3_sub(v_delta, v_movement_slide, v_delta);
+    if (d)  glm_vec3_add(v_delta, v_movement_slide, v_delta);
+
+    if (!glm_vec3_eq(v_delta, 0.0))  glm_vec3_norm(v_delta);
+
+    glm_vec3_scale(v_delta, (double)(CAMERA_SPEED * 0.01), v_delta);
+    camera_transform(cam, v_delta);
+}   

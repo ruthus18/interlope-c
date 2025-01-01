@@ -8,7 +8,6 @@
 #include "cgm.h"
 
 
-static void handle_user_control();
 static void on_init__();
 static void on_update__();
 static void on_destroy__();
@@ -62,7 +61,11 @@ void on_update__() {
     }
 
     if (!cursor_is_visible()) {
-        camera_player_control(cam);
+        bool w = input_is_keyrp(IN_KEY_W);
+        bool s = input_is_keyrp(IN_KEY_S);
+        bool a = input_is_keyrp(IN_KEY_A);
+        bool d = input_is_keyrp(IN_KEY_D);
+        camera_player_control(cam, w, s, a, d);
     }
 
     gfx_draw(&(cam->gfxd), pos, m_model);

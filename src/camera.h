@@ -21,6 +21,7 @@ void camera_update_persp_mat(Camera* cam);
 void camera_update_view_mat(Camera* cam);
 
 void camera_set_position(Camera*, vec3 pos);
+void camera_transform(Camera*, vec3 pos_delta);
 void camera_set_rotation(Camera*, double yaw, double pitch);
 void camera_rotate(Camera*, double yaw_delta, double pitch_delta);
-void camera_player_control(Camera*);
+void camera_player_control(Camera*, bool w, bool s, bool a, bool d);
