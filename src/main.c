@@ -36,10 +36,24 @@ void main() {
 
 Camera* cam;
 mat4 m_model;
+GfxMesh* mesh;
 
 
 static
 void on_init__() {
+    float vtx_buf[] = {
+        // vertices
+        0.0, 0.0, 0.0,    0.0, 0.5, 0.0,    0.5, 0.5, 0.0,
+        // normals
+        1.0, 0.0, 0.0,    1.0, 0.0, 0.0,    1.0, 0.0, 0.0,
+        // texcoords
+        0.0, 0.0,         0.0, 0.0,         0.0, 0.0
+    };
+    int ind_buf[] = {};
+    int vtx_count = 3;
+    int ind_count = 0;
+    mesh = gfx_mesh_load("cube", vtx_buf, ind_buf, vtx_count, ind_count, false);
+
     cam = camera_create();
     camera_set_position(cam, (vec3){0.0, 1.7, 0.0});
 
@@ -67,11 +81,12 @@ void on_update__() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    gfx_draw(&(cam->gfxd), m_model);
+    gfx_draw(&(cam->gfxd), mesh, m_model);
 }
 
 
 static
 void on_destroy__() {
+    gfx_mesh_unload(mesh);
     camera_destroy(cam);
 }

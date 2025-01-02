@@ -184,18 +184,10 @@ void log_startup_info() {
 
 static inline
 void init_shaders() {
-    self->shaders.failback = shader_create(
-        "failback.vert", "failback.frag"
+    self->shaders.objects = shader_create(
+        "object.vert", "object.frag"
     );
 }
-
-
-int vao;
-int vbo;
-float vtx_buf[] = {0.0, 0.0, 0.0,    0.0, 0.5, 0.0,    0.5, 0.5, 0.0};
-
-
-#define sizeof_vec3 (sizeof(float) * 3)
 
 
 void gfx_init() {
@@ -210,24 +202,79 @@ void gfx_init() {
     glLineWidth(2);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    
-    shader_use(self->shaders.failback);
-    /* Init render data */
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vtx_buf), vtx_buf, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof_vec3, (void*)0);
-    glEnableVertexAttribArray(0);
 
     glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_POLYGON : GL_LINE);
 }
 
+
+#define vec3_size (3 * sizeof(float))
+#define vec2_size (2 * sizeof(float))
+
+
+GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, int ind_count, bool cw) {
+    GfxMesh* mesh = malloc(sizeof(GfxMesh));
+    mesh->id = id;
+    mesh->vtx_count = vtx_count;
+    mesh->ind_count = ind_count;
+    mesh->cw = cw;
+
+    shader_use(self->shaders.objects);
+
+    /* -- VAO -- */
+    glGenVertexArrays(1, &(mesh->vao));
+    glBindVertexArray(mesh->vao);
+
+    /* -- VBO -- */
+    glGenBuffers(1, &(mesh->vbo));
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float) * vtx_count, vtx_buf, GL_STATIC_DRAW);
+
+    /* -- IBO -- */
+    glGenBuffers(1, &(mesh->ibo));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER, sizeof(ind_buf), ind_buf, GL_STATIC_DRAW
+    );
+
+    /* -- Vertex Attributes -- */
+    // Vertex buffer format: (v1, v2, ..., vn1, vn2, ..., vt1, vt2, ...)
+    //
+    // More about formats: https://stackoverflow.com/a/39684775
+    GLintptr v_offset = 0;
+    GLintptr vn_offset = vec3_size * vtx_count;
+    GLintptr vt_offset = vec3_size * vtx_count * 2;
+
+    // vtx position
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, vec3_size, (void*)v_offset);
+    glEnableVertexAttribArray(0);
+
+    // vtx normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, vec3_size, (void*)vn_offset);
+    glEnableVertexAttribArray(1);
+
+    // vtx texcoord
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, vec2_size, (void*)vn_offset);
+    glEnableVertexAttribArray(2);
+
+    /* -- Cleanup -- */
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    shader_use(NULL);
+
+    log_success("Mesh loaded: %s", id);
+    return mesh;
+}
+
+
+void gfx_mesh_unload(GfxMesh* mesh){
+    free(mesh);
+}
+
+
 void gfx_destroy() {
-    free(self->shaders.failback);
+    free(self->shaders.objects);
     glfwDestroyWindow(self->window);
 
     glfwTerminate();
@@ -238,7 +285,7 @@ void gfx_destroy() {
 #define __GFX_FAILBACK_SHADER_ENABLED true
 
 
-void gfx_draw(GfxCamera* camera, mat4 m_model) {
+void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
@@ -246,12 +293,12 @@ void gfx_draw(GfxCamera* camera, mat4 m_model) {
     /* FAILBACK SHADER */
     #if __GFX_FAILBACK_SHADER_ENABLED
 
-    shader_use(self->shaders.failback);
-    glBindVertexArray(vao);
+    shader_use(self->shaders.objects);
+    glBindVertexArray(mesh->vao);
 
-    uniform_set_mat4(self->shaders.failback, "m_persp", camera->m_persp);
-    uniform_set_mat4(self->shaders.failback, "m_view", camera->m_view);
-    uniform_set_mat4(self->shaders.failback, "m_model", m_model);
+    uniform_set_mat4(self->shaders.objects, "m_persp", camera->m_persp);
+    uniform_set_mat4(self->shaders.objects, "m_view", camera->m_view);
+    uniform_set_mat4(self->shaders.objects, "m_model", m_model);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
 

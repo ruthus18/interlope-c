@@ -4,6 +4,7 @@
 
 
 typedef struct GfxMesh {
+    char* id;
     int vao;
     int vbo;
     int ibo;
@@ -31,7 +32,7 @@ typedef struct Gfx {
     bool stop_;
 
     struct {
-        Shader* failback;
+        Shader* objects;
         // Shader* object;
     } shaders;
 } Gfx;
@@ -44,4 +45,10 @@ void gfx_init();
 void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
-void gfx_draw(GfxCamera* camera, mat4 m_model);
+void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model);
+
+
+GfxMesh* gfx_mesh_load(
+    char* id, float* vtx_buf, int* ind_buf, int vtx_count, int ind_count, bool cw
+);
+void gfx_mesh_unload(GfxMesh* mesh);
