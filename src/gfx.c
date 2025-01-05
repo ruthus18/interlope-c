@@ -6,7 +6,6 @@
 #include <cglm/cglm.h>
 
 #include "config.h"
-#include "cgm.h"
 #include "gfx.h"
 #include "log.h"
 #include "platform.h"
@@ -282,7 +281,7 @@ void gfx_destroy() {
 }
 
 
-#define __GFX_FAILBACK_SHADER_ENABLED true
+static bool __persp_mat_set = false;
 
 
 void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
@@ -290,28 +289,29 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
     glClearColor(WINDOW_BG_COLOR);
 
     /* ---------------- */
-    /* FAILBACK SHADER */
-    #if __GFX_FAILBACK_SHADER_ENABLED
-
+    /* OBJECT SHADER */
     shader_use(self->shaders.objects);
-    glBindVertexArray(mesh->vao);
 
-    uniform_set_mat4(self->shaders.objects, "m_persp", camera->m_persp);
+    if (!__persp_mat_set) {
+        uniform_set_mat4(self->shaders.objects, "m_persp", camera->m_persp);
+        __persp_mat_set = true;
+    }
     uniform_set_mat4(self->shaders.objects, "m_view", camera->m_view);
     uniform_set_mat4(self->shaders.objects, "m_model", m_model);
 
+    glBindVertexArray(mesh->vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    #endif
     /* ---------------- */
     /* CLEANUP */
     shader_use(NULL);
+
     glfwSwapBuffers(self->window);
 }
 
 
 bool gfx_need_stop() {
-    glfwWindowShouldClose(self->window) || self->stop_;
+    return glfwWindowShouldClose(self->window) || self->stop_;
 }
 
 void gfx_stop() {

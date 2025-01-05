@@ -5,9 +5,9 @@
 
 typedef struct GfxMesh {
     char* id;
-    int vao;
-    int vbo;
-    int ibo;
+    unsigned int vao;
+    unsigned int vbo;
+    unsigned int ibo;
 
     size_t vtx_count;
     size_t ind_count;

@@ -8,6 +8,7 @@ VENDOR=vendor
 echo "[build.sh] Compiling Engine..."
 
 time gcc \
+    -std="c23" \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
     -lm -lGL -lGLEW -lglfw \

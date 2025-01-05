@@ -1,11 +1,14 @@
 #include <stdbool.h>
 
+#include "assets.h"
 #include "camera.h"
-#include "config.h"
-#include "gfx.h"
-#include "log.h"
-#include "platform.h"
 #include "cgm.h"
+#include "gfx.h"
+#include "platform/input_keys.h"
+#include "platform.h"
+
+#include "config.h"
+#include "log.h"
 
 
 static void on_init__();
@@ -13,7 +16,7 @@ static void on_update__();
 static void on_destroy__();
 
 
-void main() {
+int main() {
     gfx_init();
     input_init();
 
@@ -30,6 +33,7 @@ void main() {
     on_destroy__();
     input_destroy();
     gfx_destroy();
+    return 1;
 }
 
 /* ----------------------- */
@@ -53,6 +57,9 @@ void on_init__() {
     int vtx_count = 3;
     int ind_count = 0;
     mesh = gfx_mesh_load("cube", vtx_buf, ind_buf, vtx_count, ind_count, false);
+
+    GfxMesh* mesh2 = mesh_load_gltf("chair01.gltf");
+    // if (mesh2 == NULL) exit(0);
 
     cam = camera_create();
     camera_set_position(cam, (vec3){0.0, 1.7, 0.0});

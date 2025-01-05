@@ -2,13 +2,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
 #include "log.h"
-#include "config.h"
 
 
 void log_greeting(const char* msg, ...) {

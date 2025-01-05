@@ -1,8 +1,7 @@
 #pragma once
 #include <stdbool.h>
+#include <cglm/cglm.h>
 #include <GLFW/glfw3.h>
-
-#include "platform/input_keys.h"
 
 
 typedef GLFWwindow Window;
@@ -12,8 +11,10 @@ typedef GLFWwindow Window;
 const char* file_read_text(const char* path);
 const char* path_to_shader(const char* file_path);
 const char* path_to_asset(const char* rel_path);
+const char* path_to_mesh(const char* rel_path);
 
 /* input.c */
+constexpr unsigned int _KPST_SIZE = 8;
 
 typedef struct Input {
     Window* window;
@@ -25,7 +26,7 @@ typedef struct Input {
     double mouse_dx;
     double mouse_dy;
 
-    int keyp_storage[8];
+    int keyp_storage[_KPST_SIZE];
 } Input;
 
 void input_init();

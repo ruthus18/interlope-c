@@ -25,6 +25,7 @@
 /* Paths & Dirs */
 #define DIR_SHADERS "shaders/"
 #define DIR_ASSETS "assets/"
+#define DIR_MESHES "assets/meshes/"
 
 /* Input */
 #define MOUSE_SENSITIVITY 150.0

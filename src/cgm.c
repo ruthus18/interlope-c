@@ -2,7 +2,6 @@
 
 #include "cgm.h"
 #include "config.h"
-#include "log.h"
 
 
 vec3 v_up_x = {1.0, 0.0, 0.0};

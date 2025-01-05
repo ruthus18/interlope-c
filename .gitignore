@@ -1,2 +1,5 @@
 /.vscode
 /interlope
+
+# clangd server config
+/compile_flags.txt
