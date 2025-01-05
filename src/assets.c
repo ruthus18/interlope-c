@@ -4,7 +4,7 @@
 #include "assets.h"
 #include "gfx.h"
 #include "log.h"
-#include "platform.h"
+#include "platform/file.h"
 
 
 GfxMesh* mesh_load_obj(const char* mesh_name) {

@@ -1,6 +1,9 @@
 /* gfx.h - Graphics (Rendering Backend) */
 #pragma once
-#include "platform.h"
+#include <stdlib.h>
+#include <cglm/cglm.h>
+
+#include "platform/window.h"
 
 
 typedef struct GfxMesh {
@@ -20,22 +23,6 @@ typedef struct GfxCamera {
     mat4 m_persp;
     mat4 m_view;
 } GfxCamera;
-
-
-typedef struct Shader {
-    int program_id;
-} Shader;
-
-
-typedef struct Gfx {
-    Window* window;
-    bool stop_;
-
-    struct {
-        Shader* objects;
-        // Shader* object;
-    } shaders;
-} Gfx;
 
 
 void window_init();

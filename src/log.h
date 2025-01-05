@@ -1,4 +1,6 @@
 #pragma once
+#include <cglm/cglm.h>
+
 
 /* Terminal colors */
 #define TERM_RED      "\033[0;31m"
@@ -11,10 +13,3 @@ void log_greeting(const char* msg, ...);
 void log_info(const char* msg, ...);
 void log_success(const char* msg, ...);
 void log_error(const char* msg, ...);
-
-/* OpenGL related */
-void log_glshader(uint32_t shader);
-void log_glprogram(uint32_t program);
-
-/* Other */
-void log_mat4(mat4 src);

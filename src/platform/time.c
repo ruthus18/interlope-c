@@ -1,15 +1,15 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "../config.h"
-#include "../platform.h"
+#include "time.h"
 
-
-static double current_time, last_time, dt, timer_sec;
 
 static double current_time = 0.0;       // GetTime value from GLFW
+static double last_time;
+
+static double timer_sec = 0.0;
 static int nbframes = 0;                // num of frames after recent timer reset
 static int fps = 0;                     // last record of nbframes
 static bool second_passed = false;      // mark true on every 1 sec frame (timer)
@@ -19,7 +19,7 @@ void time_update() {
     last_time = current_time;
     current_time = glfwGetTime();
 
-    dt = current_time - last_time;
+    double dt = current_time - last_time;
     nbframes++;
 
     timer_sec += dt;

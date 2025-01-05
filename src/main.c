@@ -1,14 +1,10 @@
-#include <stdbool.h>
-
 #include "assets.h"
 #include "camera.h"
 #include "cgm.h"
 #include "gfx.h"
 #include "platform/input_keys.h"
-#include "platform.h"
-
-#include "config.h"
-#include "log.h"
+#include "platform/input.h"
+#include "platform/time.h"
 
 
 static void on_init__();
@@ -31,7 +27,6 @@ int main() {
     }
 
     on_destroy__();
-    input_destroy();
     gfx_destroy();
     return 1;
 }

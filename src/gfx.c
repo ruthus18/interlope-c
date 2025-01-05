@@ -7,127 +7,24 @@
 
 #include "config.h"
 #include "gfx.h"
+#include "gfx_shader.h"
 #include "log.h"
-#include "platform.h"
+#include "platform/window.h"
 
 
-/* ------------------------------------------------------------------------ */
-/* Shaders Routines */
+static struct _Gfx {
+    Window* window;
+    bool stop_;
 
-static
-bool check_gl_error() {
-    bool is_err = false;
-    int gl_err = glGetError();
+    struct {
+        Shader* object;
+    } shaders;
 
-    while (gl_err != GL_NO_ERROR) {
-        log_error("OpenGL Error: %s", gl_err);
-        is_err = true;
-    }
-    return is_err;
-}
-
-static
-void shader_compile(int program, const char* rel_path, int shader_type) {
-    uint32_t shader_id = glCreateShader(shader_type);
-
-    const char* path = path_to_shader(rel_path);
-    const char* file_buffer = file_read_text(path);
-
-    glShaderSource(shader_id, 1, &file_buffer, NULL);
-    free((void*) path);
-    free((void*) file_buffer);
-
-    glCompileShader(shader_id);
-    check_gl_error();
-
-    int compile_ok;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compile_ok);
-
-    if (compile_ok != 1) {
-        log_error("Shader compilation error; file=%s", rel_path);
-        log_glshader(shader_id);
-    }
-
-    glAttachShader(program, shader_id);
-}
-
-static
-Shader* shader_create(const char* vert_p, const char* frag_p) {
-    Shader* shader = malloc(sizeof(Shader));
-
-    int program = glCreateProgram();
-    shader_compile(program, vert_p, GL_VERTEX_SHADER);
-    shader_compile(program, frag_p, GL_FRAGMENT_SHADER);
-
-    int link_ok;
-    glLinkProgram(program);
-    glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
-    if (link_ok != 1) {
-        log_error("GL program linking error");
-        log_glprogram(program);
-    }
-
-    int validation_ok;
-    glValidateProgram(program);
-    glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_ok);
-    if (validation_ok != 1) {
-        log_error("GL program validation error");
-        log_glprogram(program);
-    }
-
-    log_success("Shader created: %s | %s", vert_p, frag_p);
-    shader->program_id = program;
-    return shader;
-}
-
-static
-void shader_destroy(Shader* shader) {
-    free(shader);
-}
-
-static
-void shader_use(Shader* shader) {
-    glUseProgram((shader != NULL) ? shader->program_id : 0);
-}
+} self;
 
 
-#define __NOT_FOUND -1
-
-
-static
-void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
-    int uniform_id = glGetUniformLocation(shader->program_id, name);
-
-    if (uniform_id == __NOT_FOUND) {
-        log_error("Not found shader uniform: %s", name);
-        gfx_stop();
-    }
-    glUniformMatrix4fv(uniform_id, 1, false, (float*)data);
-}
-
-
-static
-void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
-    int uniform_id = glGetUniformLocation(shader->program_id, name);
-
-    if (uniform_id == __NOT_FOUND) {
-        log_error("Not found shader uniform: %s", name);
-        gfx_stop();
-    }
-    glUniform3f(uniform_id, data[0], data[1], data[2]);
-}
-
-
-
-
-
-/* ------------------------------------------------------------------------ */
-/* GFX - Main Rendering Logic */
-
-static Gfx* self;
-
-
-void window_init() {
+static inline
+Window* _create_window() {
     if (!glfwInit()) {
         printf("GLFW Initialization Error!\n");
         exit(0);
@@ -161,14 +58,14 @@ void window_init() {
     }
 
     glfwSwapInterval(WINDOW_VSYNC);
-    self->window = window;
-}
 
-Window* window_get() { return self->window; }
+    window_set(window);
+    return window;
+}
 
 
 static inline
-void log_startup_info() {
+void _log_startup_info() {
     log_greeting("======  Interlope Engine  ======");
     log_info("ENGINE VERSION: %s", ENGINE_VERSION);
     log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
@@ -182,20 +79,19 @@ void log_startup_info() {
 
 
 static inline
-void init_shaders() {
-    self->shaders.objects = shader_create(
+void _init_shaders() {
+    self.shaders.object = shader_create(
         "object.vert", "object.frag"
     );
 }
 
 
 void gfx_init() {
-    self = malloc(sizeof(Gfx));
-    self->stop_ = false;
+    self.window = _create_window();
+    self.stop_ = false;
 
-    window_init();
-    log_startup_info();
-    init_shaders();
+    _log_startup_info();
+    _init_shaders();
 
     glPointSize(6);
     glLineWidth(2);
@@ -217,7 +113,7 @@ GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, in
     mesh->ind_count = ind_count;
     mesh->cw = cw;
 
-    shader_use(self->shaders.objects);
+    shader_use(self.shaders.object);
 
     /* -- VAO -- */
     glGenVertexArrays(1, &(mesh->vao));
@@ -273,11 +169,9 @@ void gfx_mesh_unload(GfxMesh* mesh){
 
 
 void gfx_destroy() {
-    free(self->shaders.objects);
-    glfwDestroyWindow(self->window);
-
+    free(self.shaders.object);
+    glfwDestroyWindow(self.window);
     glfwTerminate();
-    free(self);
 }
 
 
@@ -290,14 +184,14 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
 
     /* ---------------- */
     /* OBJECT SHADER */
-    shader_use(self->shaders.objects);
+    shader_use(self.shaders.object);
 
     if (!__persp_mat_set) {
-        uniform_set_mat4(self->shaders.objects, "m_persp", camera->m_persp);
+        uniform_set_mat4(self.shaders.object, "m_persp", camera->m_persp);
         __persp_mat_set = true;
     }
-    uniform_set_mat4(self->shaders.objects, "m_view", camera->m_view);
-    uniform_set_mat4(self->shaders.objects, "m_model", m_model);
+    uniform_set_mat4(self.shaders.object, "m_view", camera->m_view);
+    uniform_set_mat4(self.shaders.object, "m_model", m_model);
 
     glBindVertexArray(mesh->vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -306,15 +200,15 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
     /* CLEANUP */
     shader_use(NULL);
 
-    glfwSwapBuffers(self->window);
+    glfwSwapBuffers(self.window);
 }
 
 
 bool gfx_need_stop() {
-    return glfwWindowShouldClose(self->window) || self->stop_;
+    return glfwWindowShouldClose(self.window) || self.stop_;
 }
 
 void gfx_stop() {
-    self->stop_ = true;
+    self.stop_ = true;
     log_info("Engine stopped");
 }

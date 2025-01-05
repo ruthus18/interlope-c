@@ -1,11 +1,10 @@
-#include <stdbool.h>
 #include <stdlib.h>
 #include <cglm/cglm.h>
 
 #include "camera.h"
 #include "cgm.h"
 #include "config.h"
-#include "platform.h"
+#include "platform/input.h"
 
 #include "log.h"
 
