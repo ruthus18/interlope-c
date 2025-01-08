@@ -16,5 +16,5 @@ void main() {
     gl_Position = m_persp * m_view * m_model * vec4(vtx_position, 1.0);
 
     normal = vtx_normal;
-    texcoord = texcoord;
+    texcoord = vtx_texcoord;
 }

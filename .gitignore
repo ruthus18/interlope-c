@@ -1,5 +1,11 @@
+# VS Code project settings
 /.vscode
+
+# Linux executable
 /interlope
 
 # clangd server config
 /compile_flags.txt
+
+# Development notes & tmp files
+/dev

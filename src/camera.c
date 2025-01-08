@@ -17,7 +17,7 @@ Camera* camera_create() {
     Camera* cam = malloc(sizeof(Camera));
 
     camera_set_position(cam, (vec3){0.0, 0.0, 0.0});
-    camera_set_rotation(cam, -270.0, 0.0);
+    camera_set_rotation(cam, 270.0, 0.0);
 
     camera_update_persp_mat(cam);
     camera_update_view_mat(cam);

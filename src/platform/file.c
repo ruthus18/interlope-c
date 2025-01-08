@@ -44,11 +44,11 @@ const char* path_to_asset(const char* rel_path) {
 }
 
 
-const char* path_to_mesh(const char* rel_path) {
-    int size = strlen(DIR_MESHES) + strlen(rel_path) + 1;
+const char* path_to_model(const char* rel_path) {
+    int size = strlen(DIR_MODELS) + strlen(rel_path) + 1;
 
     char*  path = malloc(size);
-    strcpy(path, DIR_MESHES);
+    strcpy(path, DIR_MODELS);
     strcat(path, rel_path);
     return path;
 }

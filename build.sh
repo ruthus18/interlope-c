@@ -23,10 +23,10 @@ time gcc \
     ${SRC}/platform/time.c \
     ${SRC}/platform/window.c \
     \
-    ${SRC}/assets.c \
     ${SRC}/camera.c \
     ${SRC}/cgm.c \
     ${SRC}/log.c \
     ${SRC}/main.c \
+    ${SRC}/model.c \
 
 echo "[build.sh] Compiling Done"

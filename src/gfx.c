@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <GL/glew.h>
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
@@ -27,7 +28,7 @@ static inline
 Window* _create_window() {
     if (!glfwInit()) {
         printf("GLFW Initialization Error!\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -106,7 +107,14 @@ void gfx_init() {
 #define vec2_size (2 * sizeof(float))
 
 
-GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, int ind_count, bool cw) {
+GfxMesh* gfx_mesh_load(
+    const char* id,
+    float* vtx_buf,
+    unsigned int* ind_buf,
+    size_t vtx_count,
+    size_t ind_count,
+    bool cw
+) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
     mesh->id = id;
     mesh->vtx_count = vtx_count;
@@ -128,7 +136,7 @@ GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, in
     glGenBuffers(1, &(mesh->ibo));
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
     glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, sizeof(ind_buf), ind_buf, GL_STATIC_DRAW
+        GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * ind_count, ind_buf, GL_STATIC_DRAW
     );
 
     /* -- Vertex Attributes -- */
@@ -136,7 +144,7 @@ GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, in
     //
     // More about formats: https://stackoverflow.com/a/39684775
     GLintptr v_offset = 0;
-    GLintptr vn_offset = vec3_size * vtx_count;
+    GLintptr vn_offset = (vec3_size * vtx_count);
     GLintptr vt_offset = vec3_size * vtx_count * 2;
 
     // vtx position
@@ -148,7 +156,7 @@ GfxMesh* gfx_mesh_load(char* id, float* vtx_buf, int* ind_buf, int vtx_count, in
     glEnableVertexAttribArray(1);
 
     // vtx texcoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, vec2_size, (void*)vn_offset);
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, vec2_size, (void*)vt_offset);
     glEnableVertexAttribArray(2);
 
     /* -- Cleanup -- */
@@ -194,7 +202,11 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
     uniform_set_mat4(self.shaders.object, "m_model", m_model);
 
     glBindVertexArray(mesh->vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+
+    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
+    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
 
     /* ---------------- */
     /* CLEANUP */
@@ -210,5 +222,5 @@ bool gfx_need_stop() {
 
 void gfx_stop() {
     self.stop_ = true;
-    log_info("Engine stopped");
+    log_info("Engine stopped. Bye!");
 }

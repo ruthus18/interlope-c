@@ -7,7 +7,7 @@
 
 
 typedef struct GfxMesh {
-    char* id;
+    const char* id;
     unsigned int vao;
     unsigned int vbo;
     unsigned int ibo;
@@ -36,6 +36,11 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model);
 
 
 GfxMesh* gfx_mesh_load(
-    char* id, float* vtx_buf, int* ind_buf, int vtx_count, int ind_count, bool cw
+    const char* id,
+    float* vtx_buf,
+    unsigned int* ind_buf,
+    size_t vtx_count,
+    size_t ind_count,
+    bool cw
 );
 void gfx_mesh_unload(GfxMesh* mesh);

@@ -1,7 +1,7 @@
-#include "assets.h"
 #include "camera.h"
 #include "cgm.h"
 #include "gfx.h"
+#include "model.h"
 #include "platform/input_keys.h"
 #include "platform/input.h"
 #include "platform/time.h"
@@ -28,7 +28,7 @@ int main() {
 
     on_destroy__();
     gfx_destroy();
-    return 1;
+    return EXIT_SUCCESS;
 }
 
 /* ----------------------- */
@@ -40,26 +40,13 @@ GfxMesh* mesh;
 
 static
 void on_init__() {
-    float vtx_buf[] = {
-        // vertices
-        0.0, 0.0, 0.0,    0.0, 0.5, 0.0,    0.5, 0.5, 0.0,
-        // normals
-        1.0, 0.0, 0.0,    1.0, 0.0, 0.0,    1.0, 0.0, 0.0,
-        // texcoords
-        0.0, 0.0,         0.0, 0.0,         0.0, 0.0
-    };
-    int ind_buf[] = {};
-    int vtx_count = 3;
-    int ind_count = 0;
-    mesh = gfx_mesh_load("cube", vtx_buf, ind_buf, vtx_count, ind_count, false);
-
-    GfxMesh* mesh2 = mesh_load_gltf("chair01.gltf");
-    // if (mesh2 == NULL) exit(0);
-
     cam = camera_create();
     camera_set_position(cam, (vec3){0.0, 1.7, 0.0});
 
-    cgm_model_mat((vec3){0.0, 1.0, 3.0}, NULL, NULL, m_model);
+    mesh = model_load_file("chair01.glb");
+    if (mesh == NULL) exit(EXIT_FAILURE);
+
+    cgm_model_mat((vec3){0.0, 0.0, -3.0}, NULL, NULL, m_model);
 }
 
 

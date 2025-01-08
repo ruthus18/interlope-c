@@ -127,7 +127,7 @@ void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
 
     if (uniform_id == __NO_UNIFORM) {
         log_error("Not found shader uniform: %s", name);
-        exit(0);  // FIXME
+        exit(EXIT_FAILURE);  // FIXME
     }
     glUniform3f(uniform_id, data[0], data[1], data[2]);
 }
