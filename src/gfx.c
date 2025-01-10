@@ -108,7 +108,7 @@ void gfx_init() {
 
 
 GfxMesh* gfx_mesh_load(
-    const char* id,
+    const char* name,
     float* vtx_buf,
     unsigned int* ind_buf,
     size_t vtx_count,
@@ -116,7 +116,7 @@ GfxMesh* gfx_mesh_load(
     bool cw
 ) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
-    mesh->id = id;
+    mesh->name = name;
     mesh->vtx_count = vtx_count;
     mesh->ind_count = ind_count;
     mesh->cw = cw;
@@ -166,13 +166,48 @@ GfxMesh* gfx_mesh_load(
     glBindVertexArray(0);
     shader_use(NULL);
 
-    log_success("Mesh loaded: %s", id);
+    log_success("Mesh loaded: %s", name);
     return mesh;
 }
 
 
 void gfx_mesh_unload(GfxMesh* mesh){
     free(mesh);
+}
+
+
+GfxTexture* gfx_texture_load(unsigned char* data, int width, int height) {
+    GfxTexture* texture = malloc(sizeof(GfxTexture));
+
+    shader_use(self.shaders.object);
+    glGenTextures(1, &(texture->id));
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        width,
+        height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        data
+    );
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /* -- Texture Parameters -- */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    shader_use(NULL);
+    return texture;
+}
+
+void gfx_texture_unload(GfxTexture* texture) {
+    free(texture);
 }
 
 
@@ -186,13 +221,15 @@ void gfx_destroy() {
 static bool __persp_mat_set = false;
 
 
-void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
+void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
     /* ---------------- */
     /* OBJECT SHADER */
     shader_use(self.shaders.object);
+
+    // glBindTexture(GL_TEXTURE_2D, texture->id);
 
     if (!__persp_mat_set) {
         uniform_set_mat4(self.shaders.object, "m_persp", camera->m_persp);
@@ -210,6 +247,7 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model) {
 
     /* ---------------- */
     /* CLEANUP */
+    // glBindTexture(GL_TEXTURE_2D, 0);
     shader_use(NULL);
 
     glfwSwapBuffers(self.window);

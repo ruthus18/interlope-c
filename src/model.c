@@ -87,12 +87,12 @@ GfxMesh* model_load_file(const char* model_relpath) {
         pos_bufv->size
     );
     memcpy(
-        vtx_buf + pos_bufv->size,
+        (void*)vtx_buf + pos_bufv->size,
         normal_bufv->buffer->data + normal_bufv->offset,
         normal_bufv->size
     );
     memcpy(
-        vtx_buf + pos_bufv->size + normal_bufv->size,
+        (void*)vtx_buf + pos_bufv->size + normal_bufv->size,
         texcoord_bufv->buffer->data + texcoord_bufv->offset,
         texcoord_bufv->size
     );

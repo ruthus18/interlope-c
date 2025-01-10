@@ -7,7 +7,7 @@
 
 
 typedef struct GfxMesh {
-    const char* id;
+    const char* name;
     unsigned int vao;
     unsigned int vbo;
     unsigned int ibo;
@@ -17,6 +17,11 @@ typedef struct GfxMesh {
 
     bool cw;  // vertex ordering (1 = clockwise ; 0 = counterwise)
 } GfxMesh;
+
+
+typedef struct GfxTexture {
+    unsigned int id;
+} GfxTexture;
 
 
 typedef struct GfxCamera {
@@ -32,8 +37,7 @@ void gfx_init();
 void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
-void gfx_draw(GfxCamera* camera, GfxMesh* mesh, mat4 m_model);
-
+void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
 
 GfxMesh* gfx_mesh_load(
     const char* id,
@@ -43,4 +47,7 @@ GfxMesh* gfx_mesh_load(
     size_t ind_count,
     bool cw
 );
-void gfx_mesh_unload(GfxMesh* mesh);
+void gfx_mesh_unload(GfxMesh*);
+
+GfxTexture* gfx_texture_load(unsigned char* data, int width, int height);
+void gfx_texture_unload(GfxTexture*);

@@ -2,6 +2,7 @@
 #include "cgm.h"
 #include "gfx.h"
 #include "model.h"
+#include "texture.h"
 #include "platform/input_keys.h"
 #include "platform/input.h"
 #include "platform/time.h"
@@ -36,6 +37,7 @@ int main() {
 Camera* cam;
 mat4 m_model;
 GfxMesh* mesh;
+GfxTexture* texture;
 
 
 static
@@ -45,6 +47,8 @@ void on_init__() {
 
     mesh = model_load_file("chair01.glb");
     if (mesh == NULL) exit(EXIT_FAILURE);
+
+    texture = texture_load_file("sov_furn2.png");
 
     cgm_model_mat((vec3){0.0, 0.0, -3.0}, NULL, NULL, m_model);
 }
@@ -70,12 +74,13 @@ void on_update__() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    gfx_draw(&(cam->gfxd), mesh, m_model);
+    gfx_draw(&(cam->gfxd), mesh, texture, m_model);
 }
 
 
 static
 void on_destroy__() {
     gfx_mesh_unload(mesh);
+    gfx_texture_unload(texture);
     camera_destroy(cam);
 }

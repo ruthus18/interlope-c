@@ -5,7 +5,9 @@ out vec4 fragColor;
 in vec3 normal;
 in vec2 texcoord;
 
+layout (binding=0) uniform sampler2D texture_diff;
+
 
 void main() {
-    fragColor = vec4(1.0, 1.0, 0.0, 1.0);
+    fragColor = texture(texture_diff, texcoord);
 }

@@ -23,7 +23,6 @@
 
 /* Paths & Dirs */
 #define DIR_SHADERS "shaders/"
-#define DIR_ASSETS "assets/"
 #define DIR_MODELS "assets/models/"
 #define DIR_TEXTURES "assets/textures/"
 

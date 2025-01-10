@@ -28,5 +28,6 @@ time gcc \
     ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/model.c \
+    ${SRC}/texture.c \
 
 echo "[build.sh] Compiling Done"

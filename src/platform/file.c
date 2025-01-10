@@ -34,21 +34,22 @@ const char* path_to_shader(const char* rel_path) {
     return path;
 }
 
-const char* path_to_asset(const char* rel_path) {
-    int size = strlen(DIR_ASSETS) + strlen(rel_path) + 1;
-
-    char*  path = malloc(size);
-    strcpy(path, DIR_ASSETS);
-    strcat(path, rel_path);
-    return path;
-}
-
 
 const char* path_to_model(const char* rel_path) {
     int size = strlen(DIR_MODELS) + strlen(rel_path) + 1;
 
     char*  path = malloc(size);
     strcpy(path, DIR_MODELS);
+    strcat(path, rel_path);
+    return path;
+}
+
+
+const char* path_to_texture(const char* rel_path) {
+    int size = strlen(DIR_TEXTURES) + strlen(rel_path) + 1;
+
+    char*  path = malloc(size);
+    strcpy(path, DIR_TEXTURES);
     strcat(path, rel_path);
     return path;
 }
