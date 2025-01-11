@@ -3,7 +3,7 @@
 #include <cglm/cglm.h>
 
 
-#define ENGINE_VERSION  "0.0.1"
+#define ENGINE_VERSION  "0.0.1a"
 
 /* Window (User)*/
 #define WINDOW_WIDTH 1366
