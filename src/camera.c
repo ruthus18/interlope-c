@@ -9,10 +9,6 @@
 #include "log.h"
 
 
-#define min(a,b) (((a)<(b))?(a):(b))
-#define max(a,b) (((a)>(b))?(a):(b))
-
-
 Camera* camera_create() {
     Camera* cam = malloc(sizeof(Camera));
 

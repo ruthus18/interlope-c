@@ -48,7 +48,8 @@ void on_init__() {
     mesh = model_load_file("chair01.glb");
     if (mesh == NULL) exit(EXIT_FAILURE);
 
-    texture = texture_load_file("sov_furn2.png");
+    // texture = texture_load_file("sov_furn02.png");
+    texture = texture_load_file_dds("sov_furn02.dds");
 
     cgm_model_mat((vec3){0.0, 0.0, -3.0}, NULL, NULL, m_model);
 }

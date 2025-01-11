@@ -31,7 +31,7 @@
 
 /* Camera */
 #define CAMERA_DEFAULT_FOV 75.0
-#define CAMERA_MOVEMENT_SPEED 5
+#define CAMERA_MOVEMENT_SPEED 4
 
 
 /* ------------------------------------------------------------------------- */

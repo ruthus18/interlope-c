@@ -1,4 +1,3 @@
-// #include <string.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 

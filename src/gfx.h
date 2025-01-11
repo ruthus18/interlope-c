@@ -49,5 +49,18 @@ GfxMesh* gfx_mesh_load(
 );
 void gfx_mesh_unload(GfxMesh*);
 
-GfxTexture* gfx_texture_load(unsigned char* data, int width, int height);
+GfxTexture* gfx_texture_load(
+    unsigned char* data,
+    int width,
+    int height,
+    int gl_format
+);
+GfxTexture* gfx_texture_load_dds(
+    unsigned char* data,
+    int width,
+    int height,
+    int gl_format,
+    unsigned int mipmap_cnt,
+    unsigned int block_size
+);
 void gfx_texture_unload(GfxTexture*);
