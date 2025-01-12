@@ -37,6 +37,8 @@ void gfx_init();
 void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
+void gfx_begin_draw();
+void gfx_end_draw();
 void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
 
 GfxMesh* gfx_mesh_load(

@@ -25,6 +25,7 @@ time gcc \
     \
     ${SRC}/camera.c \
     ${SRC}/cgm.c \
+    ${SRC}/editor.c \
     ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/model.c \

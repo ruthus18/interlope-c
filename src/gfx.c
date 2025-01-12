@@ -96,11 +96,12 @@ void gfx_init() {
 
     glPointSize(6);
     glLineWidth(2);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-
     glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_POLYGON : GL_LINE);
 }
+
+void gfx_begin_draw() { glfwPollEvents(); }
+
+void gfx_end_draw() { glfwSwapBuffers(self.window); }
 
 
 #define vec3_size (3 * sizeof(float))
@@ -238,7 +239,6 @@ GfxTexture* gfx_texture_load_dds(
         w /= 2;
         h /= 2;
     }
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmap_cnt-1);
 
     shader_use(NULL);
     return texture;
@@ -264,6 +264,9 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_mode
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
     /* ---------------- */
     /* OBJECT SHADER */
     shader_use(self.shaders.object);
@@ -288,8 +291,6 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_mode
     /* CLEANUP */
     // glBindTexture(GL_TEXTURE_2D, 0);
     shader_use(NULL);
-
-    glfwSwapBuffers(self.window);
 }
 
 
