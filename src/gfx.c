@@ -10,7 +10,12 @@
 #include "gfx.h"
 #include "gfx_shader.h"
 #include "log.h"
+#include "platform/time.h"
 #include "platform/window.h"
+
+
+#define vec3_size (3 * sizeof(float))
+#define vec2_size (2 * sizeof(float))
 
 
 static struct _Gfx {
@@ -96,16 +101,16 @@ void gfx_init() {
 
     glPointSize(6);
     glLineWidth(2);
-    glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_POLYGON : GL_LINE);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_LINE : GL_POLYGON);
 }
 
-void gfx_begin_draw() { glfwPollEvents(); }
 
-void gfx_end_draw() { glfwSwapBuffers(self.window); }
-
-
-#define vec3_size (3 * sizeof(float))
-#define vec2_size (2 * sizeof(float))
+void gfx_destroy() {
+    free(self.shaders.object);
+    glfwDestroyWindow(self.window);
+    glfwTerminate();
+}
 
 
 GfxMesh* gfx_mesh_load(
@@ -250,10 +255,8 @@ void gfx_texture_unload(GfxTexture* texture) {
 }
 
 
-void gfx_destroy() {
-    free(self.shaders.object);
-    glfwDestroyWindow(self.window);
-    glfwTerminate();
+void gfx_begin_draw() { 
+    glfwPollEvents();
 }
 
 
@@ -293,6 +296,11 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_mode
     shader_use(NULL);
 }
 
+
+void gfx_end_draw() {
+    glfwSwapBuffers(self.window);
+    if (!WINDOW_VSYNC)  time_limit_framerate();
+}
 
 bool gfx_need_stop() {
     return glfwWindowShouldClose(self.window) || self.stop_;

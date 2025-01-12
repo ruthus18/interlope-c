@@ -2,11 +2,13 @@
 #include <cglm/cglm.h>
 
 #include "camera.h"
+#include "cglm/vec3.h"
 #include "cgm.h"
 #include "config.h"
 #include "platform/input.h"
 
 #include "log.h"
+#include "platform/time.h"
 
 
 Camera* camera_create() {
@@ -109,7 +111,7 @@ void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
     if (!glm_vec3_eq(v_delta, 0.0)) {
         glm_vec3_normalize(v_delta);
     }
-    glm_vec3_scale(v_delta, 0.01 * CAMERA_MOVEMENT_SPEED, v_delta);
+    glm_vec3_scale(v_delta, time_get_dt() * CAMERA_MOVEMENT_SPEED * 0.5, v_delta);
     camera_transform(cam, v_delta);
 
     if (__DEBUG__LOG_CAMERA_POSITION)
