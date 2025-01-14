@@ -7,12 +7,12 @@
 
 
 GfxTexture* texture_load_file(const char* texture_relpath) {
-    int width = 0;
-    int height = 0;
+    u32 width = 0;
+    u32 height = 0;
     int nr_channels = 0;
     const char* path = path_to_texture(texture_relpath);
 
-    unsigned char* data = stbi_load(path, &width, &height, &nr_channels, 0);
+    u8* data = stbi_load(path, (i32*)&width, (i32*)&height, &nr_channels, 0);
     if (data == NULL) {
         log_error("Cannot open texture file: %s", texture_relpath);
         log_error(stbi_failure_reason());
@@ -45,7 +45,7 @@ GfxTexture* texture_load_file_dds(const char* texture_relpath) {
 	free((void*)path);
 
     /* -- .dds Header Processing -- */
-	unsigned char* header = malloc(128);
+	u8* header = malloc(128);
 	fread(header, 1, 128, f);
   
 	if(memcmp(header, "DDS ", 4) != 0) {
@@ -91,7 +91,7 @@ GfxTexture* texture_load_file_dds(const char* texture_relpath) {
     free(header);
 
     /* -- Read and Load Texture -- */
-    unsigned char* buffer = malloc(file_size - 128);
+    u8* buffer = malloc(file_size - 128);
     fread(buffer, 1, file_size, f);
 
     GfxTexture* tex = gfx_texture_load_dds(buffer, width, height, format, mipmap_cnt, block_size);

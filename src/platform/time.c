@@ -7,16 +7,17 @@
 #include <GLFW/glfw3.h>
 
 #include "../config.h"
+#include "../types.h"
 #include "time.h"
 
 
-static double current_time = 0.0;       // GetTime value from GLFW
-static double last_time;
-static double dt;
+static f64 current_time = 0.0;       // GetTime value from GLFW
+static f64 last_time;
+static f64 dt;
 
-static double timer_sec = 0.0;
-static int nbframes = 0;                // num of frames after recent timer reset
-static int fps = 0;                     // last record of nbframes
+static f64 timer_sec = 0.0;
+static i32 nbframes = 0;                // num of frames after recent timer reset
+static i32 fps = 0;                     // last record of nbframes
 static bool second_passed = false;      // mark true on every 1 sec frame (timer)
 
 
@@ -47,7 +48,7 @@ void time_update() {
 }
 
 
-double time_get_dt() {
+f64 time_get_dt() {
     return dt;
 }
 
@@ -56,8 +57,8 @@ double time_get_dt() {
 // Temporary solution, not thread-safe
 */
 void time_limit_framerate() {
-    double min_frame_duration = 1.0 / WINDOW_MAX_FRAMERATE;
-    double frame_duration = glfwGetTime() - current_time;
+    f64 min_frame_duration = 1.0 / WINDOW_MAX_FRAMERATE;
+    f64 frame_duration = glfwGetTime() - current_time;
 
     if (frame_duration < min_frame_duration) {
         usleep((min_frame_duration - frame_duration) * 1000000);

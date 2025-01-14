@@ -57,25 +57,37 @@ void editor_init() {
 }
 
 
+static void _draw_rendering_menu() {
+
+}
+
+
+static void _draw_scene_menu() {
+
+}
+
+
+static bool is_rendering_menu_active;
+static bool is_scene_menu_active;
+
+
 void editor_update() {
     nk_glfw3_new_frame();
 
-    // Draw...
+    is_rendering_menu_active = nk_begin(
+        ctx, "Rendering",
+        nk_rect(10, 10, 300, 200),
+        NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE
+    );
+    if (is_rendering_menu_active)  _draw_rendering_menu();
+    nk_end(ctx);
 
-    // nk_end(ctx);
-
-    if (
-        nk_begin(
-            ctx,
-            "Texture",
-            nk_rect(10, 10, 230, 250),
-            NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE
-        )
-    ) {
-        struct nk_command_buffer *canvas = nk_window_get_canvas(ctx);
-        struct nk_rect total_space = nk_window_get_content_region(ctx);
-        nk_draw_image(canvas, total_space, &img, nk_white);
-    }
+    is_scene_menu_active = nk_begin(
+        ctx, "Scene",
+        is_rendering_menu_active ? nk_rect(10, 220, 300, 200) : nk_rect(10, 50, 300, 200),
+        NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE
+    );
+    if (is_scene_menu_active)  _draw_scene_menu();
     nk_end(ctx);
 
     nk_glfw3_render(NK_ANTI_ALIASING_OFF);

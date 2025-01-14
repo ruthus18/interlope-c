@@ -1,14 +1,15 @@
 #include <stdlib.h>
 #include <cglm/cglm.h>
 
+#include "platform/input.h"
+#include "platform/time.h"
 #include "camera.h"
 #include "cglm/vec3.h"
 #include "cgm.h"
 #include "config.h"
-#include "platform/input.h"
-
 #include "log.h"
-#include "platform/time.h"
+#include "types.h"
+
 
 
 Camera* camera_create() {
@@ -48,7 +49,7 @@ void camera_transform(Camera* cam, vec3 pos_delta) {
 }
 
 
-void camera_set_rotation(Camera* cam, double yaw, double pitch) {
+void camera_set_rotation(Camera* cam, f64 yaw, f64 pitch) {
     cam->yaw = yaw;
     cam->pitch = pitch;
 
@@ -63,7 +64,7 @@ void camera_set_rotation(Camera* cam, double yaw, double pitch) {
 }
 
 
-void camera_rotate(Camera* cam, double yaw_delta, double pitch_delta) {
+void camera_rotate(Camera* cam, f64 yaw_delta, f64 pitch_delta) {
     cam->yaw += yaw_delta;
     cam->pitch += pitch_delta;
 

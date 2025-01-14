@@ -6,17 +6,19 @@
 #define ENGINE_VERSION  "0.0.1a"
 
 /* Window (User)*/
-#define WINDOW_WIDTH 1366
-#define WINDOW_HEIGHT 768
+// #define WINDOW_WIDTH 1366
+// #define WINDOW_HEIGHT 768
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 1050
 #define WINDOW_XPOS 0
 #define WINDOW_YPOS 0
 #define WINDOW_BORDER false
-#define WINDOW_FULLSC false
-#define WINDOW_VSYNC true
+#define WINDOW_FULLSC true
+#define WINDOW_VSYNC false
 
 /* Window (System)*/
 #define WINDOW_TITLE "Interlope Engine"
-#define WINDOW_BG_COLOR (float)29 / 255, (float)32 / 255, (float)33 / 255, 1.0
+#define WINDOW_BG_COLOR (f32)29 / 255, (f32)32 / 255, (f32)33 / 255, 1.0
 #define WINDOW_MAX_FRAMERATE 120.0
 
 /* GFX */
@@ -38,7 +40,7 @@
 /* ------------------------------------------------------------------------- */
 /* Debugging */
 
-#define __DEBUG__PRINT_FPS true
+#define __DEBUG__PRINT_FPS false
 #define __DEBUG__PRINT_TIME_UPDATE false
 #define __DEBUG__LOG_CAMERA_ROTATION false
 #define __DEBUG__LOG_CAMERA_POSITION false
@@ -48,4 +50,4 @@
 /* ------------------------------------------------------------------------- */
 /* Fancy functions for easy living */
 
-#define len(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+#define len(x) ((sizeof(x)/sizeof(0[x])) / ((u64)(!(sizeof(x) % sizeof(0[x])))))

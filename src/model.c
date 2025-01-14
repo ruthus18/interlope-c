@@ -78,8 +78,8 @@ GfxMesh* model_load_file(const char* model_relpath) {
     cgltf_buffer_view* texcoord_bufv = texcoord_attr->buffer_view;
     cgltf_buffer_view* ind_bufv = ind_attr->buffer_view;
 
-    size_t vtx_count = pos_attr->count;
-    float* vtx_buf = malloc(pos_bufv->size + normal_bufv->size + texcoord_bufv->size);
+    u64 vtx_count = pos_attr->count;
+    f32* vtx_buf = malloc(pos_bufv->size + normal_bufv->size + texcoord_bufv->size);
     memcpy(
         vtx_buf,
         pos_bufv->buffer->data + pos_bufv->offset,
@@ -96,9 +96,9 @@ GfxMesh* model_load_file(const char* model_relpath) {
         texcoord_bufv->size
     );
 
-    size_t ind_count = ind_attr->count;
-    unsigned int* ind_buf = malloc(2 * sizeof(unsigned int) * ind_count);
-    unsigned short* ind_buf_tmp = ind_bufv->buffer->data + ind_bufv->offset;
+    u64 ind_count = ind_attr->count;
+    u32* ind_buf = malloc(2 * sizeof(u32) * ind_count);
+    u16* ind_buf_tmp = ind_bufv->buffer->data + ind_bufv->offset;
 
     for (int i = 0; i < ind_count; i++) {
         ind_buf[i] = ind_buf_tmp[i];

@@ -2,6 +2,7 @@
 
 #include "cgm.h"
 #include "config.h"
+#include "types.h"
 
 
 vec3 v_up_x = {1.0, 0.0, 0.0};
@@ -9,8 +10,8 @@ vec3 v_up_y = {0.0, 1.0, 0.0};
 vec3 v_up_z = {0.0, 1.0, 1.0};
 
 
-void cgm_persp_mat(float fov, mat4 dest) {
-    double aspect = (double)WINDOW_WIDTH / (double)WINDOW_HEIGHT;
+void cgm_persp_mat(f32 fov, mat4 dest) {
+    f64 aspect = (f64)WINDOW_WIDTH / (f64)WINDOW_HEIGHT;
     glm_perspective(radian(fov), aspect, 0.01, 1000.0, dest);
 }
 
@@ -55,7 +56,7 @@ void cgm_rotation_mat(vec3 rot, mat4 dest) {
 }
 
 
-void cgm_front_vec(double yaw, double pitch, vec3 dest) {
+void cgm_front_vec(f64 yaw, f64 pitch, vec3 dest) {
     glm_vec3_copy(
         (vec3){
             cos(radian(yaw)) * cos(radian(pitch)),

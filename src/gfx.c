@@ -12,10 +12,11 @@
 #include "log.h"
 #include "platform/time.h"
 #include "platform/window.h"
+#include "types.h"
 
 
-#define vec3_size (3 * sizeof(float))
-#define vec2_size (2 * sizeof(float))
+#define vec3_size (3 * sizeof(f32))
+#define vec2_size (2 * sizeof(f32))
 
 
 static struct _Gfx {
@@ -115,10 +116,10 @@ void gfx_destroy() {
 
 GfxMesh* gfx_mesh_load(
     const char* name,
-    float* vtx_buf,
-    unsigned int* ind_buf,
-    size_t vtx_count,
-    size_t ind_count,
+    f32* vtx_buf,
+    u32* ind_buf,
+    u64 vtx_count,
+    u64 ind_count,
     bool cw
 ) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
@@ -181,9 +182,9 @@ void gfx_mesh_unload(GfxMesh* mesh){
 
 
 GfxTexture* gfx_texture_load(
-    unsigned char* data,
-    int width,
-    int height,
+    u8* data,
+    u32 width,
+    u32 height,
     int gl_format
 ) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
@@ -206,12 +207,12 @@ GfxTexture* gfx_texture_load(
 
 
 GfxTexture* gfx_texture_load_dds(
-    unsigned char* data,
-    int width,
-    int height,
-    int gl_format,
-    unsigned int mipmap_cnt,
-    unsigned int block_size
+    u8* data,
+    u32 width,
+    u32 height,
+    i32 gl_format,
+    u32 mipmap_cnt,
+    u32 block_size
 ) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
 

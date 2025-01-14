@@ -1,10 +1,10 @@
 #include "camera.h"
-#include "cgm.h"
 #include "gfx.h"
 #include "editor.h"
+#include "input_keys.h"
 #include "model.h"
+#include "scene.h"
 #include "texture.h"
-#include "platform/input_keys.h"
 #include "platform/input.h"
 #include "platform/time.h"
 
@@ -37,11 +37,11 @@ int main() {
 /* ----------------------- */
 
 Camera* cam;
-GfxMesh* mesh;
-GfxTexture* texture;
-mat4 m_model;
+Object chair;
 
-bool editor_enabled = false;
+Scene* scene;
+
+bool editor_enabled = true;
 
 
 static
@@ -51,13 +51,17 @@ void on_init__() {
     cam = camera_create();
     camera_set_position(cam, (vec3){0.0, 1.7, 0.0});
 
-    mesh = model_load_file("chair01.glb");
-    if (mesh == NULL) exit(EXIT_FAILURE);
+    chair = (Object){
+        "chair",
+        model_load_file("chair01.glb"),
+        texture_load_file("sov_furn02.png")
+        // texture_load_file_dds("sov_furn02.dds")
+    };
 
-    // texture = texture_load_file("sov_furn02.png");
-    texture = texture_load_file_dds("sov_furn02.dds");
+    scene = scene_create();
+    scene_add_object(scene, &chair, (vec3){0.0, 0.0, -3.0}, NULL, NULL);
 
-    cgm_model_mat((vec3){0.0, 0.0, -3.0}, NULL, NULL, m_model);
+    cursor_set_visible(false);
 }
 
 
@@ -85,7 +89,7 @@ void on_update__() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    gfx_draw(&(cam->gfxd), mesh, texture, m_model);
+    scene_draw(cam, scene);
 
     if (editor_enabled)  editor_update();
 }
@@ -93,8 +97,10 @@ void on_update__() {
 
 static
 void on_destroy__() {
-    gfx_mesh_unload(mesh);
-    gfx_texture_unload(texture);
+    scene_destroy(scene);
+
+    gfx_mesh_unload(chair.mesh);
+    gfx_texture_unload(chair.texture);
     camera_destroy(cam);
 
     editor_destroy();

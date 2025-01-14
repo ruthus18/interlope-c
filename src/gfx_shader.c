@@ -5,6 +5,7 @@
 #include "log.h"
 #include "platform/file.h"
 #include "gfx_shader.h"
+#include "types.h"
 
 
 static inline
@@ -21,9 +22,9 @@ bool _check_gl_error() {
 
 
 static inline
-void _log_glshader(uint32_t shader) {
-    int log_len = 0;
-    int ch = 0;
+void _log_glshader(u32 shader) {
+    i32 log_len = 0;
+    i32 ch = 0;
     char *log;
 
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_len);
@@ -39,8 +40,8 @@ void _log_glshader(uint32_t shader) {
 
 static inline
 void _log_glprogram(uint32_t program) {
-    int log_len = 0;
-    int ch = 0;
+    i32 log_len = 0;
+    i32 ch = 0;
     char *log;
 
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_len);
@@ -55,8 +56,8 @@ void _log_glprogram(uint32_t program) {
 
 
 static inline
-void _shader_compile(int program, const char* rel_path, int shader_type) {
-    uint32_t shader_id = glCreateShader(shader_type);
+void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
+    u32 shader_id = glCreateShader(shader_type);
 
     const char* path = path_to_shader(rel_path);
     const char* file_buffer = file_read_text(path);
@@ -68,7 +69,7 @@ void _shader_compile(int program, const char* rel_path, int shader_type) {
     glCompileShader(shader_id);
     _check_gl_error();
 
-    int compile_ok;
+    i32 compile_ok;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compile_ok);
 
     if (compile_ok != 1) {
@@ -83,11 +84,11 @@ void _shader_compile(int program, const char* rel_path, int shader_type) {
 Shader* shader_create(const char* vert_p, const char* frag_p) {
     Shader* shader = malloc(sizeof(Shader));
 
-    int program = glCreateProgram();
+    i32 program = glCreateProgram();
     _shader_compile(program, vert_p, GL_VERTEX_SHADER);
     _shader_compile(program, frag_p, GL_FRAGMENT_SHADER);
 
-    int link_ok;
+    i32 link_ok;
     glLinkProgram(program);
     glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
     if (link_ok != 1) {
@@ -95,7 +96,7 @@ Shader* shader_create(const char* vert_p, const char* frag_p) {
         _log_glprogram(program);
     }
 
-    int validation_ok;
+    i32 validation_ok;
     glValidateProgram(program);
     glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_ok);
     if (validation_ok != 1) {
@@ -123,7 +124,7 @@ void shader_use(Shader* shader) {
 
 
 void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
-    int uniform_id = glGetUniformLocation(shader->program_id, name);
+    i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
         log_error("Not found shader uniform: %s", name);
@@ -134,11 +135,11 @@ void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
 
 
 void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
-    int uniform_id = glGetUniformLocation(shader->program_id, name);
+    i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
         log_error("Not found shader uniform: %s", name);
-        exit(0);  // FIXME
+        exit(EXIT_FAILURE);  // FIXME
     }
-    glUniformMatrix4fv(uniform_id, 1, false, (float*)data);
+    glUniformMatrix4fv(uniform_id, 1, false, (f32*)data);
 }
