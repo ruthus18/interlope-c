@@ -264,7 +264,7 @@ void gfx_begin_draw() {
 static bool __persp_mat_set = false;
 
 
-void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
+void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 objects_cnt) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
@@ -275,25 +275,30 @@ void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_mode
     /* OBJECT SHADER */
     shader_use(self.shaders.object);
 
-    // glBindTexture(GL_TEXTURE_2D, texture->id);
-
+    
     if (!__persp_mat_set) {
         uniform_set_mat4(self.shaders.object, "m_persp", camera->m_persp);
         __persp_mat_set = true;
     }
     uniform_set_mat4(self.shaders.object, "m_view", camera->m_view);
-    uniform_set_mat4(self.shaders.object, "m_model", m_model);
+    
+    for (int i = 0; i < objects_cnt; i++) {
+        GfxObject obj = objects[i];
+        uniform_set_mat4(self.shaders.object, "m_model", obj.m_model);
+        
+        glBindVertexArray(obj.mesh->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, obj.mesh->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.mesh->ibo);
 
-    glBindVertexArray(mesh->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-
-    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
-    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
+        glBindTexture(GL_TEXTURE_2D, obj.texture->id);
+        
+        glFrontFace(obj.mesh->cw ? GL_CW : GL_CCW);
+        glDrawElements(GL_TRIANGLES, obj.mesh->ind_count, GL_UNSIGNED_INT, NULL);
+    }
 
     /* ---------------- */
     /* CLEANUP */
-    // glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     shader_use(NULL);
 }
 

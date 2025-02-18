@@ -1,6 +1,5 @@
 /* gfx.h - Graphics (Rendering Backend) */
 #pragma once
-#include <stdlib.h>
 #include <cglm/cglm.h>
 
 #include "platform/window.h"
@@ -31,6 +30,13 @@ typedef struct GfxCamera {
 } GfxCamera;
 
 
+typedef struct GfxObject {
+    GfxMesh* mesh;
+    GfxTexture* texture;
+    mat4 m_model;
+} GfxObject;
+
+
 void window_init();
 Window* window_get();
 
@@ -40,7 +46,7 @@ bool gfx_need_stop();
 void gfx_stop();
 void gfx_begin_draw();
 void gfx_end_draw();
-void gfx_draw(GfxCamera* camera, GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
+void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 total_objects);
 
 GfxMesh* gfx_mesh_load(
     const char* id,

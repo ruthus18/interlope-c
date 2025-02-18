@@ -7,7 +7,6 @@
 -- Future --
 
 * Upgrade build system
-* Fix time module (check py impl)
 * Canvas shader (GUI, editor, other 2D stuff)
 * Memory management
 * Hashmap world storage

@@ -54,12 +54,13 @@ void on_init__() {
     chair = (Object){
         "chair",
         model_load_file("chair01.glb"),
-        texture_load_file("sov_furn02.png")
-        // texture_load_file_dds("sov_furn02.dds")
+        texture_load_file("sov_furn02.dds")
     };
 
     scene = scene_create();
-    scene_add_object(scene, &chair, (vec3){0.0, 0.0, -3.0}, NULL, NULL);
+    scene_add_object(scene, &chair, (vec3){-0.5, 0.0, -3.0}, NULL, NULL);
+    scene_add_object(scene, &chair, (vec3){0.5, 0.0, -3.0}, NULL, NULL);
+    editor_set_scene(scene);
 
     cursor_set_visible(false);
 }
@@ -89,7 +90,7 @@ void on_update__() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    scene_draw(cam, scene);
+    scene_draw(scene, cam);
 
     if (editor_enabled)  editor_update();
 }

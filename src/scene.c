@@ -42,17 +42,19 @@ void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
     if (rot != NULL)  glm_vec3_copy(      sc, objp.sc);
     else              glm_vec3_copy(_vec3__1, objp.sc);
 
-    cgm_model_mat(objp.pos, objp.rot, objp.sc, objp.m_model);
+    GfxObject objg = {
+        .mesh=obj->mesh,
+        .texture=obj->texture
+    };
+
+    cgm_model_mat(objp.pos, objp.rot, objp.sc, objg.m_model);
 
     scene->objects[scene->objects_cnt] = objp;
+    scene->gfx_objects[scene->objects_cnt] = objg;
     scene->objects_cnt++;
 }
 
 
-void scene_draw(Camera* camera, Scene* scene) {
-    for (int i = 0; i < scene->objects_cnt; i++) {
-        ObjectPtr objp = scene->objects[i];
-
-        gfx_draw(&camera->gfxd, objp.obj->mesh, objp.obj->texture, objp.m_model);
-    }
+void scene_draw(Scene* scene, Camera* camera) {
+    gfx_draw(&camera->gfxd, scene->gfx_objects, scene->objects_cnt);
 }
