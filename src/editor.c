@@ -1,6 +1,9 @@
+#include "cglm/io.h"
 #include "log.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <stdio.h>
+#include <string.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -17,6 +20,7 @@
 #include <nuklear_glfw_gl4.h>
 
 #include "scene.h"
+#include "types.h"
 #include "platform/window.h"
 
 
@@ -29,6 +33,7 @@ static struct _Editor {
     struct nk_font_atlas *font_atlas;
 
     Scene* scene;
+    i32 selected_obj_id;
 } self;
 
 
@@ -58,10 +63,9 @@ void editor_init() {
 
 void editor_set_scene(Scene* scene) {
     self.scene = scene;
+    self.selected_obj_id = -1;
 }
 
-
-int selected_obj_id = -1;
 
 static
 void _draw_scene_panel() {
@@ -69,14 +73,16 @@ void _draw_scene_panel() {
         nk_label(self.ctx, "ERR: NO SCENE\0", NK_TEXT_LEFT);
         return;
     }
+    
+    /* Scene Tree */
+    for (int i = 0; i < self.scene->objects_cnt; i++) {
+        nk_layout_row_static(self.ctx, 12, 275, 1);
 
-    nk_layout_row_static(self.ctx, 12, 275, 1);
+        const char* obj_id = self.scene->objects[i].obj->id;
+        bool select_cond = (self.selected_obj_id == i);
 
-    for (int item_id = 0; item_id < self.scene->objects_cnt; item_id++) {
-        const char* obj_id = self.scene->objects[item_id].obj->id;
-
-        if (nk_select_label(self.ctx, obj_id, NK_TEXT_LEFT, (selected_obj_id == item_id))) {
-            selected_obj_id = item_id;
+        if (nk_select_label(self.ctx, obj_id, NK_TEXT_LEFT, select_cond)) {
+            self.selected_obj_id = i;
         }
     }
 }
@@ -84,10 +90,40 @@ void _draw_scene_panel() {
 
 static inline
 void _draw_object_panel() {
-    if (selected_obj_id != -1) {
-        nk_layout_row_static(self.ctx, 12, 275, 1);
-        nk_label(self.ctx, "Name: Some Object", NK_TEXT_LEFT);
-    }
+    if (self.selected_obj_id == -1)  return;
+
+    ObjectPtr selected_obj = self.scene->objects[self.selected_obj_id];
+    char* label;
+    u16 len;
+
+    /* ID */
+    len = strlen(selected_obj.obj->id);
+    label = malloc(4 + len + 1);
+    strcpy(label, "ID: ");
+    strcat(label, selected_obj.obj->id);
+
+    nk_layout_row_static(self.ctx, 12, 275, 1);
+    nk_label(self.ctx, label, NK_TEXT_LEFT);
+    free(label);
+
+    /* Position */
+    len = snprintf(NULL, 0, "%.3f", selected_obj.pos[0]);
+    label = malloc(10 + (len * 3) + 6 + 1);
+    strcpy(label, "Position: ");
+
+    char float_val[32];
+    sprintf(float_val, "%.3f", selected_obj.pos[0]);
+    strcat(label, float_val);
+    strcat(label, " | ");
+    sprintf(float_val, "%.3f", selected_obj.pos[1]);
+    strcat(label, float_val);
+    strcat(label, " | ");
+    sprintf(float_val, "%.3f", selected_obj.pos[2]);
+    strcat(label, float_val);
+
+    nk_layout_row_static(self.ctx, 12, 275, 1);
+    nk_label(self.ctx, label, NK_TEXT_LEFT);
+    free(label);
 }
 
 

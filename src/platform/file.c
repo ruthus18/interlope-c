@@ -36,10 +36,10 @@ const char* path_to_shader(const char* rel_path) {
 
 
 const char* path_to_model(const char* rel_path) {
-    int size = strlen(DIR_MODELS) + strlen(rel_path) + 1;
+    int size = strlen(DIR_MESHES) + strlen(rel_path) + 1;
 
     char*  path = malloc(size);
-    strcpy(path, DIR_MODELS);
+    strcpy(path, DIR_MESHES);
     strcat(path, rel_path);
     return path;
 }

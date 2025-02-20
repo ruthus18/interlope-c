@@ -26,15 +26,15 @@
 
 /* Paths & Dirs */
 #define DIR_SHADERS "shaders/"
-#define DIR_MODELS "assets/models/"
+#define DIR_MESHES "assets/meshes/"
 #define DIR_TEXTURES "assets/textures/"
 
 /* Input */
-#define MOUSE_SENSITIVITY 120.0
+#define MOUSE_SENSITIVITY 130.0
 
 /* Camera */
-#define CAMERA_DEFAULT_FOV 90.0
-#define CAMERA_MOVEMENT_SPEED 4
+#define CAMERA_DEFAULT_FOV 75.0
+#define CAMERA_MOVEMENT_SPEED 6
 
 
 /* ------------------------------------------------------------------------- */

@@ -39,7 +39,7 @@ void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
     if (rot != NULL)  glm_vec3_copy(     rot, objp.rot);
     else              glm_vec3_copy(_vec3__0, objp.rot);
 
-    if (rot != NULL)  glm_vec3_copy(      sc, objp.sc);
+    if (sc != NULL)  glm_vec3_copy(      sc, objp.sc);
     else              glm_vec3_copy(_vec3__1, objp.sc);
 
     GfxObject objg = {
