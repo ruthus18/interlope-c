@@ -75,7 +75,7 @@ void _draw_scene_panel() {
     }
     
     /* Scene Tree */
-    for (int i = 0; i < self.scene->objects_cnt; i++) {
+    for (int i = 0; i < self.scene->objects_count; i++) {
         nk_layout_row_static(self.ctx, 12, 275, 1);
 
         const char* obj_id = self.scene->objects[i].obj->id;
@@ -92,33 +92,33 @@ static inline
 void _draw_object_panel() {
     if (self.selected_obj_id == -1)  return;
 
-    ObjectPtr selected_obj = self.scene->objects[self.selected_obj_id];
+    ObjectInst selected_inst = self.scene->objects[self.selected_obj_id];
     char* label;
     u16 len;
 
     /* ID */
-    len = strlen(selected_obj.obj->id);
+    len = strlen(selected_inst.obj->id);
     label = malloc(4 + len + 1);
     strcpy(label, "ID: ");
-    strcat(label, selected_obj.obj->id);
+    strcat(label, selected_inst.obj->id);
 
     nk_layout_row_static(self.ctx, 12, 275, 1);
     nk_label(self.ctx, label, NK_TEXT_LEFT);
     free(label);
 
     /* Position */
-    len = snprintf(NULL, 0, "%.3f", selected_obj.pos[0]);
+    len = snprintf(NULL, 0, "%.3f", selected_inst.pos[0]);
     label = malloc(10 + (len * 3) + 6 + 1);
     strcpy(label, "Position: ");
 
     char float_val[32];
-    sprintf(float_val, "%.3f", selected_obj.pos[0]);
+    sprintf(float_val, "%.3f", selected_inst.pos[0]);
     strcat(label, float_val);
     strcat(label, " | ");
-    sprintf(float_val, "%.3f", selected_obj.pos[1]);
+    sprintf(float_val, "%.3f", selected_inst.pos[1]);
     strcat(label, float_val);
     strcat(label, " | ");
-    sprintf(float_val, "%.3f", selected_obj.pos[2]);
+    sprintf(float_val, "%.3f", selected_inst.pos[2]);
     strcat(label, float_val);
 
     nk_layout_row_static(self.ctx, 12, 275, 1);

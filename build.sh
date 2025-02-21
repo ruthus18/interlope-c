@@ -31,5 +31,7 @@ time gcc \
     ${SRC}/model.c \
     ${SRC}/scene.c \
     ${SRC}/texture.c \
+    \
+    vendor/toml.c \
 
 echo "[build.sh] Compiling Done"

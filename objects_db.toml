@@ -1,0 +1,27 @@
+[sovsh_floor]
+    model = "dungeon/floor_sov01.glb"
+    texture = "dungeon/floor_sov01.dds"
+
+[sovsh_wall]
+    model = "dungeon/wall_sov01.glb"
+    texture = "dungeon/wall_sov01.dds"
+
+[sovsh_ceil01]
+    model = "dungeon/ceil_sov01.glb"
+    texture = "dungeon/concrete01.dds"
+
+[sovsh_ceil02]
+    model = "dungeon/ceil_sov02.glb"
+    texture = "dungeon/concrete01.dds"
+
+[chair]
+    model = "chair01.glb"
+    texture = "sov_furn02.dds"
+
+[diesel_gen]
+    model = "dungeon/floor_sov01.glb"
+    textures = [
+        "diesel_gen_1.dds",
+        "diesel_gen_2.dds",
+        "diesel_gen_3.dds"
+    ]

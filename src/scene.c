@@ -67,8 +67,8 @@ void object_load_texture(Object* obj, const char* texture_path) {
 
 Scene* scene_create() {
     Scene* scene = malloc(sizeof(Scene));
-    scene->objects_cnt = 0;
-    scene->gfx_objects_cnt = 0;
+    scene->objects_count = 0;
+    scene->_gfx_objects_count = 0;
     return scene;
 }
 
@@ -83,24 +83,24 @@ void scene_destroy(Scene* scene) {
 
 
 void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
-    assert(scene->objects_cnt < __MAX_SCENE_OBJECTS);
+    assert(scene->objects_count < __MAX_SCENE_OBJECTS);
     assert(obj->meshes_count == obj->textures_count);
 
-    ObjectPtr objp = {
+    ObjectInst inst = {
         .obj=obj,
         .is_active=true
     };
-    if (pos != NULL)  glm_vec3_copy(     pos, objp.pos);
-    else              glm_vec3_copy(_vec3__0, objp.pos);
+    if (pos != NULL)  glm_vec3_copy(     pos, inst.pos);
+    else              glm_vec3_copy(_vec3__0, inst.pos);
 
-    if (rot != NULL)  glm_vec3_copy(     rot, objp.rot);
-    else              glm_vec3_copy(_vec3__0, objp.rot);
+    if (rot != NULL)  glm_vec3_copy(     rot, inst.rot);
+    else              glm_vec3_copy(_vec3__0, inst.rot);
 
-    if (sc != NULL)  glm_vec3_copy(      sc, objp.sc);
-    else              glm_vec3_copy(_vec3__1, objp.sc);
+    if (sc != NULL)  glm_vec3_copy(      sc, inst.sc);
+    else              glm_vec3_copy(_vec3__1, inst.sc);
     
     mat4 m_model;
-    cgm_model_mat(objp.pos, objp.rot, objp.sc, m_model);
+    cgm_model_mat(inst.pos, inst.rot, inst.sc, m_model);
 
     for (int i = 0; i < obj->meshes_count; i++) {
         GfxObject objg = {
@@ -109,15 +109,15 @@ void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
         };
         glm_mat4_copy(m_model, objg.m_model);
 
-        scene->gfx_objects[scene->gfx_objects_cnt] = objg;
-        scene->gfx_objects_cnt++;
+        scene->_gfx_objects[scene->_gfx_objects_count] = objg;
+        scene->_gfx_objects_count++;
     }
 
-    scene->objects[scene->objects_cnt] = objp;
-    scene->objects_cnt++;
+    scene->objects[scene->objects_count] = inst;
+    scene->objects_count++;
 }
 
 
 void scene_draw(Scene* scene, Camera* camera) {
-    gfx_draw(&camera->gfxd, scene->gfx_objects, scene->gfx_objects_cnt);
+    gfx_draw(&camera->gfxd, scene->_gfx_objects, scene->_gfx_objects_count);
 }
