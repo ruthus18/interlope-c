@@ -130,21 +130,21 @@ void _draw_object_panel() {
 void editor_update() {
     nk_glfw3_new_frame();
 
-    nk_begin(
-        self.ctx, "Scene",
-        nk_rect(10, 10, 300, 400),
-        NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    );
-    _draw_scene_panel();
-    nk_end(self.ctx);
+    // nk_begin(
+    //     self.ctx, "Scene",
+    //     nk_rect(10, 10, 300, 400),
+    //     NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    // );
+    // _draw_scene_panel();
+    // nk_end(self.ctx);
     
-    nk_begin(
-        self.ctx, "Object",
-        nk_rect(10, 420, 300, 620),
-        NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    );
-    _draw_object_panel();
-    nk_end(self.ctx);
+    // nk_begin(
+    //     self.ctx, "Object",
+    //     nk_rect(10, 420, 300, 620),
+    //     NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    // );
+    // _draw_object_panel();
+    // nk_end(self.ctx);
 
     nk_glfw3_render(NK_ANTI_ALIASING_OFF);
 }

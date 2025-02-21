@@ -7,9 +7,17 @@
 
 typedef struct Object {
     const char* id;
-    GfxMesh* mesh;
-    GfxTexture* texture;
+    GfxMesh** meshes;
+    GfxTexture** textures;
+    u64 meshes_count;
+    u64 textures_count;
 } Object;
+
+
+Object object_create(const char* id);
+void object_destroy(Object*);
+void object_load_meshes(Object*, const char* meshes_path);
+void object_load_texture(Object*, const char* texture_path);
 
 
 typedef struct ObjectPtr {
@@ -23,12 +31,13 @@ typedef struct ObjectPtr {
 } ObjectPtr;
 
 
-constexpr u32 __MAX_SCENE_OBJECTS = 128;
+constexpr u32 __MAX_SCENE_OBJECTS = 1024;
 
 typedef struct Scene {
     ObjectPtr objects[__MAX_SCENE_OBJECTS];
     GfxObject gfx_objects[__MAX_SCENE_OBJECTS];
     u32 objects_cnt;
+    u32 gfx_objects_cnt;
 } Scene;
 
 

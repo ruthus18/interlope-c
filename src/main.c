@@ -2,9 +2,7 @@
 #include "gfx.h"
 #include "editor.h"
 #include "input_keys.h"
-#include "model.h"
 #include "scene.h"
-#include "texture.h"
 #include "platform/input.h"
 #include "platform/time.h"
 
@@ -107,54 +105,52 @@ void on_destroy__() {
 /* Game Content */
 /* ------------------------------------------------------------------------ -*/
 
-Object chair;
 Object sovsh_floor;
 Object sovsh_wall;
 Object sovsh_ceil01;
 Object sovsh_ceil02;
 
+Object diesel_gen;
+Object chair;
+
 static
 void on_assets_load__() {
-    chair = (Object){
-        "chair",
-        model_load_file("chair01.glb"),
-        texture_load_file("sov_furn02.dds")
-    };
-    sovsh_floor = (Object){
-        "sovsh_floor",
-        model_load_file("dungeon/floor_sov01.glb"),
-        texture_load_file("dungeon/floor_sov01.dds")
-    };
-    sovsh_wall = (Object){
-        "sovsh_wall",
-        model_load_file("dungeon/wall_sov01.glb"),
-        texture_load_file("dungeon/wall_sov01.dds")
-    };
-    sovsh_ceil01 = (Object){
-        "sovsh_ceil01",
-        model_load_file("dungeon/ceil_sov01.glb"),
-        texture_load_file("dungeon/concrete01.dds")
-    };
-    sovsh_ceil02 = (Object){
-        "sovsh_ceil02",
-        model_load_file("dungeon/ceil_sov02.glb"),
-        texture_load_file("dungeon/concrete01.dds")
-    };
+    sovsh_floor = object_create("sovsh_floor");
+    object_load_meshes(&sovsh_floor, "dungeon/floor_sov01.glb");
+    object_load_texture(&sovsh_floor, "dungeon/floor_sov01.dds");
+    
+    sovsh_wall = object_create("sovsh_wall");
+    object_load_meshes(&sovsh_wall, "dungeon/wall_sov01.glb");
+    object_load_texture(&sovsh_wall, "dungeon/wall_sov01.dds");
+    
+    sovsh_ceil01 = object_create("sovsh_ceil01");
+    object_load_meshes(&sovsh_ceil01, "dungeon/ceil_sov01.glb");
+    object_load_texture(&sovsh_ceil01, "dungeon/concrete01.dds");
+
+    sovsh_ceil02 = object_create("sovsh_ceil02");
+    object_load_meshes(&sovsh_ceil02, "dungeon/ceil_sov02.glb");
+    object_load_texture(&sovsh_ceil02, "dungeon/concrete01.dds");
+    
+    chair = object_create("chair");
+    object_load_meshes(&chair, "chair01.glb");
+    object_load_texture(&chair, "sov_furn02.dds");
+    
+    diesel_gen = object_create("diesel_gen");
+    object_load_meshes(&diesel_gen, "diesel_gen.glb");
+    object_load_texture(&diesel_gen, "diesel_gen_1.dds");
+    object_load_texture(&diesel_gen, "diesel_gen_2.dds");
+    object_load_texture(&diesel_gen, "diesel_gen_3.dds");
 }
 
 
 static
 void on_scene_destroy__() {
-    gfx_mesh_unload(chair.mesh);
-    gfx_texture_unload(chair.texture);
-    gfx_mesh_unload(sovsh_floor.mesh);
-    gfx_texture_unload(sovsh_floor.texture);
-    gfx_mesh_unload(sovsh_wall.mesh);
-    gfx_texture_unload(sovsh_wall.texture);
-    gfx_mesh_unload(sovsh_ceil01.mesh);
-    gfx_texture_unload(sovsh_ceil01.texture);
-    gfx_mesh_unload(sovsh_ceil02.mesh);
-    gfx_texture_unload(sovsh_ceil02.texture);
+    object_destroy(&sovsh_floor);
+    object_destroy(&sovsh_wall);
+    object_destroy(&sovsh_ceil01);
+    object_destroy(&sovsh_ceil02);
+    object_destroy(&chair);
+    object_destroy(&diesel_gen);
 }
 
 
@@ -252,6 +248,10 @@ void on_scene_create__() {
         (vec3){7.5, 0.0, 3.75}, (vec3){0.0, 90.0, 0.0}, NULL
     );    
     
+    scene_add_object(
+        scene, &diesel_gen,
+        (vec3){3.5, 0.0, 4.0}, NULL, NULL
+    );
     // scene_add_object(
         //     scene, &chair,
         //     (vec3){0.5, 0.0, -3.0}, NULL, NULL
