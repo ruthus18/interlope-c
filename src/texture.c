@@ -14,8 +14,8 @@ GfxTexture* texture_load_file(const char* texture_relpath) {
     /* -- Get File Size -- */
 	FILE* f;
 	if((f = fopen(path, "rb")) == 0)
-	return 0;
-fseek(f, 0, SEEK_END);
+		return 0;
+	fseek(f, 0, SEEK_END);
 	long file_size = ftell(f);
 	fseek(f, 0, SEEK_SET);
 	
@@ -42,22 +42,22 @@ fseek(f, 0, SEEK_END);
 	if(header[84] == 'D') {
 		switch(header[87]) {
 			case '1': // DXT1
-			format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			block_size = 8;
-			break;
+				format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				block_size = 8;
+				break;
 			case '3': // DXT3
-			format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			block_size = 16;
-			break;
+				format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				block_size = 16;
+				break;
 			case '5': // DXT5
-			format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			block_size = 16;
-			break;
+				format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				block_size = 16;
+				break;
 			default:
-			log_error("Unsupported .dds type: only DXT1-5 are supported!");
-			free(header);
-			fclose(f);
-			exit(EXIT_FAILURE);
+				log_error("Unsupported .dds type: only DXT1-5 are supported!");
+				free(header);
+				fclose(f);
+				exit(EXIT_FAILURE);
 		}
 	} else {
 		log_error("Unsupported .dds type: only DXT1-5 are supported!");
@@ -72,7 +72,6 @@ fseek(f, 0, SEEK_END);
     fread(buffer, 1, file_size, f);
 	
     GfxTexture* tex = gfx_texture_load_dds(buffer, width, height, format, mipmap_cnt, block_size);
-    log_success("Texture loaded: %s", texture_relpath);
 	
     free(buffer);
 	fclose(f);
@@ -97,7 +96,6 @@ GfxTexture* _texture_load_file_png(const char* texture_relpath) {
 
 	int gl_format = GL_RGBA;
 	GfxTexture* texture = gfx_texture_load(data, width, height, gl_format);
-	log_success("Texture loaded: %s", texture_relpath);
 
 	stbi_image_free(data);
 	free((void*)path);

@@ -19,7 +19,7 @@
     texture = "sov_furn02.dds"
 
 [diesel_gen]
-    model = "dungeon/floor_sov01.glb"
+    model = "diesel_gen.glb"
     textures = [
         "diesel_gen_1.dds",
         "diesel_gen_2.dds",

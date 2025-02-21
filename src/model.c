@@ -37,8 +37,8 @@ GfxMesh** model_load_file(const char* model_relpath) {
     u32 _meshes_memsize = sizeof(GfxMesh*) * (data->meshes_count + 1);
     GfxMesh** meshes = malloc(_meshes_memsize);
 
-    for (int i = 0; i < data->meshes_count; i++) {
-        cgltf_mesh* mesh = &data->meshes[i];
+    for (int m = 0; m < data->meshes_count; m++) {
+        cgltf_mesh* mesh = &data->meshes[m];
 
         /* -- Primitive Handling -- */
         assert(mesh->primitives_count == 1);
@@ -113,7 +113,7 @@ GfxMesh** model_load_file(const char* model_relpath) {
         free(vtx_buf);
         free(ind_buf);
         
-        meshes[i] = gfx_mesh;
+        meshes[m] = gfx_mesh;
     }
 
     meshes[data->meshes_count] = NULL;

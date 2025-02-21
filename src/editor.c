@@ -1,5 +1,3 @@
-#include "cglm/io.h"
-#include "log.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>

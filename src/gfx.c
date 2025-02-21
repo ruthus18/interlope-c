@@ -171,7 +171,7 @@ GfxMesh* gfx_mesh_load(
     glBindVertexArray(0);
     shader_use(NULL);
 
-    log_success("Mesh loaded: %s", name);
+    // log_success("Mesh loaded: %s", name);
     return mesh;
 }
 
@@ -246,6 +246,7 @@ GfxTexture* gfx_texture_load_dds(
         h /= 2;
     }
 
+    // log_success("Texture loaded: %s", texture_relpath);
     shader_use(NULL);
     return texture;
 }

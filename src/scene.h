@@ -1,6 +1,5 @@
 #pragma once
 #include <cglm/cglm.h>
-#include <toml.h>
 
 #include "camera.h"
 #include "gfx.h"
@@ -21,6 +20,17 @@ void object_load_meshes(Object*, const char* meshes_path);
 void object_load_texture(Object*, const char* texture_path);
 
 
+constexpr u64 _MAX_OBJECTS_DB_SIZE = 1024;
+
+typedef struct ObjectsDB {
+    Object objects[_MAX_OBJECTS_DB_SIZE];
+    u64 objects_count;
+} ObjectsDB;
+
+ObjectsDB objdb_create_from(const char* toml_path);
+void objdb_destroy(ObjectsDB*);
+
+
 typedef struct ObjectInst {
     Object* obj;
     vec3 pos;
@@ -31,18 +41,21 @@ typedef struct ObjectInst {
 } ObjectInst;
 
 
-constexpr u32 __MAX_SCENE_OBJECTS = 1024;
+constexpr u64 _MAX_SCENE_OBJECTS = 1024;
+constexpr u64 _MAX_OBJECT_TEXTURES = 8;
 
 typedef struct Scene {
-    ObjectInst objects[__MAX_SCENE_OBJECTS];
-    u32 objects_count;
+    ObjectInst objects[_MAX_SCENE_OBJECTS];
+    u64 objects_count;
 
-    GfxObject _gfx_objects[__MAX_SCENE_OBJECTS];
-    u32 _gfx_objects_count;
+    GfxObject _gfx_objects[_MAX_SCENE_OBJECTS];
+    u64 _gfx_objects_count;
 } Scene;
 
 
 Scene* scene_create();
+Scene* scene_create_from(const char* toml_path, ObjectsDB*);
 void scene_destroy(Scene*);
+
 void scene_add_object(Scene*, Object*, vec3 pos, vec3 rot, vec3 sc);
 void scene_draw(Scene*, Camera*);
