@@ -108,9 +108,6 @@ ObjectsDB objdb_create_from(const char* toml_path) {
     toml_datum_t _texture_path;
     toml_array_t* _texture_paths;
 
-    const char* model_path;
-    const char* texture_paths[8] = {NULL};
-
     ObjectsDB out_db = { .objects_count = 0};
 
     for (int i = 0; i < db_size; i++) {
@@ -118,6 +115,8 @@ ObjectsDB objdb_create_from(const char* toml_path) {
         obj_record = toml_table_in(db, obj_id);
 
         /* --- "model" kwarg --- */
+        const char* model_path;
+
         _model_path = toml_string_in(obj_record, "model");
         if (!_model_path.ok) {
             log_error("Error while parsing object [%s]: `model` kwarg not set", obj_id);
@@ -126,6 +125,8 @@ ObjectsDB objdb_create_from(const char* toml_path) {
         model_path = _model_path.u.s;
         
         /* --- "texture" and "textures" kwargs --- */
+        const char* texture_paths[8] = {NULL};
+
         _texture_path = toml_string_in(obj_record, "texture");
         _texture_paths = toml_array_in(obj_record, "textures");
 
@@ -193,7 +194,11 @@ void scene_destroy(Scene* scene) {
 
 void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
     assert(scene->objects_count < _MAX_SCENE_OBJECTS);
-    assert(obj->meshes_count == obj->textures_count);
+
+    if (obj->meshes_count != obj->textures_count) {
+        log_error("Unable to add object to scene");
+        log_error("ID: %s, M: %i, T: %i", obj->id, obj->meshes_count, obj->textures_count);
+    }
 
     ObjectInst inst = {
         .obj=obj,

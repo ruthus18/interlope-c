@@ -1,27 +1,95 @@
+
+# ------ Dungeon ------
+
 [sovsh_floor]
-    model = "dungeon/floor_sov01.glb"
+    model = "dungeon/sovsh_floor01.glb"
     texture = "dungeon/floor_sov01.dds"
 
 [sovsh_wall]
-    model = "dungeon/wall_sov01.glb"
+    model = "dungeon/sovsh_wall01.glb"
     texture = "dungeon/wall_sov01.dds"
 
 [sovsh_ceil01]
-    model = "dungeon/ceil_sov01.glb"
+    model = "dungeon/sovsh_ceil01.glb"
     texture = "dungeon/concrete01.dds"
 
 [sovsh_ceil02]
-    model = "dungeon/ceil_sov02.glb"
+    model = "dungeon/sovsh_ceil02.glb"
     texture = "dungeon/concrete01.dds"
 
+[sovsh_wall_dr01]
+    model = "dungeon/sovsh_wall_dr01.glb"
+    textures = [
+        "dungeon/wall_sov01.dds",
+        "dungeon/concrete01.dds"
+    ]
+
+[sovsh_wall_dr02]
+    model = "dungeon/sovsh_wall_dr02.glb"
+    textures = [
+        "dungeon/wall_sov01.dds",
+        "dungeon/concrete01.dds"
+    ]
+
+# ------ Doors ------
+
+[sovsh_door_herm01]
+    model = "dungeon/sovsh_door_herm01.glb"
+    textures = [
+        "dungeon/sovsh_door_herm01.dds",
+        "dungeon/sovsh_door_herm01.dds"
+    ]
+
+[sovsh_door_herm02]
+    model = "dungeon/sovsh_door_herm02.glb"
+    textures = [
+        "dungeon/sovsh_door_herm02.dds",
+        "dungeon/sovsh_door_herm02.dds"
+    ]
+
+
+# ------ Furniture ------
+
 [chair]
-    model = "chair01.glb"
+    model = "furniture/chair01.glb"
     texture = "sov_furn02.dds"
 
+[metal_locker01]
+    model = "furniture/metal_locker01.glb"
+    textures = [
+        "sov_furn04.dds",
+        "sov_furn04.dds",
+    ]
+
+[metal_locker02]
+    model = "furniture/metal_locker02.glb"
+    textures = [
+        "sov_furn04.dds",
+        "sov_furn04.dds",
+        "sov_furn04.dds"
+    ]
+
+[metal_locker03]
+    model = "furniture/metal_locker03.glb"
+    texture = "sov_furn04.dds"
+
+# ------ Machinery ------
+
 [diesel_gen]
-    model = "diesel_gen.glb"
+    model = "machinery/diesel_gen.glb"
     textures = [
         "diesel_gen_1.dds",
         "diesel_gen_2.dds",
         "diesel_gen_3.dds"
+    ]
+
+[diesel_gen_pipes]
+    model = "machinery/diesel_gen_pipes.glb"
+    texture = "vent_elements.dds"
+
+[pipes_asm2x2]
+    model = "machinery/pipes_asm2x2.glb"
+    textures = [
+        "vent_elements.dds",
+        "rusty_metal01.dds"
     ]
