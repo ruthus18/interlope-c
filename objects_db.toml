@@ -54,6 +54,10 @@
     model = "furniture/chair01.glb"
     texture = "sov_furn02.dds"
 
+[table01]
+    model = "furniture/table01.glb"
+    texture = "sov_furn03.dds"
+
 [metal_locker01]
     model = "furniture/metal_locker01.glb"
     textures = [
@@ -93,3 +97,8 @@
         "vent_elements.dds",
         "rusty_metal01.dds"
     ]
+
+# ------ Items ------
+[vodka]
+    model = "vodka.glb"
+    texture = "vodka.dds"

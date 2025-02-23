@@ -6,6 +6,14 @@
 #include "types.h"
 
 
+typedef struct GfxGeometry {
+    u32 vao;
+    u32 vbo;
+
+    u64 vtx_count;
+} GfxGeometry;
+
+
 typedef struct GfxMesh {
     const char* name;
     u32 vao;
@@ -37,17 +45,27 @@ typedef struct GfxObject {
 } GfxObject;
 
 
+typedef struct GfxScene {
+    GfxCamera* camera;
+    GfxObject objects[1024];  // FIXME
+    u64 objects_count;
+} GfxScene;
+
+
 void window_init();
 Window* window_get();
 
+/* ------ Gfx main interface ------ */
 void gfx_init();
 void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
+
 void gfx_begin_draw();
 void gfx_end_draw();
-void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 total_objects);
+void gfx_draw(GfxScene*);
 
+/* ------ Mesh ------ */
 GfxMesh* gfx_mesh_load(
     const char* id,
     f32* vtx_buf,
@@ -58,6 +76,7 @@ GfxMesh* gfx_mesh_load(
 );
 void gfx_mesh_unload(GfxMesh*);
 
+/* ------ Texture ------ */
 GfxTexture* gfx_texture_load(
     u8* data,
     u32 width,
@@ -73,3 +92,7 @@ GfxTexture* gfx_texture_load_dds(
     u32 block_size
 );
 void gfx_texture_unload(GfxTexture*);
+
+/* ------ Geometry ------ */
+GfxGeometry* gfx_geometry_load(f32* vtx_buf, u64 vtx_count);
+void gfx_geometry_unload(GfxGeometry* geom);

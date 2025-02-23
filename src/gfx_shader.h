@@ -7,7 +7,7 @@ typedef struct Shader {
 } Shader;
 
 
-Shader* shader_create(const char* vert_p, const char* frag_p);
+Shader* shader_create(const char* vert_path, const char* frag_path);
 void shader_destroy(Shader*);
 void shader_use(Shader*);
 

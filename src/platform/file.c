@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../config.h"
+#include "../log.h"
 
 
 const char* file_read_text(const char* path) {
@@ -20,6 +21,10 @@ const char* file_read_text(const char* path) {
             fread(buffer, sizeof(char), len, file);
         
         fclose(file);
+    }
+    else {
+        log_error("Unable to read shader file: %s", path);
+        exit(EXIT_FAILURE);
     }
     buffer[len] = '\0';
     return buffer;

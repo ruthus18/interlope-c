@@ -25,8 +25,8 @@ static struct _Gfx {
 
     struct {
         Shader* object;
+        Shader* geometry;
     } shaders;
-
 } self;
 
 
@@ -90,6 +90,9 @@ void _init_shaders() {
     self.shaders.object = shader_create(
         "object.vert", "object.frag"
     );
+    self.shaders.geometry = shader_create(
+        "geometry.vert", "geometry.frag"
+    );
 }
 
 
@@ -112,6 +115,11 @@ void gfx_destroy() {
     glfwDestroyWindow(self.window);
     glfwTerminate();
 }
+
+
+// void gfx_set_scene(GfxScene* scene) {
+//     self.scene = scene;
+// }
 
 
 GfxMesh* gfx_mesh_load(
@@ -257,6 +265,20 @@ void gfx_texture_unload(GfxTexture* texture) {
 }
 
 
+GfxGeometry* gfx_geometry_load(f32* vtx_buf, u64 vtx_count) {
+    GfxGeometry* geom = malloc(sizeof(GfxGeometry));
+    
+    // TODO ...
+
+    return geom;
+}
+
+
+void gfx_geometry_unload(GfxGeometry* geom) {
+    free(geom);
+}
+
+
 void gfx_begin_draw() { 
     glfwPollEvents();
 }
@@ -265,7 +287,7 @@ void gfx_begin_draw() {
 static bool __persp_mat_set = false;
 
 
-void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 objects_cnt) {
+void gfx_draw(GfxScene* scene) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
 
@@ -275,16 +297,19 @@ void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 objects_cnt) {
     /* ---------------- */
     /* OBJECT SHADER */
     shader_use(self.shaders.object);
-
     
+    GfxCamera* camera = scene->camera;
+    u64 objects_count = scene->objects_count;
+
     if (!__persp_mat_set) {
         uniform_set_mat4(self.shaders.object, "m_persp", camera->m_persp);
         __persp_mat_set = true;
     }
     uniform_set_mat4(self.shaders.object, "m_view", camera->m_view);
     
-    for (int i = 0; i < objects_cnt; i++) {
-        GfxObject obj = objects[i];
+    for (int i = 0; i < objects_count; i++) {
+        GfxObject obj = scene->objects[i];
+
         uniform_set_mat4(self.shaders.object, "m_model", obj.m_model);
         
         glBindVertexArray(obj.mesh->vao);
@@ -296,6 +321,11 @@ void gfx_draw(GfxCamera* camera, GfxObject objects[], u32 objects_cnt) {
         glFrontFace(obj.mesh->cw ? GL_CW : GL_CCW);
         glDrawElements(GL_TRIANGLES, obj.mesh->ind_count, GL_UNSIGNED_INT, NULL);
     }
+
+    /* ---------------- */
+    /* GEOMETRY SHADER */
+    shader_use(self.shaders.geometry);
+    // TODO: Draw Geometry
 
     /* ---------------- */
     /* CLEANUP */

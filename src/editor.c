@@ -59,13 +59,20 @@ void editor_init() {
 }
 
 
+void editor_destroy() {
+    nk_glfw3_shutdown();
+}
+
+
 void editor_set_scene(Scene* scene) {
     self.scene = scene;
     self.selected_obj_id = -1;
 }
 
 
-static
+/* ------ UI Logic ------ */
+
+static inline
 void _draw_scene_panel() {
     if (self.scene == NULL) {
         nk_label(self.ctx, "ERR: NO SCENE\0", NK_TEXT_LEFT);
@@ -125,34 +132,40 @@ void _draw_object_panel() {
 }
 
 
-void editor_update() {
+static inline
+void _editor_draw_ui() {
+    nk_begin(
+        self.ctx, "Scene",
+        nk_rect(10, 10, 300, 400),
+        NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    );
+    _draw_scene_panel();
+    nk_end(self.ctx);
+    
+    nk_begin(
+        self.ctx, "Object",
+        nk_rect(10, 420, 300, 620),
+        NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    );
+    _draw_object_panel();
+    nk_end(self.ctx);
+}
+
+
+/* ------ Editor Main Loop ------ */
+
+void editor_update(bool visible) {
+    /* --- Nuklear draw --- */
     nk_glfw3_new_frame();
 
-    // nk_begin(
-    //     self.ctx, "Scene",
-    //     nk_rect(10, 10, 300, 400),
-    //     NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    // );
-    // _draw_scene_panel();
-    // nk_end(self.ctx);
-    
-    // nk_begin(
-    //     self.ctx, "Object",
-    //     nk_rect(10, 420, 300, 620),
-    //     NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    // );
-    // _draw_object_panel();
-    // nk_end(self.ctx);
-
+    if (visible) {
+        _editor_draw_ui();
+    }  
     nk_glfw3_render(NK_ANTI_ALIASING_OFF);
+
+    /* --- Editor Geometry --- */
+    // TODO check selected obj id and call editor geometry interface
 }
-
-
-void editor_destroy() {
-    nk_glfw3_shutdown();
-}
-
-
 
 
 // static void _draw_rendering_menu() {

@@ -73,38 +73,41 @@ void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compile_ok);
 
     if (compile_ok != 1) {
-        log_error("Shader compilation error; file=%s", rel_path);
         _log_glshader(shader_id);
+        log_exit("Shader compilation error; file=%s", rel_path);
     }
 
     glAttachShader(program, shader_id);
 }
 
 
-Shader* shader_create(const char* vert_p, const char* frag_p) {
-    Shader* shader = malloc(sizeof(Shader));
+Shader* shader_create(const char* vert_path, const char* frag_path) {
+    i32 program;
+    Shader* shader;
 
-    i32 program = glCreateProgram();
-    _shader_compile(program, vert_p, GL_VERTEX_SHADER);
-    _shader_compile(program, frag_p, GL_FRAGMENT_SHADER);
+    program = glCreateProgram();
+    _shader_compile(program, vert_path, GL_VERTEX_SHADER);
+    _shader_compile(program, frag_path, GL_FRAGMENT_SHADER);
+
+    shader = malloc(sizeof(Shader));
 
     i32 link_ok;
     glLinkProgram(program);
     glGetProgramiv(program, GL_LINK_STATUS, &link_ok);
     if (link_ok != 1) {
-        log_error("GL program linking error");
         _log_glprogram(program);
+        log_exit("GL program linking error");
     }
 
     i32 validation_ok;
     glValidateProgram(program);
     glGetProgramiv(program, GL_VALIDATE_STATUS, &validation_ok);
     if (validation_ok != 1) {
-        log_error("GL program validation error");
         _log_glprogram(program);
+        log_exit("GL program validation error");
     }
 
-    log_success("Shader created: %s | %s", vert_p, frag_p);
+    log_success("Shader created: %s | %s", vert_path, frag_path);
     shader->program_id = program;
     return shader;
 }
@@ -127,8 +130,7 @@ void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
-        log_error("Not found shader uniform: %s", name);
-        exit(EXIT_FAILURE);  // FIXME
+        log_exit("Not found shader uniform: %s", name);
     }
     glUniform3f(uniform_id, data[0], data[1], data[2]);
 }
@@ -138,8 +140,7 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
-        log_error("Not found shader uniform: %s", name);
-        exit(EXIT_FAILURE);  // FIXME
+        log_exit("Not found shader uniform: %s", name);
     }
     glUniformMatrix4fv(uniform_id, 1, false, (f32*)data);
 }

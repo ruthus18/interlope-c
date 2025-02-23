@@ -2,7 +2,6 @@
 #include "gfx.h"
 #include "editor.h"
 #include "input_keys.h"
-#include "log.h"
 #include "scene.h"
 #include "platform/input.h"
 #include "platform/time.h"
@@ -40,7 +39,7 @@ ObjectsDB objdb;
 Camera* cam;
 Scene* scene;
 
-bool editor_visible = true;
+bool is_editor_visible = false;
 
 
 static
@@ -51,6 +50,7 @@ void on_init__() {
 
     objdb = objdb_create_from("objects_db.toml");
     scene = scene_create_from("scenes/sovsh_demo.toml", &objdb);
+    scene_set_camera(scene, cam);
 
     editor_init();
     editor_set_scene(scene);
@@ -80,7 +80,7 @@ void on_update__() {
         cursor_set_visible(!cur_visible);
     }
     else if (input_is_keyp(IN_KEY_F1)) {
-        editor_visible = !editor_visible;
+        is_editor_visible = !is_editor_visible;
     }
 
     /* -- Player movement -- */
@@ -93,7 +93,6 @@ void on_update__() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    scene_draw(scene, cam);
-
-    if (editor_visible)  editor_update();
+    gfx_draw(&scene->gfxd);
+    editor_update(is_editor_visible);
 }

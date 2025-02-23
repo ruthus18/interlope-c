@@ -6,7 +6,6 @@
 #include <cglm/cglm.h>
 #include <toml.h>
 
-#include "camera.h"
 #include "cglm/vec3.h"
 #include "cgm.h"
 #include "gfx.h"
@@ -15,6 +14,8 @@
 #include "texture.h"
 #include "scene.h"
 
+
+/* ------ Object ------ */
 
 Object object_create(const char* id) {
     char* id_ = malloc(sizeof(id));
@@ -64,14 +65,15 @@ void object_load_texture(Object* obj, const char* texture_path) {
         obj->textures = malloc(sizeof(GfxTexture*) * _MAX_OBJECT_TEXTURES);
     }
     if (obj->textures_count > _MAX_OBJECT_TEXTURES) {
-        log_error("Max textures per model reached");
-        exit(EXIT_FAILURE);
+        log_exit("Max textures per model reached");
     }
 
     obj->textures[obj->textures_count] = texture_load_file(texture_path);
     obj->textures_count++;
 }
 
+
+/* ------ Objects DB ------ */
 
 ObjectsDB objdb_create_from(const char* toml_path) {
     /* ------ Read database file ------ */
@@ -82,23 +84,17 @@ ObjectsDB objdb_create_from(const char* toml_path) {
     u64 db_size;
 
     fp = fopen(toml_path, "r");
-    if (!fp) {
-        log_error("Unable to read file: %s", toml_path);
-        exit(EXIT_FAILURE);
-    }
+    if (!fp)  log_exit("Unable to read file: %s", toml_path);
+
     db = toml_parse_file(fp, errbuf, sizeof(errbuf));
     fclose(fp);
 
-    if (!db) {
-        log_error("Cannot parse TOML struct in: %s", toml_path);
-        exit(EXIT_FAILURE);
-    }
+    if (!db)  log_exit("Cannot parse TOML struct in: %s", toml_path);
 
     db_size = toml_table_ntab(db);
-    if (db_size > _MAX_OBJECTS_DB_SIZE) {
-        log_error("Objects db is too large to open! (size=%i)", db_size);
-        exit(EXIT_FAILURE);
-    };
+
+    if (db_size > _MAX_OBJECTS_DB_SIZE)
+        log_exit("Objects db is too large to open! (size=%i)", db_size);
 
     /* ------ Parse database records ------ */
     const char* obj_id;
@@ -108,7 +104,7 @@ ObjectsDB objdb_create_from(const char* toml_path) {
     toml_datum_t _texture_path;
     toml_array_t* _texture_paths;
 
-    ObjectsDB out_db = { .objects_count = 0};
+    ObjectsDB out_db = { .objects_count = 0 };
 
     for (int i = 0; i < db_size; i++) {
         obj_id = toml_key_in(db, i);
@@ -142,10 +138,8 @@ ObjectsDB objdb_create_from(const char* toml_path) {
                 texture_paths[cnt] = _texture_path.u.s;
             }
         }
-        else {
-            log_error("Error while parsing object [%s]: `texture` or `textures` kwargs not set", obj_id);
-            exit(EXIT_FAILURE);
-        }
+        else
+            log_exit("Error while parsing object [%s]: `texture` or `textures` kwargs not set", obj_id);
 
         /* --- Create and load object in `ObjectsDB` */
         out_db.objects[i] = object_create(obj_id);
@@ -175,10 +169,12 @@ void objdb_destroy(ObjectsDB* objdb) {
 }
 
 
+/* ------ Scene ------ */
+
 Scene* scene_create() {
     Scene* scene = malloc(sizeof(Scene));
     scene->objects_count = 0;
-    scene->_gfx_objects_count = 0;
+    scene->gfxd.objects_count = 0;
     return scene;
 }
 
@@ -223,8 +219,8 @@ void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
         };
         glm_mat4_copy(m_model, objg.m_model);
 
-        scene->_gfx_objects[scene->_gfx_objects_count] = objg;
-        scene->_gfx_objects_count++;
+        scene->gfxd.objects[scene->gfxd.objects_count] = objg;
+        scene->gfxd.objects_count++;
     }
 
     scene->objects[scene->objects_count] = inst;
@@ -241,29 +237,21 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
     u64 scene_size;
 
     fp = fopen(toml_path, "r");
-    if (!fp) {
-        log_error("Unable to read file: %s", toml_path);
-        exit(EXIT_FAILURE);
-    }
+    if (!fp)  log_exit("Unable to read file: %s", toml_path);
+
     scene = toml_parse_file(fp, errbuf, sizeof(errbuf));
     fclose(fp);
 
-    if (!scene) {
-        log_error("Cannot parse TOML struct in: %s", toml_path);
-        exit(EXIT_FAILURE);
-    }
+    if (!scene)  log_exit("Cannot parse TOML struct in: %s", toml_path);
 
     toml_array_t* instances = toml_array_in(scene, "obj");
-    if (!instances) {
-        log_error("Invalid scene file: no instances");
-        exit(EXIT_FAILURE);
-    }
+
+    if (!instances) log_exit("Invalid scene file: no instances");
 
     scene_size = toml_array_nelem(instances);
-    if (scene_size > _MAX_SCENE_OBJECTS) {
-        log_error("Scene is too large to open! (size=%i)", scene_size);
-        exit(EXIT_FAILURE);
-    };
+
+    if (scene_size > _MAX_SCENE_OBJECTS)
+        log_exit("Scene is too large to open! (size=%i)", scene_size);
 
     /* ------ Parse object instances ------ */
     toml_datum_t _obj_id;
@@ -283,10 +271,8 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
         if (_obj_id.ok) {
             obj_id = _obj_id.u.s;
         }
-        else {
-            log_error("Error while parsing object instance: `id` kwarg not set", obj_id);
-            exit(EXIT_FAILURE);
-        }
+        else
+            log_exit("Error while parsing object instance: `id` kwarg not set", obj_id);
 
         _pos = toml_array_in(inst, "pos");
         if (_pos) {
@@ -319,10 +305,8 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
                 break;
             }
         }
-        if (obj == NULL) {
-            log_error("Unknown object reference: %s", obj_id);
-            exit(EXIT_FAILURE);
-        }
+
+        if (obj == NULL)  log_exit("Unknown object reference: %s", obj_id);
 
         scene_add_object(out_scene, obj, pos, rot, NULL);
     }
@@ -334,7 +318,6 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
     return out_scene;
 }
 
-
-void scene_draw(Scene* scene, Camera* camera) {
-    gfx_draw(&camera->gfxd, scene->_gfx_objects, scene->_gfx_objects_count);
+void scene_set_camera(Scene* scene, Camera* camera) {
+    scene->gfxd.camera = &camera->gfxd;
 }
