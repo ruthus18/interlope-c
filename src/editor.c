@@ -17,6 +17,7 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl4.h>
 
+#include "log.h"
 #include "scene.h"
 #include "types.h"
 #include "platform/window.h"
@@ -26,12 +27,21 @@
 #define EDITOR_MAX_ELEMENT_BUFFER 128 * 1024
 
 
+typedef struct ObjectPanel {
+    char pos_val[3][32];
+    int pos_len[3];
+    char rot_val[3][32];
+    int rot_len[3];
+} ObjectPanel;
+
+
 static struct _Editor {
     struct nk_context* ctx;
     struct nk_font_atlas *font_atlas;
 
     Scene* scene;
     i32 selected_obj_id;
+    ObjectPanel object_panel;
 } self;
 
 
@@ -39,6 +49,7 @@ static struct _Editor {
 
 
 void editor_init() {
+
     self.ctx = nk_glfw3_init(
         window_get(),
         NK_GLFW3_INSTALL_CALLBACKS,
@@ -54,7 +65,7 @@ void editor_init() {
 
     nk_style_set_font(self.ctx, &default_font->handle);
 
-    self.ctx->style.window.spacing = nk_vec2(25,5);
+    self.ctx->style.window.spacing = nk_vec2(5,5);
     self.ctx->style.window.padding = nk_vec2(5,5);
 }
 
@@ -72,6 +83,30 @@ void editor_set_scene(Scene* scene) {
 
 /* ------ UI Logic ------ */
 
+
+static inline
+void _update_objpan_data() {
+    ObjectInst selected_inst = self.scene->objects[self.selected_obj_id];
+    ObjectPanel* pan = &self.object_panel;
+
+    sprintf(pan->pos_val[0], "%.2f", selected_inst.pos[0]);
+    sprintf(pan->pos_val[1], "%.2f", selected_inst.pos[1]);
+    sprintf(pan->pos_val[2], "%.2f", selected_inst.pos[2]);
+
+    pan->pos_len[0] = snprintf(NULL, 0, "%.2f", selected_inst.pos[0]);
+    pan->pos_len[1] = snprintf(NULL, 0, "%.2f", selected_inst.pos[1]);
+    pan->pos_len[2] = snprintf(NULL, 0, "%.2f", selected_inst.pos[2]);
+    
+    sprintf(pan->rot_val[0], "%.1f", selected_inst.rot[0]);
+    sprintf(pan->rot_val[1], "%.1f", selected_inst.rot[1]);
+    sprintf(pan->rot_val[2], "%.1f", selected_inst.rot[2]);
+
+    pan->rot_len[0] = snprintf(NULL, 0, "%.1f", selected_inst.rot[0]);
+    pan->rot_len[1] = snprintf(NULL, 0, "%.1f", selected_inst.rot[1]);
+    pan->rot_len[2] = snprintf(NULL, 0, "%.1f", selected_inst.rot[2]);    
+}
+
+
 static inline
 void _draw_scene_panel() {
     if (self.scene == NULL) {
@@ -87,7 +122,10 @@ void _draw_scene_panel() {
         bool select_cond = (self.selected_obj_id == i);
 
         if (nk_select_label(self.ctx, obj_id, NK_TEXT_LEFT, select_cond)) {
-            self.selected_obj_id = i;
+            if (self.selected_obj_id != i) {
+                self.selected_obj_id = i;
+                _update_objpan_data();
+            }
         }
     }
 }
@@ -97,38 +135,44 @@ static inline
 void _draw_object_panel() {
     if (self.selected_obj_id == -1)  return;
 
+    ObjectPanel* pan = &self.object_panel;
     ObjectInst selected_inst = self.scene->objects[self.selected_obj_id];
-    char* label;
-    u16 len;
 
-    /* ID */
-    len = strlen(selected_inst.obj->id);
-    label = malloc(4 + len + 1);
-    strcpy(label, "ID: ");
-    strcat(label, selected_inst.obj->id);
+    /* ------ ID ------ */
+    nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 210});
+    nk_label(self.ctx, "ID", NK_TEXT_LEFT);
+    nk_label(self.ctx, selected_inst.obj->id, NK_TEXT_LEFT);
 
-    nk_layout_row_static(self.ctx, 12, 275, 1);
-    nk_label(self.ctx, label, NK_TEXT_LEFT);
-    free(label);
+    /* ------ Position Input ------ */
+    
+    nk_flags res;
 
-    /* Position */
-    len = snprintf(NULL, 0, "%.3f", selected_inst.pos[0]);
-    label = malloc(10 + (len * 3) + 6 + 1);
-    strcpy(label, "Position: ");
+    nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 70, 70, 70});
+    nk_label(self.ctx, "Pos", NK_TEXT_LEFT);
 
-    char float_val[32];
-    sprintf(float_val, "%.3f", selected_inst.pos[0]);
-    strcat(label, float_val);
-    strcat(label, " | ");
-    sprintf(float_val, "%.3f", selected_inst.pos[1]);
-    strcat(label, float_val);
-    strcat(label, " | ");
-    sprintf(float_val, "%.3f", selected_inst.pos[2]);
-    strcat(label, float_val);
+    res = nk_edit_string(self.ctx, NK_EDIT_SIMPLE|NK_EDIT_SIG_ENTER, pan->pos_val[0], &pan->pos_len[0], 32, nk_filter_float);
+    if (res & NK_EDIT_COMMITED) {
+        selected_inst.pos[0] = atof(pan->pos_val[0]);
 
-    nk_layout_row_static(self.ctx, 12, 275, 1);
-    nk_label(self.ctx, label, NK_TEXT_LEFT);
-    free(label);
+        // TODO: 
+        //      refactor assets & scene management + data model
+        //      to cool interface to update game objects data
+    }
+
+    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->pos_val[1], &pan->pos_len[1], 32, nk_filter_float);
+    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->pos_val[2], &pan->pos_len[2], 32, nk_filter_float);
+
+    // if (nk_input_is_key_pressed(&self.ctx->input, NK_KEY_ENTER)) {
+    //     log_info("ENTER");
+    // }
+
+    /* ------ Rotation Input ------ */
+
+    nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 70, 70, 70});
+    nk_label(self.ctx, "Rot", NK_TEXT_LEFT);
+    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[0], &pan->rot_len[0], 32, nk_filter_float);
+    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[1], &pan->rot_len[1], 32, nk_filter_float);
+    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[2], &pan->rot_len[2], 32, nk_filter_float);
 }
 
 
@@ -141,7 +185,7 @@ void _editor_draw_ui() {
     );
     _draw_scene_panel();
     nk_end(self.ctx);
-    
+
     nk_begin(
         self.ctx, "Object",
         nk_rect(10, 420, 300, 620),
