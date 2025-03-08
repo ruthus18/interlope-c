@@ -39,8 +39,7 @@ ObjectsDB objdb;
 Camera* cam;
 Scene* scene;
 
-bool is_editor_visible = true;
-bool is_cursor_visible = true;
+bool is_editor_visible = false;
 
 
 static
@@ -56,7 +55,7 @@ void on_init__() {
     editor_init();
     editor_set_scene(scene);
 
-    cursor_set_visible(is_cursor_visible);
+    cursor_set_visible(is_editor_visible);
 }
 
 
@@ -77,11 +76,9 @@ void on_update__() {
         gfx_stop();
     }
     else if (input_is_keyp(IN_KEY_TILDA)) {
-        is_cursor_visible = !is_cursor_visible;
-        cursor_set_visible(is_cursor_visible);
-    }
-    else if (input_is_keyp(IN_KEY_F1)) {
         is_editor_visible = !is_editor_visible;
+
+        cursor_set_visible(is_editor_visible);
     }
 
     /* -- Player movement -- */

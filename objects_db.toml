@@ -1,3 +1,12 @@
+# ------ Player ------
+
+[player_male]
+    model = "player_male.glb"
+    textures = [
+        "player/player_m_body.dds",
+        "player/player_m_body.dds",
+        "player/player_m_body.dds"
+    ]
 
 # ------ Dungeon ------
 

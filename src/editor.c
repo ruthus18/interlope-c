@@ -176,43 +176,41 @@ void _draw_object_panel() {
 }
 
 
-static inline
-void _editor_draw_ui() {
-    nk_begin(
-        self.ctx, "Scene",
-        nk_rect(10, 10, 300, 400),
-        NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    );
-    _draw_scene_panel();
-    nk_end(self.ctx);
+void _draw_menu_bar() {
+    struct nk_context* ctx = self.ctx;
 
-    nk_begin(
-        self.ctx, "Object",
-        nk_rect(10, 420, 300, 620),
-        NK_WINDOW_BORDER | NK_WINDOW_TITLE
-    );
-    _draw_object_panel();
-    nk_end(self.ctx);
-}
+    nk_menubar_begin(ctx);
+    nk_layout_row_begin(ctx, NK_STATIC, 15, 2);
 
+    nk_layout_row_push(ctx, 60);
+    if (nk_menu_begin_label(ctx, "Scene", NK_TEXT_LEFT, nk_vec2(200, 300))) {
+        nk_layout_row_dynamic(ctx, 25, 1);
+        if (nk_menu_item_label(ctx, "Open...", NK_TEXT_LEFT)) {}
+        if (nk_menu_item_label(ctx, "Save", NK_TEXT_LEFT)) {}
+        if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
 
-/* ------ Editor Main Loop ------ */
+        nk_menu_end(ctx);
+    }
+    
+    nk_layout_row_push(ctx, 60);
+    if (nk_menu_begin_label(ctx, "Assets", NK_TEXT_LEFT, nk_vec2(200, 300))) {
+        nk_layout_row_dynamic(ctx, 25, 1);
+        if (nk_menu_item_label(ctx, "Open Viewer", NK_TEXT_LEFT)) {
+            // TODO: swith gfx state to assets viewer
+        }
+        if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
+        if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
 
-void editor_update(bool visible) {
-    /* --- Nuklear draw --- */
-    nk_glfw3_new_frame();
+        nk_menu_end(ctx);
+    }
 
-    if (visible) {
-        _editor_draw_ui();
-    }  
-    nk_glfw3_render(NK_ANTI_ALIASING_OFF);
-
-    /* --- Editor Geometry --- */
-    // TODO check selected obj id and call editor geometry interface
+    nk_menubar_end(ctx);
 }
 
 
 // static void _draw_rendering_menu() {
+//     struct nk_context* ctx = self.ctx;
+
 //     /* menubar */
 //         enum menu_states {MENU_DEFAULT, MENU_WINDOWS};
 //         static nk_size mprog = 60;
@@ -297,3 +295,46 @@ void editor_update(bool visible) {
 //         nk_checkbox_label(ctx, "check", &mcheck);
 //         nk_menubar_end(ctx);
 // }
+
+
+/* ------ Editor Main Loop ------ */
+
+static inline
+void _editor_draw_ui() {
+    nk_begin(
+        self.ctx, "Scene",
+        nk_rect(10, 40, 300, 390),
+        NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    );
+    _draw_scene_panel();
+    nk_end(self.ctx);
+
+    nk_begin(
+        self.ctx, "Object",
+        nk_rect(10, 440, 300, 600),
+        NK_WINDOW_BORDER | NK_WINDOW_TITLE
+    );
+    _draw_object_panel();
+    nk_end(self.ctx);
+
+    nk_begin(
+        self.ctx, "Menu",
+        nk_rect(0, 0, 1680, 30),
+        NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
+    );
+    _draw_menu_bar();
+    nk_end(self.ctx);
+}
+
+void editor_update(bool visible) {
+    /* --- Nuklear draw --- */
+    nk_glfw3_new_frame();
+
+    if (visible) {
+        _editor_draw_ui();
+    }  
+    nk_glfw3_render(NK_ANTI_ALIASING_OFF);
+
+    /* --- Editor Geometry --- */
+    // TODO check selected obj id and call editor geometry interface
+}
