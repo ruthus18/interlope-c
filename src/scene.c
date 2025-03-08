@@ -142,6 +142,7 @@ ObjectsDB objdb_create_from(const char* toml_path) {
             log_exit("Error while parsing object [%s]: `texture` or `textures` kwargs not set", obj_id);
 
         /* --- Create and load object in `ObjectsDB` */
+
         out_db.objects[i] = object_create(obj_id);
         out_db.objects_count++;
         
@@ -152,10 +153,21 @@ ObjectsDB objdb_create_from(const char* toml_path) {
 
             object_load_texture(&out_db.objects[i], texture_paths[j]);
         }
+
+        if (out_db.objects[i].meshes_count != out_db.objects[i].textures_count) {
+            log_error("Unable to load object: meshes_count != textures_count");
+            log_error(
+                "ID: %s, M: %i, T: %i",
+                out_db.objects[i].id,
+                out_db.objects[i].meshes_count,
+                out_db.objects[i].textures_count
+            );
+        }
     }
+
+    log_info("Objects DB size: %i", out_db.objects_count);
     
     /* ------ Cleanup ------ */
-    log_info("Objects DB size: %i", out_db.objects_count);
 
     toml_free(db);
     return out_db;
@@ -174,7 +186,6 @@ void objdb_destroy(ObjectsDB* objdb) {
 Scene* scene_create() {
     Scene* scene = malloc(sizeof(Scene));
     scene->objects_count = 0;
-    scene->gfxd.objects_count = 0;
     return scene;
 }
 
@@ -191,14 +202,12 @@ void scene_destroy(Scene* scene) {
 void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
     assert(scene->objects_count < _MAX_SCENE_OBJECTS);
 
-    if (obj->meshes_count != obj->textures_count) {
-        log_error("Unable to add object to scene");
-        log_error("ID: %s, M: %i, T: %i", obj->id, obj->meshes_count, obj->textures_count);
-    }
-
     ObjectInst inst = {
-        .obj=obj,
-        .is_active=true
+        .base_id = (char*) obj->id,
+        .is_active = true,
+        .meshes = obj->meshes,
+        .textures = obj->textures,
+        .slots_count = obj->meshes_count,
     };
     if (pos != NULL)  glm_vec3_copy(     pos, inst.pos);
     else              glm_vec3_copy(_vec3__0, inst.pos);
@@ -209,22 +218,22 @@ void scene_add_object(Scene* scene, Object* obj, vec3 pos, vec3 rot, vec3 sc) {
     if (sc != NULL)   glm_vec3_copy(      sc, inst.sc);
     else              glm_vec3_copy(_vec3__1, inst.sc);
     
-    mat4 m_model;
-    cgm_model_mat(inst.pos, inst.rot, inst.sc, m_model);
-
-    for (int i = 0; i < obj->meshes_count; i++) {
-        GfxObject objg = {
-            .mesh=obj->meshes[i],
-            .texture=obj->textures[i]
-        };
-        glm_mat4_copy(m_model, objg.m_model);
-
-        scene->gfxd.objects[scene->gfxd.objects_count] = objg;
-        scene->gfxd.objects_count++;
-    }
+    cgm_model_mat(inst.pos, inst.rot, inst.sc, inst.m_model);
 
     scene->objects[scene->objects_count] = inst;
     scene->objects_count++;
+}
+
+
+void object_update_position(ObjectInst* inst, vec3 new_pos) {
+    glm_vec3_copy(new_pos, inst->pos);
+    cgm_model_mat(inst->pos, inst->rot, inst->sc, inst->m_model);
+}
+
+
+void object_update_rotation(ObjectInst* inst, vec3 new_rot) {
+    glm_vec3_copy(new_rot, inst->rot);
+    cgm_model_mat(inst->pos, inst->rot, inst->sc, inst->m_model);
 }
 
 
@@ -298,8 +307,11 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
             glm_vec3_copy((vec3){0.0, 0.0, 0.0}, rot);
         }
 
+        /* ------ */
+
         Object* obj = NULL;
         for (int j = 0; j < objdb->objects_count ; j++) {
+            // TODO: hashmap
             if (strcmp(objdb->objects[j].id, obj_id) == 0) {
                 obj = &objdb->objects[j];
                 break;
@@ -318,6 +330,16 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
     return out_scene;
 }
 
-void scene_set_camera(Scene* scene, Camera* camera) {
-    scene->gfxd.camera = &camera->gfxd;
+
+void scene_draw(Scene* scene) {
+    gfx_begin_draw_objects();
+
+    for (int i = 0; i < scene->objects_count; i++) {
+        ObjectInst* obj = &scene->objects[i];
+
+        for (int j = 0; j < obj->slots_count; j++) {
+            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_model);
+        }
+    }
+    gfx_end_draw_objects();
 }

@@ -7,7 +7,7 @@ typedef struct AssetStorage AssetStorage;
 
 
 void assets_init();
-void assets_exit();
+void assets_destroy();
 void assets_read_meshes();
 void assets_read_textures();
 void assets_read_materials();

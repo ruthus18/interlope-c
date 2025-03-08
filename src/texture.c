@@ -1,5 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <GL/gl.h>
 
 #include "platform/file.h"
 #include "gfx.h"

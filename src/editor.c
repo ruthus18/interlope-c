@@ -9,7 +9,6 @@
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL4_IMPLEMENTATION
 #define NK_KEYSTATE_BASED_INPUT
@@ -117,11 +116,10 @@ void _draw_scene_panel() {
     /* Scene Tree */
     for (int i = 0; i < self.scene->objects_count; i++) {
         nk_layout_row_static(self.ctx, 12, 275, 1);
-
-        const char* obj_id = self.scene->objects[i].obj->id;
+        
         bool select_cond = (self.selected_obj_id == i);
-
-        if (nk_select_label(self.ctx, obj_id, NK_TEXT_LEFT, select_cond)) {
+        
+        if (nk_select_label(self.ctx, self.scene->objects[i].base_id, NK_TEXT_LEFT, select_cond)) {
             if (self.selected_obj_id != i) {
                 self.selected_obj_id = i;
                 _update_objpan_data();
@@ -134,45 +132,94 @@ void _draw_scene_panel() {
 static inline
 void _draw_object_panel() {
     if (self.selected_obj_id == -1)  return;
-
+    
     ObjectPanel* pan = &self.object_panel;
-    ObjectInst selected_inst = self.scene->objects[self.selected_obj_id];
-
+    ObjectInst* selected_inst = &self.scene->objects[self.selected_obj_id];
+    nk_flags res;
+    
     /* ------ ID ------ */
-    nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 210});
-    nk_label(self.ctx, "ID", NK_TEXT_LEFT);
-    nk_label(self.ctx, selected_inst.obj->id, NK_TEXT_LEFT);
+    nk_layout_row(self.ctx, NK_STATIC, 20, 2, (float[]){70, 190});
+    nk_label(self.ctx, "Base ID: ", NK_TEXT_LEFT);
+    nk_label(self.ctx, selected_inst->base_id, NK_TEXT_LEFT);
+    
+    // Empty row
+    nk_layout_row_static(self.ctx, 10, 275, 1);
 
     /* ------ Position Input ------ */
     
-    nk_flags res;
-
     nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 70, 70, 70});
     nk_label(self.ctx, "Pos", NK_TEXT_LEFT);
-
-    res = nk_edit_string(self.ctx, NK_EDIT_SIMPLE|NK_EDIT_SIG_ENTER, pan->pos_val[0], &pan->pos_len[0], 32, nk_filter_float);
+    
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[0], &pan->pos_len[0], 32, nk_filter_float
+    );
     if (res & NK_EDIT_COMMITED) {
-        selected_inst.pos[0] = atof(pan->pos_val[0]);
-
-        // TODO: 
-        //      refactor assets & scene management + data model
-        //      to cool interface to update game objects data
+        object_update_position(selected_inst, (vec3) {
+            atof(pan->pos_val[0]),
+            atof(pan->pos_val[1]),
+            atof(pan->pos_val[2]),
+        });
     }
 
-    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->pos_val[1], &pan->pos_len[1], 32, nk_filter_float);
-    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->pos_val[2], &pan->pos_len[2], 32, nk_filter_float);
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[1], &pan->pos_len[1], 32, nk_filter_float
+    );
+    if (res & NK_EDIT_COMMITED) {
+        object_update_position(selected_inst, (vec3) {
+            atof(pan->pos_val[0]),
+            atof(pan->pos_val[1]),
+            atof(pan->pos_val[2]),
+        });
+    }
 
-    // if (nk_input_is_key_pressed(&self.ctx->input, NK_KEY_ENTER)) {
-    //     log_info("ENTER");
-    // }
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[2], &pan->pos_len[2], 32, nk_filter_float
+    );
+    if (res & NK_EDIT_COMMITED) {
+        object_update_position(selected_inst, (vec3) {
+            atof(pan->pos_val[0]),
+            atof(pan->pos_val[1]),
+            atof(pan->pos_val[2]),
+        });
+    }
 
     /* ------ Rotation Input ------ */
 
     nk_layout_row(self.ctx, NK_STATIC, 20, 4, (float[]){50, 70, 70, 70});
     nk_label(self.ctx, "Rot", NK_TEXT_LEFT);
-    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[0], &pan->rot_len[0], 32, nk_filter_float);
-    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[1], &pan->rot_len[1], 32, nk_filter_float);
-    nk_edit_string(self.ctx, NK_EDIT_SIMPLE, pan->rot_val[2], &pan->rot_len[2], 32, nk_filter_float);
+
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[0], &pan->rot_len[0], 32, nk_filter_float
+    );
+    if (res & NK_EDIT_COMMITED) {
+        object_update_rotation(selected_inst, (vec3) {
+            atof(pan->rot_val[0]),
+            atof(pan->rot_val[1]),
+            atof(pan->rot_val[2]),
+        });
+    }
+
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[1], &pan->rot_len[1], 32, nk_filter_float
+    );
+    if (res & NK_EDIT_COMMITED) {
+        object_update_rotation(selected_inst, (vec3) {
+            atof(pan->rot_val[0]),
+            atof(pan->rot_val[1]),
+            atof(pan->rot_val[2]),
+        });
+    }
+
+    res = nk_edit_string(
+        self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[2], &pan->rot_len[2], 32, nk_filter_float
+    );
+    if (res & NK_EDIT_COMMITED) {
+        object_update_rotation(selected_inst, (vec3) {
+            atof(pan->rot_val[0]),
+            atof(pan->rot_val[1]),
+            atof(pan->rot_val[2]),
+        });
+    }
 }
 
 

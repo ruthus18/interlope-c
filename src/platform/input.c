@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
 
 #include "../config.h"
-#include "../gfx.h"
 #include "../log.h"
+#include "../types.h"
 #include "input.h"
 #include "window.h"
 

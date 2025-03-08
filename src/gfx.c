@@ -10,13 +10,8 @@
 #include "gfx.h"
 #include "gfx_shader.h"
 #include "log.h"
-#include "platform/time.h"
-#include "platform/window.h"
 #include "types.h"
-
-
-#define vec3_size (3 * sizeof(f32))
-#define vec2_size (2 * sizeof(f32))
+#include "platform/window.h"
 
 
 static struct _Gfx {
@@ -28,47 +23,6 @@ static struct _Gfx {
         Shader* geometry;
     } shaders;
 } self;
-
-
-static inline
-Window* _create_window() {
-    if (!glfwInit()) {
-        printf("GLFW Initialization Error!\n");
-        exit(EXIT_FAILURE);
-    }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    if (!WINDOW_BORDER) {
-        glfwWindowHint(GLFW_DECORATED, false);
-    }
-
-    GLFWmonitor* monitor = NULL;
-    if (WINDOW_FULLSC)
-        monitor = glfwGetPrimaryMonitor();
-
-    Window* window = glfwCreateWindow(
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        WINDOW_TITLE,
-        monitor,
-        NULL
-    );
-    glfwSetWindowPos(window, WINDOW_XPOS, WINDOW_YPOS);
-    glfwMakeContextCurrent(window);
-
-    int glew_status = glewInit();
-    if (glew_status != GLEW_OK) {
-        printf("GLEW Initialization Error!\n");
-        exit(0);
-    }
-
-    glfwSwapInterval(WINDOW_VSYNC);
-
-    window_set(window);
-    return window;
-}
 
 
 static inline
@@ -97,7 +51,7 @@ void _init_shaders() {
 
 
 void gfx_init() {
-    self.window = _create_window();
+    self.window = window_get();
     self.stop_ = false;
 
     _log_startup_info();
@@ -117,19 +71,50 @@ void gfx_destroy() {
 }
 
 
-// void gfx_set_scene(GfxScene* scene) {
-//     self.scene = scene;
-// }
+bool gfx_need_stop() {
+    return glfwWindowShouldClose(self.window) || self.stop_;
+}
+
+void gfx_stop() {
+    self.stop_ = true;
+    log_info("Engine stopped. Bye!");
+}
 
 
-GfxMesh* gfx_mesh_load(
-    const char* name,
-    f32* vtx_buf,
-    u32* ind_buf,
-    u64 vtx_count,
-    u64 ind_count,
-    bool cw
-) {
+/* ------------------------------------------------------------------------- */
+/* Rendering Resources */
+/* ------------------------------------------------------------------------- */
+
+typedef struct GfxMesh {
+    const char* name;
+    u32 vao;
+    u32 vbo;
+    u32 ibo;
+
+    u64 vtx_count;
+    u64 ind_count;
+    
+    bool cw;  // vertex ordering (1 = clockwise ; 0 = counterwise)
+} GfxMesh;
+
+
+typedef struct GfxTexture {
+    unsigned int id;
+} GfxTexture;
+
+
+typedef struct GfxGeometry {
+    u32 vao;
+    u32 vbo;
+    u64 vtx_count;
+} GfxGeometry;
+
+
+#define VEC3_SIZE (3 * sizeof(f32))
+#define VEC2_SIZE (2 * sizeof(f32))
+
+
+GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
     mesh->name = name;
     mesh->vtx_count = vtx_count;
@@ -157,19 +142,19 @@ GfxMesh* gfx_mesh_load(
     //
     // More about formats: https://stackoverflow.com/a/39684775
     GLintptr v_offset = 0;
-    GLintptr vn_offset = (vec3_size * vtx_count);
-    GLintptr vt_offset = vec3_size * vtx_count * 2;
+    GLintptr vn_offset = (VEC3_SIZE * vtx_count);
+    GLintptr vt_offset = VEC3_SIZE * vtx_count * 2;
 
     // vtx position
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, vec3_size, (void*)v_offset);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, VEC3_SIZE, (void*)v_offset);
     glEnableVertexAttribArray(0);
 
     // vtx normal
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, vec3_size, (void*)vn_offset);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, VEC3_SIZE, (void*)vn_offset);
     glEnableVertexAttribArray(1);
 
     // vtx texcoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, vec2_size, (void*)vt_offset);
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, VEC2_SIZE, (void*)vt_offset);
     glEnableVertexAttribArray(2);
 
     /* -- Cleanup -- */
@@ -189,12 +174,7 @@ void gfx_mesh_unload(GfxMesh* mesh){
 }
 
 
-GfxTexture* gfx_texture_load(
-    u8* data,
-    u32 width,
-    u32 height,
-    int gl_format
-) {
+GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
 
     shader_use(self.shaders.object);
@@ -214,14 +194,7 @@ GfxTexture* gfx_texture_load(
 }
 
 
-GfxTexture* gfx_texture_load_dds(
-    u8* data,
-    u32 width,
-    u32 height,
-    i32 gl_format,
-    u32 mipmap_cnt,
-    u32 block_size
-) {
+GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
 
     shader_use(self.shaders.object);
@@ -279,71 +252,45 @@ void gfx_geometry_unload(GfxGeometry* geom) {
 }
 
 
-void gfx_begin_draw() { 
-    glfwPollEvents();
-}
+/* ------------------------------------------------------------------------- */
+/* Rendering Cycle */
+/* ------------------------------------------------------------------------- */
 
 
-static bool __persp_mat_set = false;
-
-
-void gfx_draw(GfxScene* scene) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(WINDOW_BG_COLOR);
-
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-
-    /* ---------------- */
-    /* OBJECT SHADER */
+void gfx_update_camera(mat4 m_persp, mat4 m_view) {
     shader_use(self.shaders.object);
-    
-    GfxCamera* camera = scene->camera;
-    u64 objects_count = scene->objects_count;
-
-    if (!__persp_mat_set) {
-        uniform_set_mat4(self.shaders.object, "m_persp", camera->m_persp);
-        __persp_mat_set = true;
-    }
-    uniform_set_mat4(self.shaders.object, "m_view", camera->m_view);
-    
-    for (int i = 0; i < objects_count; i++) {
-        GfxObject obj = scene->objects[i];
-
-        uniform_set_mat4(self.shaders.object, "m_model", obj.m_model);
-        
-        glBindVertexArray(obj.mesh->vao);
-        glBindBuffer(GL_ARRAY_BUFFER, obj.mesh->vbo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj.mesh->ibo);
-
-        glBindTexture(GL_TEXTURE_2D, obj.texture->id);
-        
-        glFrontFace(obj.mesh->cw ? GL_CW : GL_CCW);
-        glDrawElements(GL_TRIANGLES, obj.mesh->ind_count, GL_UNSIGNED_INT, NULL);
-    }
-
-    /* ---------------- */
-    /* GEOMETRY SHADER */
-    shader_use(self.shaders.geometry);
-    // TODO: Draw Geometry
-
-    /* ---------------- */
-    /* CLEANUP */
-    glBindTexture(GL_TEXTURE_2D, 0);
+    uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
+    uniform_set_mat4(self.shaders.object, "m_view", m_view);
     shader_use(NULL);
 }
 
 
-void gfx_end_draw() {
-    glfwSwapBuffers(self.window);
-    if (!WINDOW_VSYNC)  time_limit_framerate();
+void gfx_begin_draw_objects() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(WINDOW_BG_COLOR);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
+    shader_use(self.shaders.object);
 }
 
-bool gfx_need_stop() {
-    return glfwWindowShouldClose(self.window) || self.stop_;
+void gfx_end_draw_objects() {
+    shader_use(NULL);
 }
 
-void gfx_stop() {
-    self.stop_ = true;
-    log_info("Engine stopped. Bye!");
+
+void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
+
+    uniform_set_mat4(self.shaders.object, "m_model", m_model);
+    
+    glBindVertexArray(mesh->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+    
+    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
+    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

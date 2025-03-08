@@ -7,6 +7,7 @@
 #include "cglm/vec3.h"
 #include "cgm.h"
 #include "config.h"
+#include "gfx.h"
 #include "log.h"
 #include "types.h"
 
@@ -29,11 +30,11 @@ void camera_destroy(Camera* cam) {
 }
 
 void camera_update_persp_mat(Camera* cam) {
-    cgm_persp_mat(CAMERA_DEFAULT_FOV, cam->gfxd.m_persp);
+    cgm_persp_mat(CAMERA_DEFAULT_FOV, cam->m_persp);
 }
 
 void camera_update_view_mat(Camera* cam) {
-    cgm_view_mat(cam->position, cam->v_front, cam->gfxd.m_view);
+    cgm_view_mat(cam->position, cam->v_front, cam->m_view);
 }
 
 
@@ -120,4 +121,9 @@ void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
 
     if (__DEBUG__LOG_CAMERA_POSITION_DELTA)
         log_info("CAM[POS Δ]  %f  %f  %f", v_delta[0], v_delta[1], v_delta[2]);
-}   
+}
+
+
+void camera_upload_to_gfx(Camera* cam) {
+    gfx_update_camera(cam->m_persp, cam->m_view);
+}

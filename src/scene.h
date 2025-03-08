@@ -1,7 +1,6 @@
 #pragma once
 #include <cglm/cglm.h>
 
-#include "camera.h"
 #include "gfx.h"
 
 
@@ -36,12 +35,17 @@ void objdb_destroy(ObjectsDB*);
 
 
 typedef struct ObjectInst {
-    Object* obj;
+    char* base_id;
     vec3 pos;
     vec3 rot;
     vec3 sc;
-
     bool is_active;
+
+    GfxMesh** meshes;
+    GfxTexture** textures;
+    u16 slots_count;
+    mat4 m_model;
+
 } ObjectInst;
 
 
@@ -53,8 +57,6 @@ constexpr u64 _MAX_OBJECT_TEXTURES = 8;
 typedef struct Scene {
     ObjectInst objects[_MAX_SCENE_OBJECTS];
     u64 objects_count;
-
-    GfxScene gfxd;
 } Scene;
 
 
@@ -63,4 +65,7 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB*);
 void scene_destroy(Scene*);
 
 void scene_add_object(Scene*, Object*, vec3 pos, vec3 rot, vec3 sc);
-void scene_set_camera(Scene*, Camera*);
+void scene_draw(Scene*);
+
+void object_update_position(ObjectInst*, vec3);
+void object_update_rotation(ObjectInst*, vec3);

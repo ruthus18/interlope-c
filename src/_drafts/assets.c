@@ -9,26 +9,18 @@ typedef struct Mesh {
     UT_hash_handle hh;
     char id[32];
 
-    GfxMesh* slots;
+    GfxMesh** slots;
     u16 slots_size;
-} AssetMesh;
+} Mesh;
 
 
 typedef struct Material {
     UT_hash_handle hh;
     char id[32];
 
-    GfxTexture* diffuse_slots;
-    u16 slots_size;
+    GfxTexture* texture_diffuse;
+    // (+) Lighting params
 } Material;
-
-
-typedef struct Texture {
-    UT_hash_handle hh;
-    char id[32];
-
-    GfxTexture* gfx;
-} Texture;
 
 
 typedef struct AssetStorage {
@@ -43,10 +35,16 @@ AssetStorage assets;
 
 void assets_init() {
     assets.meshes = NULL;
+    assets.textures = NULL;
     assets.materials = NULL;
 }
 
 
-void assets_exit() {
+void assets_destroy() {
+    
+}
+
+
+void assets_read_meshes() {
 
 }

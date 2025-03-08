@@ -15,13 +15,13 @@ time gcc \
     -lcglm \
     -o interlope\
     \
-    ${SRC}/gfx.c \
-    ${SRC}/gfx_shader.c \
-    \
     ${SRC}/platform/file.c \
     ${SRC}/platform/input.c \
     ${SRC}/platform/time.c \
     ${SRC}/platform/window.c \
+    \
+    ${SRC}/gfx.c \
+    ${SRC}/gfx_shader.c \
     \
     ${SRC}/camera.c \
     ${SRC}/cgm.c \
