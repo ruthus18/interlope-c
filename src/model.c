@@ -1,3 +1,5 @@
+#include "cglm/vec3.h"
+#include <string.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
@@ -7,7 +9,29 @@
 #include "platform/file.h"
 
 
-GfxMesh** model_load_file(const char* model_relpath) {
+static inline
+Model* model_alloc(u32 slots_count) {
+    Model* model = malloc(sizeof(Model) * slots_count);
+    model->meshes = malloc(sizeof(GfxMesh*) * slots_count);
+    model->local_positions = malloc(sizeof(vec3) * slots_count);
+    model->names = malloc(sizeof(char) * 64 * slots_count);
+    model->slots_count = slots_count;
+
+    return model;
+}
+
+
+void model_destroy(Model* model) {
+    // TODO: gfx_mesh_unload
+
+    free(model->meshes);
+    free(model->local_positions);
+    free(model->names);
+    free(model);
+}
+
+
+Model* model_read(const char* model_relpath) {
     cgltf_result parse_res;
     cgltf_options options = {0};
     cgltf_data* data = NULL;
@@ -30,17 +54,25 @@ GfxMesh** model_load_file(const char* model_relpath) {
     cgltf_load_buffers(&options, data, path);
     free((void*)path);
 
-    /* -- Mesh Handling -- */
-    // assert(data->nodes_count == 1);
-    // const char* mesh_name = data->nodes[0].name;
+    /* -- Data Processing -- */
+    assert(data->nodes_count == data->meshes_count);
+    
+    Model* model = model_alloc(data->nodes_count);
+    for (int i = 0; i < data->nodes_count; i++) {
+        cgltf_node node = data->nodes[i];
 
-    u32 _meshes_memsize = sizeof(GfxMesh*) * (data->meshes_count + 1);
-    GfxMesh** meshes = malloc(_meshes_memsize);
+        char* name_ = malloc(sizeof(char) * 64); // FIXME
+        strcpy(name_, node.name);
+        model->names[i] = name_;
 
-    for (int m = 0; m < data->meshes_count; m++) {
-        cgltf_mesh* mesh = &data->meshes[m];
+        if (node.has_translation) {
+            glm_vec3_copy(node.translation, model->local_positions[i]);
+        }
+        else {
+            glm_vec3_copy((vec3){0}, model->local_positions[i]);
+        }
 
-        /* -- Primitive Handling -- */
+        cgltf_mesh* mesh = node.mesh;
         assert(mesh->primitives_count == 1);
         cgltf_primitive* pr = &mesh->primitives[0];
         
@@ -49,8 +81,8 @@ GfxMesh** model_load_file(const char* model_relpath) {
         cgltf_accessor* texcoord_attr = NULL;
         cgltf_accessor* ind_attr = pr->indices;
         
-        for (int i = 0; i < pr->attributes_count; i++) {
-            cgltf_attribute* attr = &pr->attributes[i];
+        for (int j = 0; j < pr->attributes_count; j++) {
+            cgltf_attribute* attr = &pr->attributes[j];
             
             if (attr->type == cgltf_attribute_type_position) {
                 pos_attr = attr->data;
@@ -105,19 +137,19 @@ GfxMesh** model_load_file(const char* model_relpath) {
         u32* ind_buf = malloc(2 * sizeof(u32) * ind_count);
         u16* ind_buf_tmp = ind_bufv->buffer->data + ind_bufv->offset;
         
-        for (int i = 0; i < ind_count; i++) {
-            ind_buf[i] = ind_buf_tmp[i];
+        for (int j = 0; j < ind_count; j++) {
+            ind_buf[j] = ind_buf_tmp[j];
         }
         
         GfxMesh* gfx_mesh = gfx_mesh_load(mesh->name, vtx_buf, ind_buf, vtx_count, ind_count, false);
         free(vtx_buf);
         free(ind_buf);
         
-        meshes[m] = gfx_mesh;
+        model->meshes[i] = gfx_mesh;
     }
 
-    meshes[data->meshes_count] = NULL;
+    // meshes[data->meshes_count] = NULL;
     cgltf_free(data);
-    return meshes;
+    return model;
 }
 

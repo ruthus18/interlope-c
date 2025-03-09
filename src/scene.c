@@ -23,14 +23,19 @@ typedef struct ObjectBase {
     const char* id;
     GfxMesh** meshes;
     u64 meshes_count;
+    vec3* local_positions;
+    char** names;
+
     GfxTexture** textures;
     u64 textures_count;
+
+    Model* __model;
 } ObjectBase;
 
 
 static inline
 ObjectBase objbase_create(const char* id) {
-    char* id_ = malloc(sizeof(id));
+    char* id_ = malloc(sizeof(id));  // FIXME
     strcpy(id_, id);
 
     return (ObjectBase){
@@ -42,35 +47,16 @@ ObjectBase objbase_create(const char* id) {
     };
 }
 
-static inline
-void objbase_destroy(ObjectBase* obj) {
-    if (obj->meshes != NULL) {
-        for (int i = 0; i < obj->meshes_count; i++) {
-            gfx_mesh_unload(obj->meshes[i]);
-        }
-        free(obj->meshes);
-    }
-
-    if (obj->textures != NULL) {
-        for (int i = 0; i < obj->textures_count; i++) {
-            gfx_texture_unload(obj->textures[i]);
-        }
-        free(obj->textures);
-    }
-
-    free((void*)obj->id);
-}
 
 static inline
 void objbase_load_meshes(ObjectBase* obj, const char* meshes_path) {
-    obj->meshes = model_load_file(meshes_path);
+    Model* model = model_read(meshes_path);
+    obj->meshes = model->meshes;
+    obj->meshes_count = model->slots_count;
+    obj->local_positions = model->local_positions;
+    obj->names = model->names;
 
-    int i = 0;
-    while (1) {
-        if (obj->meshes[i] == NULL)  break;
-        i++;
-    }
-    obj->meshes_count = i;
+    obj->__model = model;
 }
 
 
@@ -87,6 +73,25 @@ void objbase_load_texture(ObjectBase* obj, const char* texture_path) {
 
     obj->textures[obj->textures_count] = texture_load_file(texture_path);
     obj->textures_count++;
+}
+
+static inline
+void objbase_destroy(ObjectBase* obj) {
+    if (obj->meshes != NULL) {
+        for (int i = 0; i < obj->meshes_count; i++) {
+            gfx_mesh_unload(obj->meshes[i]);
+        }
+        model_destroy(obj->__model); // FIXME
+    }
+
+    if (obj->textures != NULL) {
+        for (int i = 0; i < obj->textures_count; i++) {
+            gfx_texture_unload(obj->textures[i]);
+        }
+        free(obj->textures);
+    }
+
+    free((void*)obj->id);
 }
 
 
@@ -224,7 +229,7 @@ ObjectBase* objdb_find(ObjectsDB* objdb, const char* base_id) {
 /* ------------------------------------------------------------------------- */
 
 typedef struct Object {
-    char* base_id;
+    const char* base_id;
     vec3 pos;
     vec3 rot;
     vec3 sc;
@@ -232,6 +237,7 @@ typedef struct Object {
 
     GfxMesh** meshes;
     GfxTexture** textures;
+    vec3* local_positions;
     u16 slots_count;
     mat4 m_model;
 } Object;
@@ -293,11 +299,12 @@ void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec
     assert(scene->objects_count < _MAX_SCENE_OBJECTS);
 
     Object obj = {
-        .base_id = (char*) objbase->id,
-        .is_active = true,
+        .base_id = objbase->id,
         .meshes = objbase->meshes,
         .textures = objbase->textures,
+        .local_positions = objbase->local_positions,
         .slots_count = objbase->meshes_count,
+        .is_active = true,
     };
     if (pos != NULL)  glm_vec3_copy(    pos, obj.pos);
     else              glm_vec3_copy(VEC3__0, obj.pos);
@@ -409,6 +416,11 @@ void scene_draw(Scene* scene) {
         Object* obj = &scene->objects[i];
 
         for (int j = 0; j < obj->slots_count; j++) {
+
+            vec3 result_pos;
+            glm_vec3_sub(obj->pos, obj->local_positions[j], result_pos);
+            cgm_model_mat(result_pos, obj->rot, obj->sc, obj->m_model);  // FIXME
+
             gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_model);
         }
     }
