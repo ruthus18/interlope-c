@@ -16,7 +16,7 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl4.h>
 
-#include "log.h"
+// #include "log.h"
 #include "scene.h"
 #include "types.h"
 #include "platform/window.h"
@@ -85,24 +85,29 @@ void editor_set_scene(Scene* scene) {
 
 static inline
 void _update_objpan_data() {
-    ObjectInst selected_inst = self.scene->objects[self.selected_obj_id];
+    Object* selected_obj = scene_get_object(self.scene, self.selected_obj_id);
+    vec3 pos, rot;
+
+    object_get_position(selected_obj, pos);
+    object_get_rotation(selected_obj, rot);
+
     ObjectPanel* pan = &self.object_panel;
 
-    sprintf(pan->pos_val[0], "%.2f", selected_inst.pos[0]);
-    sprintf(pan->pos_val[1], "%.2f", selected_inst.pos[1]);
-    sprintf(pan->pos_val[2], "%.2f", selected_inst.pos[2]);
+    sprintf(pan->pos_val[0], "%.2f", pos[0]);
+    sprintf(pan->pos_val[1], "%.2f", pos[1]);
+    sprintf(pan->pos_val[2], "%.2f", pos[2]);
 
-    pan->pos_len[0] = snprintf(NULL, 0, "%.2f", selected_inst.pos[0]);
-    pan->pos_len[1] = snprintf(NULL, 0, "%.2f", selected_inst.pos[1]);
-    pan->pos_len[2] = snprintf(NULL, 0, "%.2f", selected_inst.pos[2]);
+    pan->pos_len[0] = snprintf(NULL, 0, "%.2f", pos[0]);
+    pan->pos_len[1] = snprintf(NULL, 0, "%.2f", pos[1]);
+    pan->pos_len[2] = snprintf(NULL, 0, "%.2f", pos[2]);
     
-    sprintf(pan->rot_val[0], "%.1f", selected_inst.rot[0]);
-    sprintf(pan->rot_val[1], "%.1f", selected_inst.rot[1]);
-    sprintf(pan->rot_val[2], "%.1f", selected_inst.rot[2]);
+    sprintf(pan->rot_val[0], "%.1f", rot[0]);
+    sprintf(pan->rot_val[1], "%.1f", rot[1]);
+    sprintf(pan->rot_val[2], "%.1f", rot[2]);
 
-    pan->rot_len[0] = snprintf(NULL, 0, "%.1f", selected_inst.rot[0]);
-    pan->rot_len[1] = snprintf(NULL, 0, "%.1f", selected_inst.rot[1]);
-    pan->rot_len[2] = snprintf(NULL, 0, "%.1f", selected_inst.rot[2]);    
+    pan->rot_len[0] = snprintf(NULL, 0, "%.1f", rot[0]);
+    pan->rot_len[1] = snprintf(NULL, 0, "%.1f", rot[1]);
+    pan->rot_len[2] = snprintf(NULL, 0, "%.1f", rot[2]);    
 }
 
 
@@ -114,12 +119,13 @@ void _draw_scene_panel() {
     }
     
     /* Scene Tree */
-    for (int i = 0; i < self.scene->objects_count; i++) {
+    for (int i = 0; i < scene_get_objects_count(self.scene); i++) {
         nk_layout_row_static(self.ctx, 12, 275, 1);
         
         bool select_cond = (self.selected_obj_id == i);
+        Object* obj = scene_get_object(self.scene, i);
         
-        if (nk_select_label(self.ctx, self.scene->objects[i].base_id, NK_TEXT_LEFT, select_cond)) {
+        if (nk_select_label(self.ctx, object_get_base_id(obj), NK_TEXT_LEFT, select_cond)) {
             if (self.selected_obj_id != i) {
                 self.selected_obj_id = i;
                 _update_objpan_data();
@@ -134,13 +140,13 @@ void _draw_object_panel() {
     if (self.selected_obj_id == -1)  return;
     
     ObjectPanel* pan = &self.object_panel;
-    ObjectInst* selected_inst = &self.scene->objects[self.selected_obj_id];
+    Object* selected_obj = scene_get_object(self.scene, self.selected_obj_id);
     nk_flags res;
     
     /* ------ ID ------ */
     nk_layout_row(self.ctx, NK_STATIC, 20, 2, (float[]){70, 190});
     nk_label(self.ctx, "Base ID: ", NK_TEXT_LEFT);
-    nk_label(self.ctx, selected_inst->base_id, NK_TEXT_LEFT);
+    nk_label(self.ctx, object_get_base_id(selected_obj), NK_TEXT_LEFT);
     
     // Empty row
     nk_layout_row_static(self.ctx, 10, 275, 1);
@@ -154,7 +160,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[0], &pan->pos_len[0], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_position(selected_inst, (vec3) {
+        object_set_position(selected_obj, (vec3) {
             atof(pan->pos_val[0]),
             atof(pan->pos_val[1]),
             atof(pan->pos_val[2]),
@@ -165,7 +171,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[1], &pan->pos_len[1], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_position(selected_inst, (vec3) {
+        object_set_position(selected_obj, (vec3) {
             atof(pan->pos_val[0]),
             atof(pan->pos_val[1]),
             atof(pan->pos_val[2]),
@@ -176,7 +182,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->pos_val[2], &pan->pos_len[2], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_position(selected_inst, (vec3) {
+        object_set_position(selected_obj, (vec3) {
             atof(pan->pos_val[0]),
             atof(pan->pos_val[1]),
             atof(pan->pos_val[2]),
@@ -192,7 +198,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[0], &pan->rot_len[0], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_rotation(selected_inst, (vec3) {
+        object_set_rotation(selected_obj, (vec3) {
             atof(pan->rot_val[0]),
             atof(pan->rot_val[1]),
             atof(pan->rot_val[2]),
@@ -203,7 +209,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[1], &pan->rot_len[1], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_rotation(selected_inst, (vec3) {
+        object_set_rotation(selected_obj, (vec3) {
             atof(pan->rot_val[0]),
             atof(pan->rot_val[1]),
             atof(pan->rot_val[2]),
@@ -214,7 +220,7 @@ void _draw_object_panel() {
         self.ctx, NK_EDIT_SIMPLE | NK_EDIT_SIG_ENTER, pan->rot_val[2], &pan->rot_len[2], 32, nk_filter_float
     );
     if (res & NK_EDIT_COMMITED) {
-        object_update_rotation(selected_inst, (vec3) {
+        object_set_rotation(selected_obj, (vec3) {
             atof(pan->rot_val[0]),
             atof(pan->rot_val[1]),
             atof(pan->rot_val[2]),

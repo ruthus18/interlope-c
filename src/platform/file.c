@@ -23,8 +23,7 @@ const char* file_read_text(const char* path) {
         fclose(file);
     }
     else {
-        log_error("Unable to read shader file: %s", path);
-        exit(EXIT_FAILURE);
+        log_exit("Unable to read file: %s", path);
     }
     buffer[len] = '\0';
     return buffer;
@@ -41,10 +40,10 @@ const char* path_to_shader(const char* rel_path) {
 
 
 const char* path_to_model(const char* rel_path) {
-    int size = strlen(DIR_MESHES) + strlen(rel_path) + 1;
+    int size = strlen(DIR_MODELS) + strlen(rel_path) + 1;
 
     char*  path = malloc(size);
-    strcpy(path, DIR_MESHES);
+    strcpy(path, DIR_MODELS);
     strcat(path, rel_path);
     return path;
 }

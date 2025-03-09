@@ -5,7 +5,7 @@
 
 #define ENGINE_VERSION  "0.0.1a"
 
-/* Window (User)*/
+/* --- Window (User) --- */
 // #define WINDOW_WIDTH 1366
 // #define WINDOW_HEIGHT 768
 #define WINDOW_WIDTH 1600
@@ -16,29 +16,29 @@
 #define WINDOW_FULLSC true
 #define WINDOW_VSYNC false
 
-/* Window (System)*/
+/* --- Window (System) --- */
 #define WINDOW_TITLE "Interlope Engine"
 #define WINDOW_BG_COLOR (f32)29 / 255, (f32)32 / 255, (f32)33 / 255, 1.0
 #define WINDOW_MAX_FRAMERATE 120.0
 
-/* GFX */
+/* --- GFX --- */
 #define GFX_WIREFRAME_MODE false
 
-/* Paths & Dirs */
+/* --- Paths & Dirs --- */
 #define DIR_SHADERS "shaders/"
-#define DIR_MESHES "assets/meshes/"
+#define DIR_MODELS "assets/models/"
 #define DIR_TEXTURES "assets/textures/"
 
-/* Input */
+/* --- Input --- */
 #define MOUSE_SENSITIVITY 130.0
 
-/* Camera */
+/* --- Camera --- */
 #define CAMERA_DEFAULT_FOV 75.0
 #define CAMERA_MOVEMENT_SPEED 6
 
 
 /* ------------------------------------------------------------------------- */
-/* Debugging */
+/* --- Debugging --- */
 
 #define __DEBUG__PRINT_FPS false
 #define __DEBUG__PRINT_TIME_UPDATE false
@@ -49,5 +49,6 @@
 
 /* ------------------------------------------------------------------------- */
 /* Fancy functions for easy living */
+// TODO: Shouldn't live there
 
 #define len(x) ((sizeof(x)/sizeof(0[x])) / ((u64)(!(sizeof(x) % sizeof(0[x])))))

@@ -7,8 +7,6 @@
 #include "log.h"
 
 
-
-
 GfxTexture* texture_load_file(const char* texture_relpath) {
 	const char* path = path_to_texture(texture_relpath);
 	
@@ -27,10 +25,9 @@ GfxTexture* texture_load_file(const char* texture_relpath) {
 	fread(header, 1, 128, f);
 	
 	if(memcmp(header, "DDS ", 4) != 0) {
-		log_error("Error while loading .dds: invalid signature");
-	    free(header);
+		free(header);
 	    fclose(f);
-		exit(EXIT_FAILURE);
+		log_exit("Error while loading .dds: invalid signature");
     }
 	
 	unsigned int height = (header[12]) | (header[13] << 8) | (header[14] << 16) | (header[15] << 24);
@@ -55,16 +52,14 @@ GfxTexture* texture_load_file(const char* texture_relpath) {
 				block_size = 16;
 				break;
 			default:
-				log_error("Unsupported .dds type: only DXT1-5 are supported!");
 				free(header);
 				fclose(f);
-				exit(EXIT_FAILURE);
+				log_exit("Unsupported .dds type: only DXT1-5 are supported!");
 		}
 	} else {
-		log_error("Unsupported .dds type: only DXT1-5 are supported!");
-        free(header);
+		free(header);
 	    fclose(f);
-        exit(EXIT_FAILURE);
+		log_exit("Unsupported .dds type: only DXT1-5 are supported!");
     }
     free(header);
 	
@@ -88,11 +83,10 @@ GfxTexture* _texture_load_file_png(const char* texture_relpath) {
 
 	u8* data = stbi_load(path, (i32*)&width, (i32*)&height, &nr_channels, 0);
 	if (data == NULL) {
-		log_error("Cannot open texture file: %s", texture_relpath);
-		log_error(stbi_failure_reason());
-
 		free((void*)path);
-		exit(0);
+
+		log_error(stbi_failure_reason());	
+		log_exit("Cannot open texture file: %s", texture_relpath);
 	}
 
 	int gl_format = GL_RGBA;

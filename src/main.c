@@ -41,7 +41,7 @@ int main() {
 
 /* ------ Application Logic ------ */
 
-ObjectsDB objdb;
+ObjectsDB* objdb;
 Camera* cam;
 Scene* scene;
 
@@ -55,8 +55,8 @@ void on_init__() {
     camera_set_position(cam, (vec3){1.25, 1.7, 1.25});
     camera_set_rotation(cam, 0.0, 0.0);
 
-    objdb = objdb_create_from("objects_db.toml");
-    scene = scene_create_from("scenes/sovsh_demo.toml", &objdb);
+    objdb = objdb_create_from("data/objects.toml");
+    scene = scene_create_from("data/scenes/sovsh_demo.toml", objdb);
 
     editor_init();
     editor_set_scene(scene);
@@ -71,7 +71,7 @@ void on_destroy__() {
     camera_destroy(cam);
 
     scene_destroy(scene);
-    objdb_destroy(&objdb);
+    objdb_destroy(objdb);
 }
 
 

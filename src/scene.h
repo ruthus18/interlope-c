@@ -1,71 +1,36 @@
 #pragma once
 #include <cglm/cglm.h>
 
-#include "gfx.h"
-
-
-/* ------ Object ------ */
-
-typedef struct Object {
-    const char* id;
-    GfxMesh** meshes;
-    u64 meshes_count;
-    GfxTexture** textures;
-    u64 textures_count;
-} Object;
-
-
-Object object_create(const char* id);
-void object_destroy(Object*);
-void object_load_meshes(Object*, const char* meshes_path);
-void object_load_texture(Object*, const char* texture_path);
+#include "types.h"
 
 
 /* ------ Objects DB ------ */
 
-constexpr u64 _MAX_OBJECTS_DB_SIZE = 1024;
+typedef struct ObjectsDB ObjectsDB;
 
-typedef struct ObjectsDB {
-    Object objects[_MAX_OBJECTS_DB_SIZE];
-    u64 objects_count;
-} ObjectsDB;
-
-ObjectsDB objdb_create_from(const char* toml_path);
+ObjectsDB* objdb_create_from(const char* toml_path);
 void objdb_destroy(ObjectsDB*);
 
 
-typedef struct ObjectInst {
-    char* base_id;
-    vec3 pos;
-    vec3 rot;
-    vec3 sc;
-    bool is_active;
+/* ------ Object ------ */
 
-    GfxMesh** meshes;
-    GfxTexture** textures;
-    u16 slots_count;
-    mat4 m_model;
+typedef struct Object Object;
 
-} ObjectInst;
+const char* object_get_base_id(Object*);
+void object_get_position(Object*, vec3);
+void object_get_rotation(Object*, vec3);
+void object_set_position(Object*, vec3);
+void object_set_rotation(Object*, vec3);
 
 
 /* ------ Scene ------ */
 
-constexpr u64 _MAX_SCENE_OBJECTS = 1024;
-constexpr u64 _MAX_OBJECT_TEXTURES = 8;
-
-typedef struct Scene {
-    ObjectInst objects[_MAX_SCENE_OBJECTS];
-    u64 objects_count;
-} Scene;
-
+typedef struct Scene Scene;
 
 Scene* scene_create();
 Scene* scene_create_from(const char* toml_path, ObjectsDB*);
 void scene_destroy(Scene*);
-
-void scene_add_object(Scene*, Object*, vec3 pos, vec3 rot, vec3 sc);
 void scene_draw(Scene*);
 
-void object_update_position(ObjectInst*, vec3);
-void object_update_rotation(ObjectInst*, vec3);
+u64 scene_get_objects_count(Scene*);
+Object* scene_get_object(Scene*, u64 idx);

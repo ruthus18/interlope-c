@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "window.h"
+#include "../log.h"
 #include "../config.h"
 
 
@@ -13,8 +14,7 @@ static Window* window = NULL;
 
 void window_init() {
     if (!glfwInit()) {
-        printf("window_init: GLFW Initialization Error!\n");
-        exit(EXIT_FAILURE);
+        log_exit("(window_init) GLFW Initialization Error!");
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -40,8 +40,7 @@ void window_init() {
 
     int glew_status = glewInit();
     if (glew_status != GLEW_OK) {
-        printf("window_init: GLEW Initialization Error!\n");
-        exit(EXIT_FAILURE);
+        log_exit("(window_init) GLEW Initialization Error!");
     }
 
     glfwSwapInterval(WINDOW_VSYNC);
