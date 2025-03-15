@@ -35,6 +35,8 @@ void window_init() {
         monitor,
         NULL
     );
+    if (!window)  log_exit("Unable to create GLFW window");
+
     glfwSetWindowPos(window, WINDOW_XPOS, WINDOW_YPOS);
     glfwMakeContextCurrent(window);
 
@@ -47,7 +49,8 @@ void window_init() {
 }
 
 void window_destroy() {
-    // TODO
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 

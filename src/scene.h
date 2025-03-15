@@ -8,7 +8,7 @@
 
 typedef struct ObjectsDB ObjectsDB;
 
-ObjectsDB* objdb_create_from(const char* toml_path);
+ObjectsDB* objdb_create_from(const char* toml_path);  // TODO: objdb_load
 void objdb_destroy(ObjectsDB*);
 
 
@@ -21,16 +21,18 @@ void object_get_position(Object*, vec3);
 void object_get_rotation(Object*, vec3);
 void object_set_position(Object*, vec3);
 void object_set_rotation(Object*, vec3);
+void object_set_subm_rotation(Object*, vec3, u32 slot_idx);
 
 
 /* ------ Scene ------ */
 
 typedef struct Scene Scene;
 
-Scene* scene_create();
-Scene* scene_create_from(const char* toml_path, ObjectsDB*);
+// Scene* scene_create();
+Scene* scene_create_from(const char* toml_path, ObjectsDB*);  // TODO: scene_load
 void scene_destroy(Scene*);
 void scene_draw(Scene*);
 
 u64 scene_get_objects_count(Scene*);
 Object* scene_get_object(Scene*, u64 idx);
+Object* scene_find_object(Scene* scene, const char* base_id);

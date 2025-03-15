@@ -20,10 +20,11 @@
 /* ------------------------------------------------------------------------- */
 
 typedef struct ObjectBase {
-    const char* id;
+    char id[64];
     GfxMesh** meshes;
     u64 meshes_count;
     vec3* local_positions;
+    vec3* local_rotations;
     char** names;
 
     GfxTexture** textures;
@@ -35,16 +36,14 @@ typedef struct ObjectBase {
 
 static inline
 ObjectBase objbase_create(const char* id) {
-    char* id_ = malloc(sizeof(id));  // FIXME
-    strcpy(id_, id);
-
-    return (ObjectBase){
-        .id = id_,
+    ObjectBase objbase = {
         .meshes = NULL,
         .textures = NULL,
         .meshes_count = 0,
         .textures_count = 0,
     };
+    strcpy(objbase.id, id);
+    return objbase;
 }
 
 
@@ -54,6 +53,7 @@ void objbase_load_meshes(ObjectBase* obj, const char* meshes_path) {
     obj->meshes = model->meshes;
     obj->meshes_count = model->slots_count;
     obj->local_positions = model->local_positions;
+    obj->local_rotations = model->local_rotations;
     obj->names = model->names;
 
     obj->__model = model;
@@ -78,9 +78,6 @@ void objbase_load_texture(ObjectBase* obj, const char* texture_path) {
 static inline
 void objbase_destroy(ObjectBase* obj) {
     if (obj->meshes != NULL) {
-        for (int i = 0; i < obj->meshes_count; i++) {
-            gfx_mesh_unload(obj->meshes[i]);
-        }
         model_destroy(obj->__model); // FIXME
     }
 
@@ -90,8 +87,6 @@ void objbase_destroy(ObjectBase* obj) {
         }
         free(obj->textures);
     }
-
-    free((void*)obj->id);
 }
 
 
@@ -230,6 +225,7 @@ ObjectBase* objdb_find(ObjectsDB* objdb, const char* base_id) {
 
 typedef struct Object {
     const char* base_id;
+    // TODO: need consistent naming (pos -> position, rot -> ..., sc -> ...)
     vec3 pos;
     vec3 rot;
     vec3 sc;
@@ -237,9 +233,11 @@ typedef struct Object {
 
     GfxMesh** meshes;
     GfxTexture** textures;
-    vec3* local_positions;
     u16 slots_count;
-    mat4 m_model;
+
+    vec3* local_positions;
+    vec3* local_rotations;
+    mat4* m_models;
 } Object;
 
 
@@ -255,14 +253,41 @@ void object_get_rotation(Object* obj, vec3 dest) {
     glm_vec3_copy(obj->rot, dest);
 }
 
+
+// TODO: refactoring
 void object_set_position(Object* obj, vec3 new_pos) {
     glm_vec3_copy(new_pos, obj->pos);
-    cgm_model_mat(obj->pos, obj->rot, obj->sc, obj->m_model);
+    
+    for (int i = 0; i < obj->slots_count; i++) {
+        vec3 result_pos;
+        glm_vec3_sub(obj->pos, obj->local_positions[i], result_pos);
+        cgm_model_mat(result_pos, obj->local_rotations[i], obj->sc, obj->m_models[i]);
+    }
 }
 
+// TODO: refactoring
 void object_set_rotation(Object* obj, vec3 new_rot) {
     glm_vec3_copy(new_rot, obj->rot);
-    cgm_model_mat(obj->pos, obj->rot, obj->sc, obj->m_model);
+    
+    for (int i = 0; i < obj->slots_count; i++) {
+        vec3 result_rot;
+        glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
+        cgm_model_mat(obj->local_positions[i], result_rot, obj->sc, obj->m_models[i]);
+    }
+}
+
+// TODO: refactoring
+void object_set_subm_rotation(Object* obj, vec3 new_rot, u32 slot_idx) {
+    u32 i = slot_idx;
+    vec3 result_pos;
+    vec3 result_rot;
+
+    glm_vec3_copy(new_rot, obj->local_rotations[i]);
+    
+    glm_vec3_sub(obj->pos, obj->local_positions[i], result_pos);    
+    glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
+
+    cgm_model_mat(result_pos, result_rot, obj->sc, obj->m_models[i]);
 }
 
 
@@ -297,25 +322,45 @@ void scene_destroy(Scene* scene) {
 
 void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec3 sc) {
     assert(scene->objects_count < _MAX_SCENE_OBJECTS);
-
+    
     Object obj = {
         .base_id = objbase->id,
         .meshes = objbase->meshes,
         .textures = objbase->textures,
-        .local_positions = objbase->local_positions,
         .slots_count = objbase->meshes_count,
         .is_active = true,
+        .local_positions = NULL,
+        .local_rotations = NULL,
     };
     if (pos != NULL)  glm_vec3_copy(    pos, obj.pos);
     else              glm_vec3_copy(VEC3__0, obj.pos);
-
+    
     if (rot != NULL)  glm_vec3_copy(    rot, obj.rot);
     else              glm_vec3_copy(VEC3__0, obj.rot);
-
+    
     if (sc != NULL)   glm_vec3_copy(     sc, obj.sc);
     else              glm_vec3_copy(VEC3__1, obj.sc);
     
-    cgm_model_mat(obj.pos, obj.rot, obj.sc, obj.m_model);
+    // TODO: free
+    obj.local_positions = malloc(sizeof(vec3) * obj.slots_count);
+    obj.local_rotations = malloc(sizeof(vec3) * obj.slots_count);
+    obj.m_models = malloc(sizeof(mat4) * obj.slots_count);
+    
+    // TODO: refactoring
+    for (int i = 0; i < obj.slots_count; i++) {
+        glm_vec3_copy(objbase->local_positions[i], obj.local_positions[i]);
+        glm_vec3_copy(objbase->local_rotations[i], obj.local_rotations[i]);
+
+        vec3 result_pos;
+        glm_vec3_copy(obj.pos, result_pos);
+        glm_vec3_sub(obj.pos, obj.local_positions[i], result_pos);
+        
+        vec3 result_rot;
+        glm_vec3_copy(obj.rot, result_rot);
+        glm_vec3_add(obj.rot, obj.local_rotations[i], result_rot);
+
+        cgm_model_mat(result_pos, result_rot, obj.sc, obj.m_models[i]);
+    }
 
     scene->objects[scene->objects_count] = obj;
     scene->objects_count++;
@@ -416,12 +461,7 @@ void scene_draw(Scene* scene) {
         Object* obj = &scene->objects[i];
 
         for (int j = 0; j < obj->slots_count; j++) {
-
-            vec3 result_pos;
-            glm_vec3_sub(obj->pos, obj->local_positions[j], result_pos);
-            cgm_model_mat(result_pos, obj->rot, obj->sc, obj->m_model);  // FIXME
-
-            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_model);
+            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j]);
         }
     }
     gfx_end_draw_objects();
@@ -434,4 +474,14 @@ u64 scene_get_objects_count(Scene* scene) {
 
 Object* scene_get_object(Scene* scene, u64 idx) {
     return &scene->objects[idx];
+}
+
+
+Object* scene_find_object(Scene* scene, const char* base_id) {
+    for (int i = 0; i < scene->objects_count ; i++) {
+        if (strcmp(scene->objects[i].base_id, base_id) == 0) {
+            return &scene->objects[i];
+        }
+    }
+    return NULL;
 }

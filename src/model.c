@@ -14,7 +14,13 @@ Model* model_alloc(u32 slots_count) {
     Model* model = malloc(sizeof(Model) * slots_count);
     model->meshes = malloc(sizeof(GfxMesh*) * slots_count);
     model->local_positions = malloc(sizeof(vec3) * slots_count);
-    model->names = malloc(sizeof(char) * 64 * slots_count);
+    model->local_rotations = malloc(sizeof(vec3) * slots_count);
+
+    model->names = malloc(sizeof(char*) * slots_count);
+    for (int i = 0; i < slots_count; i++) {
+        model->names[i] = malloc(sizeof(char) * 64);
+    }
+
     model->slots_count = slots_count;
 
     return model;
@@ -22,11 +28,14 @@ Model* model_alloc(u32 slots_count) {
 
 
 void model_destroy(Model* model) {
-    // TODO: gfx_mesh_unload
-
-    free(model->meshes);
-    free(model->local_positions);
+    for (int i = 0; i < model->slots_count; i++) {
+        gfx_mesh_unload(model->meshes[i]);
+        free(model->names[i]);
+    }
     free(model->names);
+    free(model->local_positions);
+    free(model->local_rotations);
+    free(model->meshes);
     free(model);
 }
 
@@ -61,15 +70,21 @@ Model* model_read(const char* model_relpath) {
     for (int i = 0; i < data->nodes_count; i++) {
         cgltf_node node = data->nodes[i];
 
-        char* name_ = malloc(sizeof(char) * 64); // FIXME
-        strcpy(name_, node.name);
-        model->names[i] = name_;
+        // TODO: check name length (should be < 64)
+        strcpy(model->names[i], node.name);
 
         if (node.has_translation) {
             glm_vec3_copy(node.translation, model->local_positions[i]);
         }
         else {
             glm_vec3_copy((vec3){0}, model->local_positions[i]);
+        }
+
+        if (node.has_rotation) {
+            glm_vec3_copy(node.rotation, model->local_rotations[i]);
+        }
+        else {
+            glm_vec3_copy((vec3){0}, model->local_rotations[i]);
         }
 
         cgltf_mesh* mesh = node.mesh;

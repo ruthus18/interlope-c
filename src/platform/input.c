@@ -9,20 +9,20 @@
 
 #define __KEY_EMPTY -1
 
-constexpr unsigned __KPST_SIZE = 8;
+constexpr u32 KEYP_STORAGE_SIZE = 8;
 
 static struct _Input {
     Window* window;
 
     // Mouse cursor position
-    double mouse_px;
-    double mouse_py;
+    f64 mouse_px;
+    f64 mouse_py;
     // Mouse cursor delta
-    double mouse_dx;
-    double mouse_dy;
+    f64 mouse_dx;
+    f64 mouse_dy;
 
     // Storage for key pressing state
-    int keyp_storage[__KPST_SIZE];
+    int keyp_storage[KEYP_STORAGE_SIZE];
 } self;
 
 
@@ -65,7 +65,7 @@ bool input_is_keyp(int key) {
     int state = glfwGetKey(self.window, key);
 
     if (state == GLFW_PRESS) {
-        for (int i = 0; i < len(self.keyp_storage); i++) {
+        for (int i = 0; i < KEYP_STORAGE_SIZE; i++) {
 
             if (self.keyp_storage[i] == __KEY_EMPTY) {
                 self.keyp_storage[i] = key;
@@ -79,7 +79,7 @@ bool input_is_keyp(int key) {
         log_error("GLFW_PRESS - OUT OF LOOP! MORE THAN 8 KEYS AT ONCE ???");
     }
     else if (state == GLFW_RELEASE) {
-        for (int i = 0; i < len(self.keyp_storage); i++) {
+        for (int i = 0; i < KEYP_STORAGE_SIZE; i++) {
 
             if (self.keyp_storage[i] == key) {
                 self.keyp_storage[i] = __KEY_EMPTY;

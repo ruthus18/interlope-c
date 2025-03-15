@@ -6,6 +6,7 @@
 typedef struct Model {
     GfxMesh** meshes;
     vec3* local_positions;
+    vec3* local_rotations;
     char** names;
     u64 slots_count;
 } Model;
