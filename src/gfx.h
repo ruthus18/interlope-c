@@ -33,3 +33,4 @@ void gfx_update_camera(mat4 m_persp, mat4 m_view);
 void gfx_begin_draw_objects();
 void gfx_end_draw_objects();
 void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
+void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model);

@@ -20,6 +20,7 @@ static struct _Gfx {
 
     struct {
         Shader* object;
+        Shader* object_outline;
         Shader* geometry;
     } shaders;
 } self;
@@ -44,9 +45,20 @@ void _init_shaders() {
     self.shaders.object = shader_create(
         "object.vert", "object.frag"
     );
+    self.shaders.object_outline = shader_create(
+        "object.vert", "object_outline.frag"
+    );
     self.shaders.geometry = shader_create(
         "geometry.vert", "geometry.frag"
     );
+}
+
+
+static inline
+void _destroy_shaders() {
+    free(self.shaders.object);
+    free(self.shaders.object_outline);
+    free(self.shaders.geometry);
 }
 
 
@@ -65,7 +77,7 @@ void gfx_init() {
 
 
 void gfx_destroy() {
-    free(self.shaders.object);
+    _destroy_shaders();
     glfwDestroyWindow(self.window);
     glfwTerminate();
 }
@@ -261,6 +273,11 @@ void gfx_update_camera(mat4 m_persp, mat4 m_view) {
     shader_use(self.shaders.object);
     uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
     uniform_set_mat4(self.shaders.object, "m_view", m_view);
+    
+    shader_use(self.shaders.object_outline);
+    uniform_set_mat4(self.shaders.object_outline, "m_persp", m_persp);
+    uniform_set_mat4(self.shaders.object_outline, "m_view", m_view);
+
     shader_use(NULL);
 }
 
@@ -293,4 +310,40 @@ void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
     glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glClear(GL_STENCIL_BUFFER_BIT);
+
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
+
+    gfx_draw_object(mesh, texture, m_model);
+    
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x00);
+
+    mat4 m_model_outline;
+    glm_mat4_copy(m_model, m_model_outline);
+    glm_scale(m_model_outline, (vec3){1.01, 1.01, 1.01});
+    
+    shader_use(self.shaders.object_outline);
+    //
+    uniform_set_mat4(self.shaders.object_outline, "m_model", m_model_outline);
+    
+    glBindVertexArray(mesh->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+    
+    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
+    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
+    //
+    
+    shader_use(self.shaders.object);
+
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
 }

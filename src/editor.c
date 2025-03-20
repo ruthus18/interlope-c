@@ -128,6 +128,7 @@ void _draw_scene_panel() {
         if (nk_select_label(self.ctx, object_get_base_id(obj), NK_TEXT_LEFT, select_cond)) {
             if (self.selected_obj_id != i) {
                 self.selected_obj_id = i;
+                scene_set_selected_object(self.scene, obj);
                 _update_objpan_data();
             }
         }

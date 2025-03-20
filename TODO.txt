@@ -1,14 +1,8 @@
--- Main Goal --
-
-
 -- Tasks --
 
+  * Basic physics
 
--- Future --
 
-* Upgrade build system
-* Canvas shader (GUI, editor, other 2D stuff)
-* Memory management
-* Hashmap world storage
-* Editor shader
-* Improve docstrings and docs management (check linux kernel src + sphinx)
+-- Fixes --
+
+  * Incorrect outlining if the origin of model not in the center

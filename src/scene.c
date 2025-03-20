@@ -301,12 +301,15 @@ constexpr u64 _MAX_SCENE_OBJECTS = 1024;
 typedef struct Scene {
     Object objects[_MAX_SCENE_OBJECTS];
     u64 objects_count;
+
+    Object* selected_object;
 } Scene;
 
 
 Scene* scene_create() {
     Scene* scene = malloc(sizeof(Scene));
     scene->objects_count = 0;
+    scene->selected_object = NULL;
     return scene;
 }
 
@@ -372,18 +375,18 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
     FILE* fp;
     char errbuf[200];
 
-    toml_table_t* scene;
+    toml_table_t* toml_scene;
     u64 scene_size;
 
     fp = fopen(toml_path, "r");
     if (!fp)  log_exit("Unable to read file: %s", toml_path);
 
-    scene = toml_parse_file(fp, errbuf, sizeof(errbuf));
+    toml_scene = toml_parse_file(fp, errbuf, sizeof(errbuf));
     fclose(fp);
 
-    if (!scene)  log_exit("Cannot parse TOML struct in: %s", toml_path);
+    if (!toml_scene)  log_exit("Cannot parse TOML struct in: %s", toml_path);
 
-    toml_array_t* objects = toml_array_in(scene, "obj");
+    toml_array_t* objects = toml_array_in(toml_scene, "obj");
 
     if (!objects) log_exit("Invalid scene file: no objects found");
 
@@ -401,7 +404,7 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
     vec3 pos;
     vec3 rot;
 
-    Scene* out_scene = scene_create();
+    Scene* scene = scene_create();
 
     for (int i = 0; i < scene_size; i++) {
         toml_table_t* obj_record = toml_table_at(objects, i);
@@ -443,28 +446,16 @@ Scene* scene_create_from(const char* toml_path, ObjectsDB* objdb) {
         if (objbase == NULL)
             log_exit("Unknown object reference: %s", obj_id);
 
-        scene_add_object(out_scene, objbase, pos, rot, NULL);
+        scene_add_object(scene, objbase, pos, rot, NULL);
     }
     
     /* ------ Cleanup ------ */
     log_info("Scene size: %i", scene_size);
 
-    toml_free(scene);
-    return out_scene;
-}
+    // scene->selected_object = &scene->objects[scene_size-1];
 
-
-void scene_draw(Scene* scene) {
-    gfx_begin_draw_objects();
-
-    for (int i = 0; i < scene->objects_count; i++) {
-        Object* obj = &scene->objects[i];
-
-        for (int j = 0; j < obj->slots_count; j++) {
-            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j]);
-        }
-    }
-    gfx_end_draw_objects();
+    toml_free(toml_scene);
+    return scene;
 }
 
 
@@ -484,4 +475,29 @@ Object* scene_find_object(Scene* scene, const char* base_id) {
         }
     }
     return NULL;
+}
+
+
+void scene_set_selected_object(Scene* scene, Object* obj) {
+    scene->selected_object = obj;
+}
+
+
+void scene_draw(Scene* scene) {
+    gfx_begin_draw_objects();
+
+    for (int i = 0; i < scene->objects_count; i++) {
+        Object* obj = &scene->objects[i];
+
+        for (int j = 0; j < obj->slots_count; j++) {
+
+            if (obj != scene->selected_object) {
+                gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j]);
+            }
+            else {
+                gfx_draw_object_outlined(obj->meshes[j], obj->textures[j], obj->m_models[j]);
+            }
+        }
+    }
+    gfx_end_draw_objects();
 }
