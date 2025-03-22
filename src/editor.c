@@ -148,6 +148,11 @@ void _draw_object_panel() {
     nk_layout_row(self.ctx, NK_STATIC, 10, 2, (float[]){70, 190});
     nk_label(self.ctx, "Base ID: ", NK_TEXT_LEFT);
     nk_label(self.ctx, object_get_base_id(selected_obj), NK_TEXT_LEFT);
+
+    /* ------ Type ------ */
+    nk_layout_row(self.ctx, NK_STATIC, 10, 2, (float[]){70, 190});
+    nk_label(self.ctx, "Type: ", NK_TEXT_LEFT);
+    nk_label(self.ctx, object_get_type_string(selected_obj), NK_TEXT_LEFT);
     
     // Empty row
     nk_layout_row_static(self.ctx, 10, 275, 1);

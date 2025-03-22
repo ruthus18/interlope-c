@@ -17,6 +17,7 @@ void objdb_destroy(ObjectsDB*);
 typedef struct Object Object;
 
 const char* object_get_base_id(Object*);
+const char* object_get_type_string(Object*);
 void object_get_position(Object*, vec3);
 void object_get_rotation(Object*, vec3);
 void object_set_position(Object*, vec3);

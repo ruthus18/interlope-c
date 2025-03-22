@@ -11,8 +11,7 @@ time gcc \
     -std="c23" \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
-    -lm -lGL -lGLEW -lglfw \
-    -lcglm \
+    -lm -lGL -lGLEW -lglfw -lcglm -lode \
     -o interlope\
     \
     ${SRC}/platform/file.c \
@@ -29,6 +28,7 @@ time gcc \
     ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/model.c \
+    ${SRC}/physics.c \
     ${SRC}/scene.c \
     ${SRC}/texture.c \
     \

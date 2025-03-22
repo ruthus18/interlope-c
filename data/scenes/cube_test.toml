@@ -1,0 +1,20 @@
+
+[[obj]]
+    id = "floor_ceiling"
+    pos = [-2.0, 0.0, -2.0]
+
+[[obj]]
+    id = "floor_ceiling"
+    pos = [-2.0, 0.0, 2.0]
+
+[[obj]]
+    id = "floor_ceiling"
+    pos = [2.0, 0.0, -2.0]
+
+[[obj]]
+    id = "floor_ceiling"
+    pos = [2.0, 0.0, 2.0]
+
+[[obj]]
+    id = "box"
+    pos = [0.0, 10.0, 0.0]

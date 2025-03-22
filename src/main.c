@@ -1,12 +1,15 @@
 #include "camera.h"
+#include "cglm/io.h"
 #include "config.h"
 #include "gfx.h"
 #include "editor.h"
 #include "input_keys.h"
+#include "physics.h"
 #include "scene.h"
 #include "platform/input.h"
 #include "platform/time.h"
 #include "platform/window.h"
+#include <stdlib.h>
 
 
 static void game_on_init();
@@ -18,6 +21,7 @@ int main() {
     window_init();
     gfx_init();
     input_init();
+    physics_init();
 
     game_on_init();
 
@@ -25,6 +29,7 @@ int main() {
         window_poll_events();
         time_update();
         input_update();
+        physics_update();
 
         game_on_update();
 
@@ -33,6 +38,7 @@ int main() {
     }
     game_on_destroy();
 
+    physics_destroy();
     gfx_destroy();
     window_destroy();
     return EXIT_SUCCESS;
@@ -49,24 +55,33 @@ bool is_editor_visible = false;
 bool is_cursor_visible = false;
 
 
-Object* door;
+// Object* door;
+Object* box;
 
 
 static
 void game_on_init() {
+    cursor_set_visible(is_cursor_visible);
+
     cam = camera_create();
-    camera_set_position(cam, (vec3){1.25, 1.7, 1.25});
-    camera_set_rotation(cam, 0.0, 0.0);
+    camera_set_position(cam, (vec3){3.5, 1.7, 3.5});
+    camera_set_rotation(cam, -135.0, 0.0);
 
     objdb = objdb_create_from("data/objects.toml");
-    scene = scene_create_from("data/scenes/sovsh_demo.toml", objdb);
+    scene = scene_create_from("data/scenes/cube_test.toml", objdb);
 
     editor_init();
     editor_set_scene(scene);
 
-    door = scene_find_object(scene, "sovsh_door_herm01");
+    physics_create_ground();
 
-    cursor_set_visible(is_cursor_visible);
+    // door = scene_find_object(scene, "sovsh_door_herm01");
+    box = scene_find_object(scene, "box");
+
+    vec3 box_pos;
+    object_get_position(box, box_pos);
+
+    physics_create_cube(box_pos, (vec3){1.0, 1.0, 1.0}, 1.0);
 }
 
 
@@ -91,7 +106,7 @@ void _rotate_door() {
     if (rot_angle <= -150.0)    rot_dir = true;
     else if (rot_angle >= 0.0)  rot_dir = false;
 
-    object_set_subm_rotation(door, (vec3){0.0, rot_angle, 0.0}, 0);
+    // object_set_subm_rotation(door, (vec3){0.0, rot_angle, 0.0}, 0);
 }
 
 
@@ -123,6 +138,10 @@ void game_on_update() {
     }
 
     _rotate_door();
+
+    vec3 cube_pos;
+    physics_get_cube_position(cube_pos);
+    object_set_position(box, cube_pos);
 
     camera_upload_to_gfx(cam);
     scene_draw(scene);

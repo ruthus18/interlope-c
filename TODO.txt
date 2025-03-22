@@ -6,3 +6,4 @@
 -- Fixes --
 
   * Incorrect outlining if the origin of model not in the center
+  * Check that mesh is triangulated before loading

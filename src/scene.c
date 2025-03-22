@@ -19,16 +19,25 @@
 /*      Object Base                                                          */
 /* ------------------------------------------------------------------------- */
 
+typedef enum ObjectType {
+    ObjectType_UNKNOWN,
+    ObjectType_RIGID_BODY,
+} ObjectType;
+
+
 typedef struct ObjectBase {
     char id[64];
+
     GfxMesh** meshes;
     u64 meshes_count;
-    vec3* local_positions;
-    vec3* local_rotations;
-    char** names;
-
     GfxTexture** textures;
     u64 textures_count;
+
+    char** names;
+    vec3* local_positions;
+    vec3* local_rotations;
+
+    ObjectType type;
 
     Model* __model;
 } ObjectBase;
@@ -130,6 +139,7 @@ ObjectsDB* objdb_create_from(const char* toml_path) {
     toml_datum_t _model_path;
     toml_datum_t _texture_path;
     toml_array_t* _texture_paths;
+    toml_datum_t _obj_type;
 
     ObjectsDB* out_db = malloc(sizeof(ObjectsDB));
     out_db->objects_count = 0;
@@ -149,7 +159,7 @@ ObjectsDB* objdb_create_from(const char* toml_path) {
         
         /* --- "texture" and "textures" kwargs --- */
         const char* texture_paths[8] = {NULL};
-
+        
         _texture_path = toml_string_in(obj_record, "texture");
         _texture_paths = toml_array_in(obj_record, "textures");
 
@@ -168,11 +178,22 @@ ObjectsDB* objdb_create_from(const char* toml_path) {
         else
             log_exit("Error while parsing object [%s]: `texture` or `textures` kwargs not set", obj_id);
 
+        /* --- "type" kwarg --- */
+        ObjectType obj_type;
+
+        _obj_type = toml_string_in(obj_record, "type");
+        if (!_obj_type.ok) 
+            obj_type = ObjectType_UNKNOWN;
+
+        else if (strcmp(_obj_type.u.s, "RIGID_BODY") == 0)
+            obj_type = ObjectType_RIGID_BODY;
+
         /* --- Create and load object in `ObjectsDB` */
 
         out_db->objects[i] = objbase_create(obj_id);
         out_db->objects_count++;
-        
+
+        out_db->objects[i].type = obj_type;
         objbase_load_meshes(&out_db->objects[i], model_path);
 
         for (int j = 0; ; j++) {
@@ -238,11 +259,24 @@ typedef struct Object {
     vec3* local_positions;
     vec3* local_rotations;
     mat4* m_models;
+
+    ObjectType type;
 } Object;
 
 
 const char* object_get_base_id(Object* obj) {
     return (const char*) obj->base_id;
+}
+
+const char* object_get_type_string(Object* obj) {
+    if (obj->type == ObjectType_UNKNOWN)
+        return "UNKNOWN";
+
+    if (obj->type == ObjectType_RIGID_BODY)
+        return "RIGID_BODY";
+
+    log_exit("Unmatched object type: %i", obj->type);
+    return "???";
 }
 
 void object_get_position(Object* obj, vec3 dest) {
@@ -328,6 +362,7 @@ void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec
     
     Object obj = {
         .base_id = objbase->id,
+        .type = objbase->type,
         .meshes = objbase->meshes,
         .textures = objbase->textures,
         .slots_count = objbase->meshes_count,
@@ -343,7 +378,7 @@ void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec
     
     if (sc != NULL)   glm_vec3_copy(     sc, obj.sc);
     else              glm_vec3_copy(VEC3__1, obj.sc);
-    
+
     // TODO: free
     obj.local_positions = malloc(sizeof(vec3) * obj.slots_count);
     obj.local_rotations = malloc(sizeof(vec3) * obj.slots_count);
