@@ -1,8 +1,8 @@
 # VS Code project settings
 /.vscode
 
-# Linux executable
-/interlope
+# Build executables
+/bin
 
 # clangd server config
 /compile_flags.txt

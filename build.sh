@@ -11,8 +11,9 @@ time gcc \
     -std="c23" \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
+    -Wl,-rpath=${VENDOR} \
     -lm -lGL -lGLEW -lglfw -lcglm -lode \
-    -o interlope\
+    -o ${BIN}/interlope\
     \
     ${SRC}/platform/file.c \
     ${SRC}/platform/input.c \
