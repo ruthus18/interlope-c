@@ -268,6 +268,7 @@ const char* object_get_base_id(Object* obj) {
     return (const char*) obj->base_id;
 }
 
+
 const char* object_get_type_string(Object* obj) {
     if (obj->type == ObjectType_UNKNOWN)
         return "UNKNOWN";
@@ -279,36 +280,40 @@ const char* object_get_type_string(Object* obj) {
     return "???";
 }
 
+
 void object_get_position(Object* obj, vec3 dest) {
     glm_vec3_copy(obj->pos, dest);
 }
+
 
 void object_get_rotation(Object* obj, vec3 dest) {
     glm_vec3_copy(obj->rot, dest);
 }
 
 
-// TODO: refactoring
-void object_set_position(Object* obj, vec3 new_pos) {
-    glm_vec3_copy(new_pos, obj->pos);
-    
+void object_update_model_mat(Object* obj) {
+    vec3 result_pos;
+    vec3 result_rot;
+
     for (int i = 0; i < obj->slots_count; i++) {
-        vec3 result_pos;
         glm_vec3_sub(obj->pos, obj->local_positions[i], result_pos);
-        cgm_model_mat(result_pos, obj->local_rotations[i], obj->sc, obj->m_models[i]);
+        glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
+        cgm_model_mat(result_pos, result_rot, obj->sc, obj->m_models[i]);
     }
 }
 
-// TODO: refactoring
+
+void object_set_position(Object* obj, vec3 new_pos) {
+    glm_vec3_copy(new_pos, obj->pos);
+    object_update_model_mat(obj);
+}
+
+
 void object_set_rotation(Object* obj, vec3 new_rot) {
     glm_vec3_copy(new_rot, obj->rot);
-    
-    for (int i = 0; i < obj->slots_count; i++) {
-        vec3 result_rot;
-        glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
-        cgm_model_mat(obj->local_positions[i], result_rot, obj->sc, obj->m_models[i]);
-    }
+    object_update_model_mat(obj);
 }
+
 
 // TODO: refactoring
 void object_set_subm_rotation(Object* obj, vec3 new_rot, u32 slot_idx) {

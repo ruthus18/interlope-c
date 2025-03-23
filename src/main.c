@@ -78,10 +78,11 @@ void game_on_init() {
     // door = scene_find_object(scene, "sovsh_door_herm01");
     box = scene_find_object(scene, "box");
 
-    vec3 box_pos;
+    vec3 box_pos, box_rot;
     object_get_position(box, box_pos);
+    object_get_rotation(box, box_rot);
 
-    physics_create_cube(box_pos, (vec3){1.0, 1.0, 1.0}, 1.0);
+    physics_create_cube(box_pos, box_rot, (vec3){1.0, 1.0, 1.0}, 5.0);
 }
 
 
@@ -139,9 +140,15 @@ void game_on_update() {
 
     _rotate_door();
 
-    vec3 cube_pos;
+    vec3 cube_pos, cube_rot;
     physics_get_cube_position(cube_pos);
     object_set_position(box, cube_pos);
+
+    physics_get_cube_rotation(cube_rot);
+    object_set_rotation(box, cube_rot);
+
+    // glm_vec3_print(cube_pos, stdout);
+    // glm_vec3_print(cube_rot, stdout);
 
     camera_upload_to_gfx(cam);
     scene_draw(scene);

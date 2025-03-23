@@ -22,6 +22,7 @@ void object_get_position(Object*, vec3);
 void object_get_rotation(Object*, vec3);
 void object_set_position(Object*, vec3);
 void object_set_rotation(Object*, vec3);
+void object_set_rotation_mat(Object* obj, mat4 m_rot);
 void object_set_subm_rotation(Object*, vec3, u32 slot_idx);
 
 
