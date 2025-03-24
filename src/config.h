@@ -45,10 +45,3 @@
 #define __DEBUG__LOG_CAMERA_ROTATION false
 #define __DEBUG__LOG_CAMERA_POSITION false
 #define __DEBUG__LOG_CAMERA_POSITION_DELTA false
-
-
-/* ------------------------------------------------------------------------- */
-/* Fancy functions for easy living */
-// TODO: Shouldn't live there
-
-#define len(x) ((sizeof(x)/sizeof(0[x])) / ((u64)(!(sizeof(x) % sizeof(0[x])))))

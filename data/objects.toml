@@ -14,3 +14,4 @@
     model = "ps1/box01.glb"
     texture = "ps1/wooden_crate_02.dds"
     type = "RIGID_BODY"
+    physics = { shape = "BOX", size = [1.0, 1.0, 1.0], mass = 1.0 }

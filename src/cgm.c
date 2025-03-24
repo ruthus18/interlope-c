@@ -40,16 +40,6 @@ void cgm_model_mat(vec3 pos, vec3 rot, vec3 sc, mat4 dest) {
 }
 
 
-// FIXME
-void cgm_model_mat_mrot(vec3 pos, mat4 m_rot, vec3 sc, mat4 dest) {
-    // glm_mat4_identity(dest);
-
-    glm_mat4_mul(dest, m_rot, dest);
-    glm_translate(dest, pos);
-    glm_scale(dest, sc);
-}
-
-
 void cgm_rotation_mat(vec3 rot, mat4 dest) {
     mat4 m_rot_x, m_rot_y, m_rot_z;
 

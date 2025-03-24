@@ -29,6 +29,8 @@ time gcc \
     ${SRC}/log.c \
     ${SRC}/main.c \
     ${SRC}/model.c \
+    ${SRC}/object.c \
+    ${SRC}/objects_db.c \
     ${SRC}/physics.c \
     ${SRC}/scene.c \
     ${SRC}/texture.c \

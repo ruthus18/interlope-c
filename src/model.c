@@ -1,4 +1,3 @@
-#include "cglm/vec3.h"
 #include <string.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
@@ -9,6 +8,8 @@
 #include "platform/file.h"
 
 
+static constexpr u16 MAX_NAME_LEN = 64;
+
 static inline
 Model* model_alloc(u32 slots_count) {
     Model* model = malloc(sizeof(Model) * slots_count);
@@ -18,7 +19,7 @@ Model* model_alloc(u32 slots_count) {
 
     model->names = malloc(sizeof(char*) * slots_count);
     for (int i = 0; i < slots_count; i++) {
-        model->names[i] = malloc(sizeof(char) * 64);
+        model->names[i] = malloc(sizeof(char) * MAX_NAME_LEN);
     }
 
     model->slots_count = slots_count;
@@ -70,7 +71,9 @@ Model* model_read(const char* model_relpath) {
     for (int i = 0; i < data->nodes_count; i++) {
         cgltf_node node = data->nodes[i];
 
-        // TODO: check name length (should be < 64)
+        if (strlen(node.name) > MAX_NAME_LEN) {
+            log_exit("Mesh name has too long name! (>%i): %s", MAX_NAME_LEN, node.name);
+        }
         strcpy(model->names[i], node.name);
 
         if (node.has_translation) {

@@ -11,7 +11,7 @@
 
 constexpr u32 KEYP_STORAGE_SIZE = 8;
 
-static struct _Input {
+static struct Input {
     Window* window;
 
     // Mouse cursor position
@@ -33,7 +33,7 @@ void input_init() {
     self.mouse_dx = 0.0;
     self.mouse_dy = 0.0;
 
-    for (int i = 0; i < len(self.keyp_storage); i++) {
+    for (int i = 0; i < KEYP_STORAGE_SIZE; i++) {
         self.keyp_storage[i] = __KEY_EMPTY;
     }
 }

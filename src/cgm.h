@@ -12,7 +12,6 @@
 void cgm_persp_mat(f32 fov, mat4 dest);
 void cgm_view_mat(vec3 pos, vec3 v_front, mat4 dest);
 void cgm_model_mat(vec3 pos, vec3 rot, vec3 sc, mat4 dest);
-void cgm_model_mat_mrot(vec3 pos, mat4 m_rot, vec3 sc, mat4 dest);
 
 void cgm_rotation_mat(vec3 rot, mat4 dest);
 void cgm_front_vec(f64 yaw, f64 pitch, vec3 dest);

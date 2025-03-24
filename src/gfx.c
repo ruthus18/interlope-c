@@ -42,13 +42,13 @@ void _log_startup_info() {
 
 static inline
 void _init_shaders() {
-    self.shaders.object = shader_create(
+    self.shaders.object = gfx_shader_create(
         "object.vert", "object.frag"
     );
-    self.shaders.object_outline = shader_create(
+    self.shaders.object_outline = gfx_shader_create(
         "object.vert", "object_outline.frag"
     );
-    self.shaders.geometry = shader_create(
+    self.shaders.geometry = gfx_shader_create(
         "geometry.vert", "geometry.frag"
     );
 }
@@ -133,7 +133,7 @@ GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_cou
     mesh->ind_count = ind_count;
     mesh->cw = cw;
 
-    shader_use(self.shaders.object);
+    gfx_shader_use(self.shaders.object);
 
     /* -- VAO -- */
     glGenVertexArrays(1, &(mesh->vao));
@@ -174,7 +174,7 @@ GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_cou
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    shader_use(NULL);
+    gfx_shader_use(NULL);
 
     // log_success("Mesh loaded: %s", name);
     return mesh;
@@ -189,7 +189,7 @@ void gfx_mesh_unload(GfxMesh* mesh){
 GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
 
-    shader_use(self.shaders.object);
+    gfx_shader_use(self.shaders.object);
     glGenTextures(1, &(texture->id));
     glBindTexture(GL_TEXTURE_2D, texture->id);
 
@@ -201,7 +201,7 @@ GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
     glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0, gl_format, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    shader_use(NULL);
+    gfx_shader_use(NULL);
     return texture;
 }
 
@@ -209,7 +209,7 @@ GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
 GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
 
-    shader_use(self.shaders.object);
+    gfx_shader_use(self.shaders.object);
     glGenTextures(1, &(texture->id));
     glBindTexture(GL_TEXTURE_2D, texture->id);
 
@@ -242,7 +242,7 @@ GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format,
     }
 
     // log_success("Texture loaded: %s", texture_relpath);
-    shader_use(NULL);
+    gfx_shader_use(NULL);
     return texture;
 }
 
@@ -272,15 +272,15 @@ void gfx_geometry_unload(GfxGeometry* geom) {
 
 
 void gfx_update_camera(mat4 m_persp, mat4 m_view) {
-    shader_use(self.shaders.object);
-    uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
-    uniform_set_mat4(self.shaders.object, "m_view", m_view);
+    gfx_shader_use(self.shaders.object);
+    gfx_uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
+    gfx_uniform_set_mat4(self.shaders.object, "m_view", m_view);
     
-    shader_use(self.shaders.object_outline);
-    uniform_set_mat4(self.shaders.object_outline, "m_persp", m_persp);
-    uniform_set_mat4(self.shaders.object_outline, "m_view", m_view);
+    gfx_shader_use(self.shaders.object_outline);
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_persp", m_persp);
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_view", m_view);
 
-    shader_use(NULL);
+    gfx_shader_use(NULL);
 }
 
 
@@ -290,17 +290,17 @@ void gfx_begin_draw_objects() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    shader_use(self.shaders.object);
+    gfx_shader_use(self.shaders.object);
 }
 
 void gfx_end_draw_objects() {
-    shader_use(NULL);
+    gfx_shader_use(NULL);
 }
 
 
 void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
 
-    uniform_set_mat4(self.shaders.object, "m_model", m_model);
+    gfx_uniform_set_mat4(self.shaders.object, "m_model", m_model);
     
     glBindVertexArray(mesh->vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
@@ -332,9 +332,9 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
     glm_mat4_copy(m_model, m_model_outline);
     glm_scale(m_model_outline, (vec3){1.01, 1.01, 1.01});
     
-    shader_use(self.shaders.object_outline);
+    gfx_shader_use(self.shaders.object_outline);
     //
-    uniform_set_mat4(self.shaders.object_outline, "m_model", m_model_outline);
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_model", m_model_outline);
     
     glBindVertexArray(mesh->vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
@@ -344,7 +344,7 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
     glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
     //
     
-    shader_use(self.shaders.object);
+    gfx_shader_use(self.shaders.object);
 
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);

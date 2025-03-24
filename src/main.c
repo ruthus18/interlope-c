@@ -67,8 +67,8 @@ void game_on_init() {
     camera_set_position(cam, (vec3){3.5, 1.7, 3.5});
     camera_set_rotation(cam, -135.0, 0.0);
 
-    objdb = objdb_create_from("data/objects.toml");
-    scene = scene_create_from("data/scenes/cube_test.toml", objdb);
+    objdb = objdb_read_toml("data/objects.toml");
+    scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
 
     editor_init();
     editor_set_scene(scene);

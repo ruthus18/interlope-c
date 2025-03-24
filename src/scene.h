@@ -1,37 +1,14 @@
 #pragma once
 #include <cglm/cglm.h>
 
+#include "object.h"
+#include "objects_db.h"
 #include "types.h"
 
 
-/* ------ Objects DB ------ */
-
-typedef struct ObjectsDB ObjectsDB;
-
-ObjectsDB* objdb_create_from(const char* toml_path);  // TODO: objdb_load
-void objdb_destroy(ObjectsDB*);
-
-
-/* ------ Object ------ */
-
-typedef struct Object Object;
-
-const char* object_get_base_id(Object*);
-const char* object_get_type_string(Object*);
-void object_get_position(Object*, vec3);
-void object_get_rotation(Object*, vec3);
-void object_set_position(Object*, vec3);
-void object_set_rotation(Object*, vec3);
-void object_set_rotation_mat(Object* obj, mat4 m_rot);
-void object_set_subm_rotation(Object*, vec3, u32 slot_idx);
-
-
-/* ------ Scene ------ */
-
 typedef struct Scene Scene;
 
-// Scene* scene_create();
-Scene* scene_create_from(const char* toml_path, ObjectsDB*);  // TODO: scene_load
+Scene* scene_read_toml(const char* toml_path, ObjectsDB*);
 void scene_destroy(Scene*);
 
 u64 scene_get_objects_count(Scene*);

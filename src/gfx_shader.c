@@ -81,7 +81,7 @@ void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
 }
 
 
-Shader* shader_create(const char* vert_path, const char* frag_path) {
+Shader* gfx_shader_create(const char* vert_path, const char* frag_path) {
     i32 program;
     Shader* shader;
 
@@ -113,12 +113,12 @@ Shader* shader_create(const char* vert_path, const char* frag_path) {
 }
 
 
-void shader_destroy(Shader* shader) {
+void gfx_shader_destroy(Shader* shader) {
     free(shader);
 }
 
 
-void shader_use(Shader* shader) {
+void gfx_shader_use(Shader* shader) {
     glUseProgram((shader != NULL) ? shader->program_id : 0);
 }
 
@@ -126,7 +126,7 @@ void shader_use(Shader* shader) {
 #define __NO_UNIFORM -1
 
 
-void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
+void gfx_uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
@@ -136,7 +136,7 @@ void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
 }
 
 
-void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
+void gfx_uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {

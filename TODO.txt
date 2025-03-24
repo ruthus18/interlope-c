@@ -1,6 +1,8 @@
 -- Tasks --
 
-  * Basic physics
+  * Physics storage for different types - static body, rigid body, collision mesh, rays
+  * Fonts loading
+  * Basic interaction (press E to do something)
 
 
 -- Fixes --

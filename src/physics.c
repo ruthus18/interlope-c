@@ -4,10 +4,8 @@
 #include <cglm/cglm.h>
 
 #include "physics.h"
-#include "cglm/io.h"
-#include "ode/contact.h"
-#include "ode/objects.h"
-#include "ode/rotation.h"
+
+#include "config.h"
 #include "types.h"
 #include "log.h"
 
@@ -15,18 +13,20 @@
 // Documentation: https://ode.org/wiki/index.php/Manual
 
 
-static dWorldID world;
-static dSpaceID space;
-static dJointGroupID contact_group;
-
 static const dReal GRAVITY = -9.81;
-static const dReal TIMESTEP = (1.0 / 60.0);
+static const dReal TIMESTEP = (1.0 / WINDOW_MAX_FRAMERATE);
+
+static struct PhysicsStorage {
+    dWorldID world;
+    dSpaceID space;
+    dJointGroupID contact_group;
+} self;
+
 
 static dGeomID ground_geom;
 
 static dBodyID cube_body;
 static dGeomID cube_geom;
-static const dReal CUBE_SIZE = 0.5; 
 
 
 static
@@ -44,11 +44,11 @@ void physics_init() {
     dSetMessageHandler(custom_message_handler);
     dInitODE();
 
-    world = dWorldCreate();
-    space = dHashSpaceCreate(0);
-    contact_group = dJointGroupCreate(0);
+    self.world = dWorldCreate();
+    self.space = dHashSpaceCreate(0);
+    self.contact_group = dJointGroupCreate(0);
 
-    dWorldSetGravity(world, 0.0, 0.0, GRAVITY);
+    dWorldSetGravity(self.world, 0.0, 0.0, GRAVITY);
 }
 
 
@@ -57,21 +57,21 @@ void physics_destroy() {
     // FIXME cause segfult, need to investigate
     // dBodyDestroy(cube_body);
     
-    dJointGroupDestroy(contact_group);
-    dSpaceDestroy(space);
-    dWorldDestroy(world);
+    dJointGroupDestroy(self.contact_group);
+    dSpaceDestroy(self.space);
+    dWorldDestroy(self.world);
     
     dCloseODE();
 }
 
 
 void physics_create_ground() {
-    ground_geom = dCreatePlane(space, 0, 0, 1, 0);
+    ground_geom = dCreatePlane(self.space, 0, 0, 1, 0);
 }
 
 
 void physics_create_cube(vec3 pos, vec3 rot, vec3 size, f32 mass) {
-    cube_body = dBodyCreate(world);
+    cube_body = dBodyCreate(self.world);
     dBodySetPosition(cube_body, pos[0], -pos[2], pos[1]);
 
     dMatrix3 R;
@@ -87,7 +87,7 @@ void physics_create_cube(vec3 pos, vec3 rot, vec3 size, f32 mass) {
     dMassSetBoxTotal(&mass_, mass, size[0], size[2], size[1]);
     dBodySetMass(cube_body, &mass_);
 
-    cube_geom = dCreateBox(space, size[0], size[2], size[1]);
+    cube_geom = dCreateBox(self.space, size[0], size[2], size[1]);
     dGeomSetBody(cube_geom, cube_body);
 
     dBodySetAutoDisableFlag(cube_body, 1);
@@ -131,14 +131,16 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
         contacts[i].surface.soft_erp = 0.8;
         contacts[i].surface.soft_cfm = 0.005;
 
-        dJointID contact = dJointCreateContact(world, contact_group, &contacts[i]);
+        dJointID contact = dJointCreateContact(
+            self.world, self.contact_group, &contacts[i]
+        );
         dJointAttach(contact, dGeomGetBody(geom1), dGeomGetBody(geom2));
     }
 }
 
 
 void physics_update() {
-    dSpaceCollide(space, 0, collision_callback);
-    dWorldStep(world, TIMESTEP);
-    dJointGroupEmpty(contact_group);
+    dSpaceCollide(self.space, 0, collision_callback);
+    dWorldStep(self.world, TIMESTEP);
+    dJointGroupEmpty(self.contact_group);
 }
