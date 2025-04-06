@@ -4,14 +4,93 @@
 #include "objects_db.h"
 
 #include "log.h"
-#include "object.h"
+#include "model.h"
+#include "texture.h"
 #include "types.h"
+
+
+ObjectRecord objrec_create(
+    const char* id,
+    ObjectType type,
+    const char* model_path,
+    const char** texture_paths
+) {
+    ObjectRecord objrec = {
+        .meshes = NULL,
+        .textures = NULL,
+        .meshes_count = 0,
+        .textures_count = 0,
+        .type = type,
+    };
+    strcpy(objrec.id, id);
+
+    objrec_load_model(&objrec, model_path);
+    for (int j = 0; ; j++) {
+        if (texture_paths[j] == NULL)  break;
+
+        objrec_load_texture(&objrec, texture_paths[j]);
+    }
+
+    if (objrec.meshes_count != objrec.textures_count) {
+        log_error("Unable to load object: meshes_count != textures_count");
+        log_error(
+            "ID: %s, M: %i, T: %i", objrec.id,
+            objrec.meshes_count,
+            objrec.textures_count
+        );
+    }
+
+    return objrec;
+}
+
+void objrec_destroy(ObjectRecord* obj) {
+    if (obj->meshes != NULL) {
+        model_destroy(obj->__model); // FIXME
+    }
+
+    if (obj->textures != NULL) {
+        for (int i = 0; i < obj->textures_count; i++) {
+            gfx_texture_unload(obj->textures[i]);
+        }
+        free(obj->textures);
+    }
+}
+
+
+void objrec_load_model(ObjectRecord* obj, const char* model_path) {
+    Model* model = model_read(model_path);
+    obj->meshes = model->meshes;
+    obj->meshes_count = model->slots_count;
+    obj->local_positions = model->local_positions;
+    obj->local_rotations = model->local_rotations;
+    obj->names = model->names;
+
+    obj->__model = model;
+}
+
+
+constexpr u64 _MAX_OBJECT_TEXTURES = 8;
+
+void objrec_load_texture(ObjectRecord* obj, const char* texture_path) {
+    if (obj->textures == NULL) {
+        obj->textures = malloc(sizeof(GfxTexture*) * _MAX_OBJECT_TEXTURES);
+    }
+    if (obj->textures_count > _MAX_OBJECT_TEXTURES) {
+        log_exit("Max textures per model reached");
+    }
+
+    obj->textures[obj->textures_count] = texture_load_file(texture_path);
+    obj->textures_count++;
+}
+
+
+/* ========================================================================= */
 
 
 constexpr u64 _MAX_OBJECTS_DB_SIZE = 1024;
 
 typedef struct ObjectsDB {
-    ObjectBase objects[_MAX_OBJECTS_DB_SIZE];
+    ObjectRecord objects[_MAX_OBJECTS_DB_SIZE];
     u64 objects_count;
 } ObjectsDB;
 
@@ -63,7 +142,9 @@ ObjectsDB* objdb_read_toml(const char* toml_path) {
         model_path = _model_path.u.s;
         
         /* --- "texture" and "textures" kwargs --- */
-        const char* texture_paths[8] = {NULL};
+
+        // TODO: validate max texture paths
+        const char* texture_paths[_MAX_OBJECT_TEXTURES + 1] = {NULL};
         
         _texture_path = toml_string_in(obj_record, "texture");
         _texture_paths = toml_array_in(obj_record, "textures");
@@ -95,27 +176,8 @@ ObjectsDB* objdb_read_toml(const char* toml_path) {
 
         /* --- Create and load object in `ObjectsDB` */
 
-        out_db->objects[i] = objbase_create(obj_id);
+        out_db->objects[i] = objrec_create(obj_id, obj_type, model_path, texture_paths);
         out_db->objects_count++;
-
-        out_db->objects[i].type = obj_type;
-        objbase_load_meshes(&out_db->objects[i], model_path);
-
-        for (int j = 0; ; j++) {
-            if (texture_paths[j] == NULL)  break;
-
-            objbase_load_texture(&out_db->objects[i], texture_paths[j]);
-        }
-
-        if (out_db->objects[i].meshes_count != out_db->objects[i].textures_count) {
-            log_error("Unable to load object: meshes_count != textures_count");
-            log_error(
-                "ID: %s, M: %i, T: %i",
-                out_db->objects[i].id,
-                out_db->objects[i].meshes_count,
-                out_db->objects[i].textures_count
-            );
-        }
     }
 
     log_info("Objects DB size: %i", out_db->objects_count);
@@ -126,13 +188,13 @@ ObjectsDB* objdb_read_toml(const char* toml_path) {
 
 void objdb_destroy(ObjectsDB* objdb) {
     for (int i = 0; i < objdb->objects_count ; i++) {
-        objbase_destroy(&objdb->objects[i]);
+        objrec_destroy(&objdb->objects[i]);
     }
     free(objdb);
 }
 
 
-ObjectBase* objdb_find(ObjectsDB* objdb, const char* base_id) {
+ObjectRecord* objdb_find(ObjectsDB* objdb, const char* base_id) {
 
     for (int j = 0; j < objdb->objects_count ; j++) {
         // TODO: hashmap

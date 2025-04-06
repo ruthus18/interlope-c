@@ -2,39 +2,8 @@
 #include <cglm/cglm.h>
 
 #include "gfx.h"
-#include "model.h"
+#include "objects_db.h"
 #include "types.h"
-
-
-typedef enum ObjectType {
-    ObjectType_UNKNOWN,
-    ObjectType_RIGID_BODY,
-} ObjectType;
-
-
-/* ObjectDB record */
-typedef struct ObjectBase {
-    char id[64];
-    
-    GfxMesh** meshes;
-    u64 meshes_count;
-    GfxTexture** textures;
-    u64 textures_count;
-    
-    char** names;
-    vec3* local_positions;
-    vec3* local_rotations;
-    
-    ObjectType type;
-    
-    Model* __model;
-} ObjectBase;
-
-
-ObjectBase objbase_create(const char* id);
-void objbase_destroy(ObjectBase* obj);
-void objbase_load_meshes(ObjectBase* obj, const char* meshes_path);
-void objbase_load_texture(ObjectBase* obj, const char* texture_path);
 
 
 /* Scene object instance */
@@ -64,5 +33,4 @@ void object_get_position(Object*, vec3);
 void object_get_rotation(Object*, vec3);
 void object_set_position(Object*, vec3);
 void object_set_rotation(Object*, vec3);
-void object_set_rotation_mat(Object* obj, mat4 m_rot);
 void object_set_subm_rotation(Object*, vec3, u32 slot_idx);

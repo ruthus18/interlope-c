@@ -43,15 +43,15 @@ void scene_destroy(Scene* scene) {
 #define VEC3__1 (vec3){1.0, 1.0, 1.0}
 
 
-void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec3 sc) {
+void scene_add_object(Scene* scene, ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
     assert(scene->objects_count < _MAX_SCENE_OBJECTS);
     
     Object obj = {
-        .base_id = objbase->id,
-        .type = objbase->type,
-        .meshes = objbase->meshes,
-        .textures = objbase->textures,
-        .slots_count = objbase->meshes_count,
+        .base_id = objrec->id,
+        .type = objrec->type,
+        .meshes = objrec->meshes,
+        .textures = objrec->textures,
+        .slots_count = objrec->meshes_count,
         .is_active = true,
         .local_positions = NULL,
         .local_rotations = NULL,
@@ -72,8 +72,8 @@ void scene_add_object(Scene* scene, ObjectBase* objbase, vec3 pos, vec3 rot, vec
     
     // TODO: refactoring
     for (int i = 0; i < obj.slots_count; i++) {
-        glm_vec3_copy(objbase->local_positions[i], obj.local_positions[i]);
-        glm_vec3_copy(objbase->local_rotations[i], obj.local_rotations[i]);
+        glm_vec3_copy(objrec->local_positions[i], obj.local_positions[i]);
+        glm_vec3_copy(objrec->local_rotations[i], obj.local_rotations[i]);
 
         vec3 result_pos;
         glm_vec3_copy(obj.pos, result_pos);
@@ -163,17 +163,15 @@ Scene* scene_read_toml(const char* toml_path, ObjectsDB* objdb) {
 
         /* ------ */
 
-        ObjectBase* objbase = objdb_find(objdb, obj_id);
-        if (objbase == NULL)
+        ObjectRecord* objrec = objdb_find(objdb, obj_id);
+        if (objrec == NULL)
             log_exit("Unknown object reference: %s", obj_id);
 
-        scene_add_object(scene, objbase, pos, rot, NULL);
+        scene_add_object(scene, objrec, pos, rot, NULL);
     }
     
     /* ------ Cleanup ------ */
     log_info("Scene size: %i", scene_size);
-
-    // scene->selected_object = &scene->objects[scene_size-1];
 
     toml_free(toml_scene);
     return scene;

@@ -1,74 +1,9 @@
 #include <cglm/cglm.h>
-#include <string.h>
 
 #include "object.h"
 
 #include "cgm.h"
 #include "log.h"
-#include "model.h"
-#include "texture.h"
-
-
-/* ------------------------------------------------------------------------- */
-/*      Object Base                                                          */
-/* ------------------------------------------------------------------------- */
-
-
-ObjectBase objbase_create(const char* id) {
-    ObjectBase objbase = {
-        .meshes = NULL,
-        .textures = NULL,
-        .meshes_count = 0,
-        .textures_count = 0,
-    };
-    strcpy(objbase.id, id);
-    return objbase;
-}
-
-
-void objbase_load_meshes(ObjectBase* obj, const char* meshes_path) {
-    Model* model = model_read(meshes_path);
-    obj->meshes = model->meshes;
-    obj->meshes_count = model->slots_count;
-    obj->local_positions = model->local_positions;
-    obj->local_rotations = model->local_rotations;
-    obj->names = model->names;
-
-    obj->__model = model;
-}
-
-
-constexpr u64 _MAX_OBJECT_TEXTURES = 8;
-
-void objbase_load_texture(ObjectBase* obj, const char* texture_path) {
-    if (obj->textures == NULL) {
-        obj->textures = malloc(sizeof(GfxTexture*) * _MAX_OBJECT_TEXTURES);
-    }
-    if (obj->textures_count > _MAX_OBJECT_TEXTURES) {
-        log_exit("Max textures per model reached");
-    }
-
-    obj->textures[obj->textures_count] = texture_load_file(texture_path);
-    obj->textures_count++;
-}
-
-void objbase_destroy(ObjectBase* obj) {
-    if (obj->meshes != NULL) {
-        model_destroy(obj->__model); // FIXME
-    }
-
-    if (obj->textures != NULL) {
-        for (int i = 0; i < obj->textures_count; i++) {
-            gfx_texture_unload(obj->textures[i]);
-        }
-        free(obj->textures);
-    }
-}
-
-
-/* ------------------------------------------------------------------------- */
-/*      Object                                                               */
-/* ------------------------------------------------------------------------- */
 
 
 const char* object_get_base_id(Object* obj) {

@@ -248,6 +248,7 @@ GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format,
 
 
 void gfx_texture_unload(GfxTexture* texture) {
+    glDeleteTextures(1, &texture->id);
     free(texture);
 }
 
