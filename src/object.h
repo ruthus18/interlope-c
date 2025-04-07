@@ -27,6 +27,11 @@ typedef struct Object {
 } Object;
 
 
+// Object lifetime management
+Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc);
+void object_destroy(Object* obj);
+
+// Object getters/setters
 const char* object_get_base_id(Object*);
 const char* object_get_type_string(Object*);
 void object_get_position(Object*, vec3);

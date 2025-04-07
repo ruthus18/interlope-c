@@ -13,7 +13,7 @@ A lightweight 3D game engine written in C, featuring modern OpenGL rendering, ph
 - Scene management with TOML-based configuration
 - Built-in editor with object manipulation
 - First-person camera controller
-- Cross-platform support
+- Cross-platform support *(at now primarly supporting Linux, 3rd party libraries and build system should be adjusted for Windows)*
 
 ## Dependencies
 
@@ -26,13 +26,15 @@ A lightweight 3D game engine written in C, featuring modern OpenGL rendering, ph
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/interlope-engine.git
+git clone https://github.com/ruthus18/interlope-c.git
 
 # Build the engine
 ./build.sh
 ```
 
 ## Quick Start
+
+**IMPORTANT:** I cannot share assets due to they non-CC0 licensing, so you should add your own assets to corresponding directory and define they usage in `objects.toml`
 
 1. Run the engine:
 ```bash
@@ -46,12 +48,12 @@ git clone https://github.com/yourusername/interlope-engine.git
 - ESC - Exit
 - ~ - Toggle cursor
 
-## Project Structure
 
+## Project Structure
 ```
-/assets    - Models, textures and fonts
-/data      - Scene and object configurations
-/shaders   - GLSL shader files
+/assets    - Models, textures, fonts, etc.
+/data      - Scene and game objects configurations
+/shaders   - GLSL shaders source
 /src       - Engine source code
 /vendor    - Third-party libraries
 ```
@@ -59,6 +61,7 @@ git clone https://github.com/yourusername/interlope-engine.git
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 ## Acknowledgments
 

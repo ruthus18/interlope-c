@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -46,7 +47,7 @@ void _init_shaders() {
         "object.vert", "object.frag"
     );
     self.shaders.object_outline = gfx_shader_create(
-        "object.vert", "object_outline.frag"
+        "object_outline.vert", "object_outline.frag"
     );
     self.shaders.geometry = gfx_shader_create(
         "geometry.vert", "geometry.frag"
@@ -56,9 +57,9 @@ void _init_shaders() {
 
 static inline
 void _destroy_shaders() {
-    free(self.shaders.object);
-    free(self.shaders.object_outline);
-    free(self.shaders.geometry);
+    gfx_shader_destroy(self.shaders.object);
+    gfx_shader_destroy(self.shaders.object_outline);
+    gfx_shader_destroy(self.shaders.geometry);
 }
 
 
@@ -128,48 +129,61 @@ typedef struct GfxGeometry {
 
 GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
-    mesh->name = name;
+    if (!mesh) {
+        log_error("Failed to allocate memory for GfxMesh");
+        return NULL;
+    }
+
+    mesh->name = strdup(name ? name : "[unnamed_mesh]");
+    if (!mesh->name) {
+        log_error("Failed to duplicate mesh name string");
+        free(mesh);
+        return NULL;
+    }
+
     mesh->vtx_count = vtx_count;
     mesh->ind_count = ind_count;
     mesh->cw = cw;
 
     gfx_shader_use(self.shaders.object);
 
-    /* -- VAO -- */
+    /* ------ VAO ------ */
     glGenVertexArrays(1, &(mesh->vao));
     glBindVertexArray(mesh->vao);
 
-    /* -- VBO -- */
+    /* ------ VBO ------ */
     glGenBuffers(1, &(mesh->vbo));
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float) * vtx_count, vtx_buf, GL_STATIC_DRAW);
 
-    /* -- IBO -- */
+    GLsizeiptr total_buffer_size = 
+        (VEC3_SIZE * vtx_count) + (VEC3_SIZE * vtx_count) + (VEC2_SIZE * vtx_count);
+
+    glBufferData(GL_ARRAY_BUFFER, total_buffer_size, vtx_buf, GL_STATIC_DRAW);
+
+    /* ------ IBO ------ */
     glGenBuffers(1, &(mesh->ibo));
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * ind_count, ind_buf, GL_STATIC_DRAW);
 
-    /* -- Vertex Attributes -- */
-    // Vertex buffer format: (v1, v2, ..., vn1, vn2, ..., vt1, vt2, ...)
-    //
-    // More about formats: https://stackoverflow.com/a/39684775
-    GLintptr v_offset = 0;
-    GLintptr vn_offset = (VEC3_SIZE * vtx_count);
-    GLintptr vt_offset = VEC3_SIZE * vtx_count * 2;
+    /* ------ Vertex Attributes ------ */
+    // Vertex buffer format is planar: (PPP...NNN...TTT...)
+    GLintptr pos_offset = 0;
+    GLintptr norm_offset = VEC3_SIZE * vtx_count;
+    GLintptr uv_offset = (VEC3_SIZE * vtx_count) + (VEC3_SIZE * vtx_count);
 
-    // vtx position
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, VEC3_SIZE, (void*)v_offset);
+    // vtx position (location = 0)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)pos_offset);
     glEnableVertexAttribArray(0);
 
-    // vtx normal
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, VEC3_SIZE, (void*)vn_offset);
+    // vtx normal (location = 1)
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)norm_offset);
     glEnableVertexAttribArray(1);
 
-    // vtx texcoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, VEC2_SIZE, (void*)vt_offset);
+    // vtx texcoord (location = 2)
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)uv_offset);
     glEnableVertexAttribArray(2);
 
-    /* -- Cleanup -- */
+    /* ------ Cleanup ------ */
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -182,12 +196,27 @@ GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_cou
 
 
 void gfx_mesh_unload(GfxMesh* mesh){
+    if (!mesh) return;
+
+    glDeleteVertexArrays(1, &mesh->vao);
+    glDeleteBuffers(1, &mesh->vbo);
+    glDeleteBuffers(1, &mesh->ibo);
+
+    free((void*)mesh->name);
     free(mesh);
 }
 
 
 GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
+    if (!texture) {
+        log_error("Failed to allocate memory for GfxTexture (DDS)");
+        return NULL;
+    }
+    if (!texture) {
+        log_error("Failed to allocate memory for GfxTexture");
+        return NULL;
+    }
 
     gfx_shader_use(self.shaders.object);
     glGenTextures(1, &(texture->id));
@@ -329,13 +358,19 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilMask(0x00);
 
-    mat4 m_model_outline;
-    glm_mat4_copy(m_model, m_model_outline);
-    glm_scale(m_model_outline, (vec3){1.01, 1.01, 1.01});
-    
     gfx_shader_use(self.shaders.object_outline);
-    //
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_model", m_model_outline);
+    
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_model", m_model);
+    
+    // Set the outline thickness - adjust based on mesh size if needed
+    // float outline_thickness = 0.02;
+    // gfx_uniform_set_float(self.shaders.object_outline, "outline_thickness", outline_thickness);
+    
+    // Set both gradient colors
+    // vec3 outline_color1 = {0.8, 0.25, 0.0};
+    // vec3 outline_color2 = {0.0, 0.8, 0.2};
+    // gfx_uniform_set_vec3(self.shaders.object_outline, "outline_color1", outline_color1);
+    // gfx_uniform_set_vec3(self.shaders.object_outline, "outline_color2", outline_color2);
     
     glBindVertexArray(mesh->vao);
     glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
@@ -343,10 +378,10 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
     
     glFrontFace(mesh->cw ? GL_CW : GL_CCW);
     glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
-    //
     
     gfx_shader_use(self.shaders.object);
 
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glDisable(GL_STENCIL_TEST);
 }

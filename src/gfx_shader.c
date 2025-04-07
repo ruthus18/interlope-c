@@ -144,3 +144,13 @@ void gfx_uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     }
     glUniformMatrix4fv(uniform_id, 1, false, (f32*)data);
 }
+
+
+void gfx_uniform_set_float(Shader* shader, const char* name, float value) {
+    i32 uniform_id = glGetUniformLocation(shader->program_id, name);
+
+    if (uniform_id == __NO_UNIFORM) {
+        log_exit("Not found shader uniform: %s", name);
+    }
+    glUniform1f(uniform_id, value);
+}

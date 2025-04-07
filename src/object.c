@@ -1,9 +1,91 @@
 #include <cglm/cglm.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "object.h"
 
 #include "cgm.h"
 #include "log.h"
+#include "types.h"
+
+
+Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
+    Object* obj = malloc(sizeof(Object));
+    if (obj == NULL) {
+        log_exit("Failed to allocate memory for Object (ID: %s)", objrec->id);
+    }
+    
+    // Initialize the object with values from the ObjectRecord
+    obj->base_id = objrec->id;
+    obj->type = objrec->type;
+    obj->meshes = objrec->meshes;
+    obj->textures = objrec->textures;
+    obj->slots_count = objrec->meshes_count;
+    obj->is_active = true;
+    obj->local_positions = NULL;
+    obj->local_rotations = NULL;
+    obj->m_models = NULL;
+    
+    // Set position, rotation, and scale with defaults if NULL
+    if (pos != NULL)  glm_vec3_copy(    pos, obj->pos);
+    else              glm_vec3_copy(VEC3__0, obj->pos);
+    
+    if (rot != NULL)  glm_vec3_copy(    rot, obj->rot);
+    else              glm_vec3_copy(VEC3__0, obj->rot);
+    
+    if (sc != NULL)   glm_vec3_copy(     sc, obj->sc);
+    else              glm_vec3_copy(VEC3__1, obj->sc);
+
+    // Allocate memory for local positions, rotations, and model matrices
+    obj->local_positions = malloc(sizeof(vec3) * obj->slots_count);
+    if (obj->local_positions == NULL) {
+        free(obj);
+        log_exit("Failed to allocate memory for object local_positions (ID: %s)", obj->base_id);
+    }
+    
+    obj->local_rotations = malloc(sizeof(vec3) * obj->slots_count);
+    if (obj->local_rotations == NULL) {
+        free(obj->local_positions);
+        free(obj);
+        log_exit("Failed to allocate memory for object local_rotations (ID: %s)", obj->base_id);
+    }
+    
+    obj->m_models = malloc(sizeof(mat4) * obj->slots_count);
+    if (obj->m_models == NULL) {
+        free(obj->local_positions);
+        free(obj->local_rotations);
+        free(obj);
+        log_exit("Failed to allocate memory for object m_models (ID: %s)", obj->base_id);
+    }
+    
+    // Initialize the local positions and rotations
+    for (int i = 0; i < obj->slots_count; i++) {
+        glm_vec3_copy(objrec->local_positions[i], obj->local_positions[i]);
+        glm_vec3_copy(objrec->local_rotations[i], obj->local_rotations[i]);
+
+        vec3 result_pos;
+        glm_vec3_copy(obj->pos, result_pos);
+        glm_vec3_sub(obj->pos, obj->local_positions[i], result_pos);
+        
+        vec3 result_rot;
+        glm_vec3_copy(obj->rot, result_rot);
+        glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
+
+        cgm_model_mat(result_pos, result_rot, obj->sc, obj->m_models[i]);
+    }
+    
+    return obj;
+}
+
+
+void object_destroy(Object* obj) {
+    if (obj == NULL)  return;
+    
+    free(obj->local_positions);
+    free(obj->local_rotations);
+    free(obj->m_models);
+    free(obj);
+}
 
 
 const char* object_get_base_id(Object* obj) {

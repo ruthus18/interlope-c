@@ -13,3 +13,4 @@ void gfx_shader_use(Shader*);
 
 void gfx_uniform_set_vec3(Shader*, const char* name, vec3 data);
 void gfx_uniform_set_mat4(Shader*, const char* name, mat4 data);
+void gfx_uniform_set_float(Shader*, const char* name, float value);

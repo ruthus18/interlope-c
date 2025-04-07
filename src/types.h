@@ -29,3 +29,7 @@ STATIC_ASSERT(sizeof(i64) == 8);
 
 STATIC_ASSERT(sizeof(f32) == 4);
 STATIC_ASSERT(sizeof(f64) == 8);
+
+
+#define VEC3__0 (vec3){0.0, 0.0, 0.0}
+#define VEC3__1 (vec3){1.0, 1.0, 1.0}
