@@ -13,7 +13,8 @@ ObjectRecord objrec_create(
     const char* id,
     ObjectType type,
     const char* model_path,
-    const char** texture_paths
+    const char** texture_paths,
+    const PhysicsProperties* physics
 ) {
     ObjectRecord objrec = {
         .meshes = NULL,
@@ -21,7 +22,18 @@ ObjectRecord objrec_create(
         .meshes_count = 0,
         .textures_count = 0,
         .type = type,
+        .physics = {
+            .has_physics = false,
+            .mass = 0.0f,
+            .collision_size = {1.0f, 1.0f, 1.0f},
+            .collision_type = "box"
+        },
     };
+
+    // Copy physics properties if provided
+    if (physics != NULL) {
+        objrec.physics = *physics;
+    }
 
     strncpy(objrec.id, id, sizeof(objrec.id) - 1);
     objrec.id[sizeof(objrec.id) - 1] = '\0';

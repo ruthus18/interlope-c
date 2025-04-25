@@ -77,12 +77,8 @@ void _init_physics_scene() {
     objdb = objdb_load_toml("data/objects.toml");
     scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
 
+    // Get a reference to the box object
     box = scene_find_object(scene, "box");
-
-    object_get_position(box, box_pos);
-    object_get_rotation(box, box_rot);
-
-    physics_create_object(PHYSICS_BODY_BOX, box_pos, box_rot, (vec3){1.0, 1.0, 1.0}, 5.0);
 }
 
 

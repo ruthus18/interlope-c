@@ -24,6 +24,9 @@ typedef struct Object {
     mat4* m_models;
 
     ObjectType type;
+    
+    // Physics runtime data (ID of the physics body, 0 if no physics)
+    u32 physics_id;
 } Object;
 
 

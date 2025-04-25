@@ -89,6 +89,54 @@ static ObjectType parse_object_type(toml_table_t* obj_record, char** obj_type_st
     return obj_type;
 }
 
+static void parse_physics_properties(toml_table_t* obj_record, PhysicsProperties* physics) {
+    // Initialize with default values
+    physics->has_physics = false;
+    physics->mass = 0.0f;
+    glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, physics->collision_size);
+    strcpy(physics->collision_type, "box");
+    
+    // Check if physics property exists (in current format, it's an inline table)
+    toml_table_t* physics_table = toml_table_in(obj_record, "physics");
+    
+    if (!physics_table) {
+        return; // No physics properties defined
+    }
+    
+    // Mark as having physics
+    physics->has_physics = true;
+    
+    // Parse shape/collision type (current format uses "shape")
+    toml_datum_t _shape = toml_string_in(physics_table, "shape");
+    if (_shape.ok) {
+        strncpy(physics->collision_type, _shape.u.s, sizeof(physics->collision_type) - 1);
+        physics->collision_type[sizeof(physics->collision_type) - 1] = '\0';
+        free(_shape.u.s);
+    }
+    
+    // Parse mass
+    toml_datum_t _mass = toml_double_in(physics_table, "mass");
+    if (_mass.ok) {
+        physics->mass = (float)_mass.u.d;
+    }
+    
+    // Parse size
+    toml_array_t* _size = toml_array_in(physics_table, "size");
+    if (_size) {
+        if (toml_array_nelem(_size) >= 3) {
+            toml_datum_t x = toml_double_at(_size, 0);
+            toml_datum_t y = toml_double_at(_size, 1);
+            toml_datum_t z = toml_double_at(_size, 2);
+            
+            if (x.ok && y.ok && z.ok) {
+                physics->collision_size[0] = (float)x.u.d;
+                physics->collision_size[1] = (float)y.u.d;
+                physics->collision_size[2] = (float)z.u.d;
+            }
+        }
+    }
+}
+
 static void free_allocated_resources(
     const char* model_path,
     const char* texture_paths[],
@@ -143,8 +191,12 @@ static void process_object_record(
     char* obj_type_str = NULL; // Store pointer to free later
     ObjectType obj_type = parse_object_type(obj_record, &obj_type_str);
     
+    // Parse physics properties
+    PhysicsProperties physics;
+    parse_physics_properties(obj_record, &physics);
+    
     // Create and add the object to the database
-    out_db->objects[index] = objrec_create(obj_id, obj_type, model_path, texture_paths);
+    out_db->objects[index] = objrec_create(obj_id, obj_type, model_path, texture_paths, &physics);
     out_db->objects_count++;
     
     // Free allocated resources

@@ -13,6 +13,13 @@ typedef enum ObjectType {
 } ObjectType;
 
 
+typedef struct PhysicsProperties {
+    bool has_physics;           // Whether this object has physics enabled
+    float mass;                 // Mass in kg (0 for static objects)
+    vec3 collision_size;        // Size of the collision box/sphere
+    char collision_type[32];    // "box", "sphere", etc.
+} PhysicsProperties;
+
 typedef struct ObjectRecord {
     char id[64];
     
@@ -26,6 +33,7 @@ typedef struct ObjectRecord {
     vec3* local_rotations;
     
     ObjectType type;
+    PhysicsProperties physics;  // Physics properties
     
     Model* __model;
 } ObjectRecord;
@@ -35,7 +43,8 @@ ObjectRecord objrec_create(
     const char* id,
     ObjectType type,
     const char* model_path,
-    const char** texture_paths
+    const char** texture_paths,
+    const PhysicsProperties* physics
 );
 void objrec_destroy(ObjectRecord* obj);
 void objrec_load_model(ObjectRecord* obj, const char* model_path);

@@ -1,11 +1,13 @@
 #include <cglm/cglm.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h> // For strcasecmp
 
 #include "object.h"
 
 #include "cgm.h"
 #include "log.h"
+#include "physics.h"
 #include "types.h"
 
 
@@ -35,6 +37,24 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
     
     if (sc != NULL)   glm_vec3_copy(     sc, obj->sc);
     else              glm_vec3_copy(VEC3__1, obj->sc);
+    
+    obj->physics_id = 0; // Default to no physics
+    
+    if (objrec->physics.has_physics) {
+        PhysicsBodyType body_type = PHYSICS_BODY_BOX;
+        
+        if (strcasecmp(objrec->physics.collision_type, "BOX") == 0) {
+            body_type = PHYSICS_BODY_BOX;
+        }
+        
+        obj->physics_id = physics_create_object(
+            body_type,
+            obj->pos,
+            obj->rot,
+            objrec->physics.collision_size,
+            objrec->physics.mass
+        );
+    }
 
     // Allocate memory for local positions, rotations, and model matrices
     obj->local_positions = malloc(sizeof(vec3) * obj->slots_count);
@@ -80,6 +100,11 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
 
 void object_destroy(Object* obj) {
     if (obj == NULL)  return;
+    
+    // Clean up physics resources if assigned
+    if (obj->physics_id != 0) {
+        physics_remove_object(obj->physics_id);
+    }
     
     free(obj->local_positions);
     free(obj->local_rotations);
