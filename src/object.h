@@ -2,7 +2,7 @@
 #include <cglm/cglm.h>
 
 #include "gfx.h"
-#include "objects_db.h"
+#include "objdb.h"
 #include "types.h"
 
 

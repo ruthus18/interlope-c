@@ -30,9 +30,11 @@ time gcc \
     ${SRC}/main.c \
     ${SRC}/model.c \
     ${SRC}/object.c \
-    ${SRC}/objects_db.c \
+    ${SRC}/objdb.c \
+    ${SRC}/objdb_loader.c \
     ${SRC}/physics.c \
     ${SRC}/scene.c \
+    ${SRC}/scene_loader.c \
     ${SRC}/texture.c \
     \
     ${VENDOR}/src/toml.c \

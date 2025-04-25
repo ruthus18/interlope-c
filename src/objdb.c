@@ -1,7 +1,7 @@
 #include <string.h>
 #include <toml.h>
 
-#include "objects_db.h"
+#include "objdb.h"
 
 #include "log.h"
 #include "model.h"
@@ -117,7 +117,6 @@ void objdb_destroy(ObjectsDB* objdb) {
 
 
 ObjectRecord* objdb_find(ObjectsDB* objdb, const char* base_id) {
-
     for (int j = 0; j < objdb->objects_count ; j++) {
         // TODO: hashmap
         if (strcmp(objdb->objects[j].id, base_id) == 0) {
