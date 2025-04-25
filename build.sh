@@ -8,7 +8,7 @@ VENDOR=vendor
 echo "[build.sh] Compiling Engine..."
 
 time gcc \
-    -std="c23" \
+    -std="c23" -g \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
     -Wl,-rpath=${VENDOR} \

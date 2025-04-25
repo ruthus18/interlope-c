@@ -38,11 +38,7 @@ static struct PhysicsStorage {
 } self;
 
 
-static dGeomID ground_geom;
-
-// Legacy references for backwards compatibility
-static dBodyID cube_body;
-static dGeomID cube_geom;
+static dGeomID ground_geom = NULL;
 
 
 static
@@ -100,26 +96,28 @@ void physics_init() {
 
 
 void physics_destroy() {
-    // Clean up all physics objects
+    // Destroy all physics objects first
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
         if (self.objects[i].in_use) {
             if (self.objects[i].geom) {
                 dGeomDestroy(self.objects[i].geom);
+                self.objects[i].geom = NULL;
             }
-            // Note: we're keeping the FIXME comment about body destruction
-            // that was in the original code
-            /*
-            // FIXME cause segfault, need to investigate
+            
             if (self.objects[i].body) {
+                // Properly detach body before destroying
+                dBodyDisable(self.objects[i].body);
+                dBodySetData(self.objects[i].body, NULL);
                 dBodyDestroy(self.objects[i].body);
+                self.objects[i].body = NULL;
             }
-            */
         }
     }
     
-    // Legacy cube cleanup if it exists
-    if (cube_geom) {
-        dGeomDestroy(cube_geom);
+    // Destroy ground plane if it exists
+    if (ground_geom) {
+        dGeomDestroy(ground_geom);
+        ground_geom = NULL;
     }
     
     dJointGroupDestroy(self.contact_group);
@@ -209,12 +207,12 @@ bool physics_remove_object(PhysicsObjectID id) {
         dGeomDestroy(obj->geom);
     }
     
-    /*
-    // FIXME: Same issue as mentioned in physics_destroy
     if (obj->body) {
+        // Properly detach body before destroying
+        dBodyDisable(obj->body);
+        dBodySetData(obj->body, NULL);
         dBodyDestroy(obj->body);
     }
-    */
     
     // Mark as unused
     obj->in_use = false;
@@ -269,43 +267,6 @@ bool physics_apply_force(PhysicsObjectID id, vec3 force) {
 }
 
 
-// Legacy function implementation using the new system
-void physics_create_cube(vec3 pos, vec3 rot, vec3 size, f32 mass) {
-    PhysicsObjectID id = physics_create_object(PHYSICS_BODY_BOX, pos, rot, size, mass);
-    
-    // Store references for backwards compatibility
-    if (id != INVALID_PHYSICS_ID) {
-        PhysicsObject* obj = find_physics_object(id);
-        cube_body = obj->body;
-        cube_geom = obj->geom;
-    }
-}
-
-
-// Legacy getter function implementations using the new system
-void physics_get_cube_position(vec3 dest) {
-    if (cube_body) {
-        const dReal* pos = dBodyGetPosition(cube_body);
-        glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
-    }
-}
-
-
-void physics_get_cube_rotation(vec3 dest) {
-    if (cube_body) {
-        const dReal* R = dBodyGetRotation(cube_body);
-        
-        mat3 rot_ = {R[0], R[1], R[2], R[4], R[5], R[6], R[8], R[9], R[10]};
-        
-        float rot_x = atan2(rot_[2][1], rot_[2][2]) * (180.0 / M_PI);
-        float rot_y = atan2(-rot_[2][0], sqrt(pow(rot_[2][1], 2) + pow(rot_[2][2], 2))) * (180.0 / M_PI);
-        float rot_z = atan2(rot_[1][0], rot_[0][0]) * (180.0 / M_PI);
-        
-        dest[0] = rot_x;
-        dest[1] = rot_z;
-        dest[2] = -rot_y;
-    }
-}
 
 
 static constexpr u16 MAX_CONTACTS = 4;

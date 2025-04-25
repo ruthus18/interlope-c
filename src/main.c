@@ -56,7 +56,7 @@ bool is_cursor_visible = false;
 
 
 Object* door;
-// Object* box;
+Object* box;
 
 
 static
@@ -67,22 +67,22 @@ void game_on_init() {
     camera_set_position(cam, (vec3){3.5, 1.7, 3.5});
     camera_set_rotation(cam, -135.0, 0.0);
 
-    objdb = objdb_read_toml("data/objects_sov.toml");
-    scene = scene_read_toml("data/scenes/sovsh_demo.toml", objdb);
+    objdb = objdb_read_toml("data/objects.toml");
+    scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
 
     editor_init();
     editor_set_scene(scene);
 
     physics_create_ground();
 
-    door = scene_find_object(scene, "sovsh_door_herm01");
-    // box = scene_find_object(scene, "box");
+    // door = scene_find_object(scene, "sovsh_door_herm01");
+    box = scene_find_object(scene, "box");
 
-    // vec3 box_pos, box_rot;
-    // object_get_position(box, box_pos);
-    // object_get_rotation(box, box_rot);
+    vec3 box_pos, box_rot;
+    object_get_position(box, box_pos);
+    object_get_rotation(box, box_rot);
 
-    // physics_create_cube(box_pos, box_rot, (vec3){1.0, 1.0, 1.0}, 5.0);
+    physics_create_object(PHYSICS_BODY_BOX, box_pos, box_rot, (vec3){1.0, 1.0, 1.0}, 5.0);
 }
 
 
@@ -109,6 +109,9 @@ void _rotate_door() {
 
     object_set_subm_rotation(door, (vec3){0.0, rot_angle, 0.0}, 0);
 }
+
+
+// vec3 cube_pos, cube_rot;
 
 
 static
@@ -138,17 +141,17 @@ void game_on_update() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    _rotate_door();
+    // _rotate_door();
 
-    // vec3 cube_pos, cube_rot;
-    // physics_get_cube_position(cube_pos);
-    // object_set_position(box, cube_pos);
+    vec3 obj_pos, obj_rot;
+    physics_get_object_position(1, obj_pos);
+    object_set_position(box, obj_pos);
 
-    // physics_get_cube_rotation(cube_rot);
-    // object_set_rotation(box, cube_rot);
+    physics_get_object_rotation(1, obj_rot);
+    object_set_rotation(box, obj_rot);
 
-    // glm_vec3_print(cube_pos, stdout);
-    // glm_vec3_print(cube_rot, stdout);
+    // glm_vec3_print(obj_pos, stdout);
+    // glm_vec3_print(obj_rot, stdout);
 
     camera_upload_to_gfx(cam);
     scene_draw(scene);
