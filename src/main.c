@@ -1,11 +1,11 @@
 #include <stdlib.h>
 
-#include "camera.h"
 #include "config.h"
 #include "gfx.h"
 #include "editor.h"
 #include "input_keys.h"
 #include "physics.h"
+#include "player.h"
 #include "scene.h"
 #include "scene_loader.h"
 #include "objdb_loader.h"
@@ -17,8 +17,6 @@
 static void game_on_init();
 static void game_on_update();
 static void game_on_destroy();
-
-static void _rotate_door();
 
 
 int main() {
@@ -52,7 +50,6 @@ int main() {
 /* ------ Application Logic ------ */
 
 ObjectsDB* objdb;
-Camera* cam;
 Scene* scene;
 
 bool is_editor_visible = false;
@@ -60,9 +57,6 @@ bool is_cursor_visible = false;
 
 
 Object* door;
-
-Object* box;
-vec3 box_pos, box_rot;
 
 
 void _init_sovsh_scene() {
@@ -76,37 +70,27 @@ void _init_sovsh_scene() {
 void _init_physics_scene() {
     objdb = objdb_load_toml("data/objects.toml");
     scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
-
-    // Get a reference to the box object
-    box = scene_find_object(scene, "box");
-}
-
-
-void _update_sovsh_scene() {
-    _rotate_door();
 }
 
 
 static
-void game_on_init() {
-    cursor_set_visible(is_cursor_visible);
-
-    cam = camera_create();
-    camera_set_position(cam, (vec3){3.5, 1.7, 3.5});
-    camera_set_rotation(cam, -135.0, 0.0);
-
+void game_on_init() {    
     // _init_sovsh_scene();
     _init_physics_scene();
 
+    player_init((vec3){3.5, 0.0, 3.5}, -135.0, 0.0);
+
     editor_init();
     editor_set_scene(scene);
+
+    cursor_set_visible(is_cursor_visible);
 }
 
 
 static
 void game_on_destroy() {
     editor_destroy();
-    camera_destroy(cam);
+    player_destroy();
 
     scene_destroy(scene);
     objdb_destroy(objdb);
@@ -147,17 +131,9 @@ void game_on_update() {
 
     /* -- Player movement -- */
     if (!cursor_is_visible()) {
-        bool w = input_is_keyrp(IN_KEY_W);
-        bool s = input_is_keyrp(IN_KEY_S);
-        bool a = input_is_keyrp(IN_KEY_A);
-        bool d = input_is_keyrp(IN_KEY_D);
-
-        camera_player_control(cam, w, s, a, d);
+        player_update();
     }
 
-    // _update_sovsh_scene();
-
-    camera_upload_to_gfx(cam);
     scene_update(scene);
     scene_draw(scene);
 

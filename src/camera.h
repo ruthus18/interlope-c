@@ -22,7 +22,9 @@ void camera_destroy(Camera*);
 void camera_update_persp_mat(Camera* cam);
 void camera_update_view_mat(Camera* cam);
 
+void camera_get_position(Camera* cam, vec3 dest);
 void camera_set_position(Camera*, vec3 pos);
+
 void camera_transform(Camera*, vec3 pos_delta);
 void camera_set_rotation(Camera*, f64 yaw, f64 pitch);
 void camera_rotate(Camera*, f64 yaw_delta, f64 pitch_delta);

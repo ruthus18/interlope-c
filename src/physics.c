@@ -8,6 +8,7 @@
 #include "config.h"
 #include "ode/collision.h"
 #include "ode/contact.h"
+#include "ode/mass.h"
 #include "types.h"
 #include "log.h"
 
@@ -141,7 +142,13 @@ PhysicsObjectID physics_create_static_object(
         return INVALID_PHYSICS_ID;
     }
 
-    obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
+    if (type == PHYSICS_BODY_BOX) {
+        obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
+    }
+    else if (type == PHYSICS_BODY_CAPSULE) {
+        obj->geom = dCreateCapsule(self.space, size[0], size[1]);
+    }
+
     dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
     dMatrix3 R;
     dRFromEulerAngles(
@@ -196,6 +203,11 @@ PhysicsObjectID physics_create_rigid_object(
             dMassSetBoxTotal(&mass_, mass, size[0], size[2], size[1]);
             obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
             break;
+
+        case PHYSICS_BODY_CAPSULE:
+            dMassSetCapsuleTotal(&mass_, mass, 3, size[0], size[1]);
+            obj->geom = dCreateCapsule(self.space, size[0], size[1]);
+            break;
         
         // Future types can be added here
         // case PHYSICS_BODY_SPHERE:
@@ -248,10 +260,20 @@ bool physics_get_object_position(PhysicsObjectID id, vec3 dest) {
     if (!obj || !obj->body) {
         return false;
     }
-    
-    const dReal* pos = dBodyGetPosition(obj->body);
+
+    const dReal* pos = dGeomGetPosition(obj->geom);
     glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
     return true;
+}
+
+
+void physics_set_object_position(PhysicsObjectID id, vec3 pos) {
+    PhysicsObject* obj = find_physics_object(id);
+    if (!obj) {
+        log_error("Physics object not found: %i", id);
+        return;
+    }
+    dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
 }
 
 

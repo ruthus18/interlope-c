@@ -9,7 +9,7 @@ typedef u32 PhysicsObjectID;
 
 typedef enum {
     PHYSICS_BODY_BOX,
-    // Can be extended with SPHERE, CYLINDER, CAPSULE, etc.
+    PHYSICS_BODY_CAPSULE,
 } PhysicsBodyType;
 
 
@@ -25,6 +25,8 @@ PhysicsObjectID physics_create_rigid_object(
 bool physics_remove_object(PhysicsObjectID id);
 
 bool physics_get_object_position(PhysicsObjectID id, vec3 dest);
+void physics_set_object_position(PhysicsObjectID id, vec3 new_pos);
+
 bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest);
 bool physics_apply_force(PhysicsObjectID id, vec3 force);
 

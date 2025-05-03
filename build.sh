@@ -33,6 +33,7 @@ time gcc \
     ${SRC}/objdb.c \
     ${SRC}/objdb_loader.c \
     ${SRC}/physics.c \
+    ${SRC}/player.c \
     ${SRC}/scene.c \
     ${SRC}/scene_loader.c \
     ${SRC}/texture.c \

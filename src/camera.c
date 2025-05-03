@@ -38,6 +38,11 @@ void camera_update_view_mat(Camera* cam) {
 }
 
 
+void camera_get_position(Camera* cam, vec3 dest) {
+    glm_vec3_copy(cam->position, dest);
+}
+
+
 void camera_set_position(Camera* cam, vec3 pos) {
     glm_vec3_copy(pos, cam->position);
     camera_update_view_mat(cam);
