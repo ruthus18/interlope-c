@@ -7,6 +7,7 @@
 
 #include "cgm.h"
 #include "log.h"
+#include "objdb.h"
 #include "physics.h"
 #include "types.h"
 
@@ -47,13 +48,26 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
             body_type = PHYSICS_BODY_BOX;
         }
         
-        obj->physics_id = physics_create_object(
-            body_type,
-            obj->pos,
-            obj->rot,
-            objrec->physics.collision_size,
-            objrec->physics.mass
-        );
+        if (obj->type == ObjectType_STATIC) {
+            obj->physics_id = physics_create_static_object(
+                body_type,
+                obj->pos,
+                obj->rot,
+                objrec->physics.collision_size
+            );
+        }
+        else if (obj->type == ObjectType_RIGID_BODY) {
+            obj->physics_id = physics_create_rigid_object(
+                body_type,
+                obj->pos,
+                obj->rot,
+                objrec->physics.collision_size,
+                objrec->physics.mass
+            );
+        }
+        else {
+            log_exit("Invalid object type: %s", object_get_type_string(obj));
+        }
     }
 
     // Allocate memory for local positions, rotations, and model matrices
@@ -122,6 +136,9 @@ const char* object_get_type_string(Object* obj) {
     if (obj->type == ObjectType_UNKNOWN)
         return "UNKNOWN";
 
+    if (obj->type == ObjectType_STATIC)
+        return "STATIC";
+
     if (obj->type == ObjectType_RIGID_BODY)
         return "RIGID_BODY";
 
@@ -176,4 +193,19 @@ void object_set_subm_rotation(Object* obj, vec3 new_rot, u32 slot_idx) {
     glm_vec3_add(obj->rot, obj->local_rotations[i], result_rot);
 
     cgm_model_mat(result_pos, result_rot, obj->sc, obj->m_models[i]);
+}
+
+
+void object_update(Object* obj) {
+    if (obj->type == ObjectType_STATIC) {
+
+    }
+    else if (obj->type == ObjectType_RIGID_BODY) {
+        vec3 obj_pos, obj_rot;
+        physics_get_object_position(obj->physics_id, obj_pos);
+        object_set_position(obj, obj_pos);
+    
+        physics_get_object_rotation(obj->physics_id, obj_rot);
+        object_set_rotation(obj, obj_rot);
+    }
 }

@@ -6,6 +6,8 @@
 #include "physics.h"
 
 #include "config.h"
+#include "ode/collision.h"
+#include "ode/contact.h"
 #include "types.h"
 #include "log.h"
 
@@ -52,8 +54,30 @@ void custom_message_handler(int num, const char *msg, va_list args) {
 }
 
 
-// Helper function to find an object by ID
-static PhysicsObject* find_physics_object(PhysicsObjectID id) {
+void physics_init() {
+    dSetMessageHandler(custom_message_handler);
+    dInitODE();
+
+    self.world = dWorldCreate();
+    self.space = dHashSpaceCreate(0);
+    self.contact_group = dJointGroupCreate(0);
+    self.next_id = 1;
+
+    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
+        self.objects[i].in_use = false;
+        self.objects[i].id = INVALID_PHYSICS_ID;
+        self.objects[i].body = NULL;
+        self.objects[i].geom = NULL;
+    }
+
+    dWorldSetGravity(self.world, 0.0, 0.0, GRAVITY);
+    
+    // Increase solver iterations for better stability
+    dWorldSetQuickStepNumIterations(self.world, 50);
+}
+
+static
+PhysicsObject* find_physics_object(PhysicsObjectID id) {
     if (id == INVALID_PHYSICS_ID) return NULL;
     
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
@@ -64,8 +88,8 @@ static PhysicsObject* find_physics_object(PhysicsObjectID id) {
     return NULL;
 }
 
-// Helper function to find an empty slot
-static PhysicsObject* find_empty_slot() {
+static
+PhysicsObject* find_empty_slot() {
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
         if (!self.objects[i].in_use) {
             return &self.objects[i];
@@ -74,29 +98,8 @@ static PhysicsObject* find_empty_slot() {
     return NULL;
 }
 
-void physics_init() {
-    dSetMessageHandler(custom_message_handler);
-    dInitODE();
-
-    self.world = dWorldCreate();
-    self.space = dHashSpaceCreate(0);
-    self.contact_group = dJointGroupCreate(0);
-    self.next_id = 1; // Start IDs at 1, 0 is invalid
-
-    // Initialize the objects array
-    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
-        self.objects[i].in_use = false;
-        self.objects[i].id = INVALID_PHYSICS_ID;
-        self.objects[i].body = NULL;
-        self.objects[i].geom = NULL;
-    }
-
-    dWorldSetGravity(self.world, 0.0, 0.0, GRAVITY);
-}
-
 
 void physics_destroy() {
-    // Destroy all physics objects first
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
         if (self.objects[i].in_use) {
             if (self.objects[i].geom) {
@@ -105,7 +108,6 @@ void physics_destroy() {
             }
             
             if (self.objects[i].body) {
-                // Properly detach body before destroying
                 dBodyDisable(self.objects[i].body);
                 dBodySetData(self.objects[i].body, NULL);
                 dBodyDestroy(self.objects[i].body);
@@ -114,7 +116,6 @@ void physics_destroy() {
         }
     }
     
-    // Destroy ground plane if it exists
     if (ground_geom) {
         dGeomDestroy(ground_geom);
         ground_geom = NULL;
@@ -127,12 +128,39 @@ void physics_destroy() {
     dCloseODE();
 }
 
-void physics_create_ground() {
-    ground_geom = dCreatePlane(self.space, 0, 0, 1, 0);
+
+PhysicsObjectID physics_create_static_object(
+    PhysicsBodyType type,
+    vec3 pos,
+    vec3 rot,
+    vec3 size
+) {
+    PhysicsObject* obj = find_empty_slot();
+    if (!obj) {
+        log_info("Physics error: Maximum number of physics objects reached (%d)", MAX_PHYSICS_OBJECTS);
+        return INVALID_PHYSICS_ID;
+    }
+
+    obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
+    dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
+    dMatrix3 R;
+    dRFromEulerAngles(
+        R,
+        rot[0] / (180 / M_PI),
+        rot[2] / (180 / M_PI),
+        rot[1] / (180 / M_PI)
+    );
+    dGeomSetRotation(obj->geom, R);
+
+    obj->id = self.next_id++;
+    obj->type = type;
+    obj->in_use = true;
+
+    return obj->id;
 }
 
 
-PhysicsObjectID physics_create_object(
+PhysicsObjectID physics_create_rigid_object(
     PhysicsBodyType type,
     vec3 pos,
     vec3 rot,
@@ -183,12 +211,7 @@ PhysicsObjectID physics_create_object(
     
     dBodySetMass(obj->body, &mass_);
     dGeomSetBody(obj->geom, obj->body);
-    
-    // Enable auto-disabling for performance
-    dBodySetAutoDisableFlag(obj->body, 1);
-    dBodySetAutoDisableLinearThreshold(obj->body, 0.05);
-    
-    // Setup object metadata
+
     obj->id = self.next_id++;
     obj->type = type;
     obj->in_use = true;
@@ -208,13 +231,11 @@ bool physics_remove_object(PhysicsObjectID id) {
     }
     
     if (obj->body) {
-        // Properly detach body before destroying
         dBodyDisable(obj->body);
         dBodySetData(obj->body, NULL);
         dBodyDestroy(obj->body);
     }
     
-    // Mark as unused
     obj->in_use = false;
     obj->id = INVALID_PHYSICS_ID;
     obj->body = NULL;
@@ -261,38 +282,45 @@ bool physics_apply_force(PhysicsObjectID id, vec3 force) {
         return false;
     }
     
-    // Apply force at the center of mass (position 0,0,0 relative to body)
     dBodyAddForce(obj->body, force[0], -force[2], force[1]);
     return true;
 }
 
 
-
-
-static constexpr u16 MAX_CONTACTS = 4;
+static const int MAX_CONTACTS = 8;
 
 static
 void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
-    dContact contacts[MAX_CONTACTS];
-    int n = dCollide(geom1, geom2, MAX_CONTACTS, &contacts[0].geom, sizeof(dContact));
+    dBodyID body1 = dGeomGetBody(geom1);
+    dBodyID body2 = dGeomGetBody(geom2);
+    
+    // Skip self-collisions for the same body
+    if (body1 && body2 && body1 == body2) return;
+    
+    // Skip collisions between two static objects (both without bodies)
+    if (!body1 && !body2) return;
+
+    dContact contact[MAX_CONTACTS];
+    int n = dCollide(geom1, geom2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
 
     for (int i = 0; i < n; i++) {
-        contacts[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
-        contacts[i].surface.bounce = 0.05;
-        contacts[i].surface.bounce_vel = 0.1;
-        contacts[i].surface.soft_erp = 0.8;
-        contacts[i].surface.soft_cfm = 0.005;
+        contact[i].surface.mode = dContactBounce | dContactSoftERP;
+        contact[i].surface.mu = dInfinity;
+        contact[i].surface.mu2 = 0;
+        contact[i].surface.bounce = 0.05;
+        contact[i].surface.bounce_vel = 0.05;
+        contact[i].surface.soft_erp = 0.01;
 
-        dJointID contact = dJointCreateContact(
-            self.world, self.contact_group, &contacts[i]
+        dJointID c = dJointCreateContact(
+            self.world, self.contact_group, &contact[i]
         );
-        dJointAttach(contact, dGeomGetBody(geom1), dGeomGetBody(geom2));
+        dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
     }
 }
 
 
 void physics_update() {
     dSpaceCollide(self.space, 0, collision_callback);
-    dWorldStep(self.world, TIMESTEP);
+    dWorldQuickStep(self.world, TIMESTEP);
     dJointGroupEmpty(self.contact_group);
 }

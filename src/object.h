@@ -42,3 +42,5 @@ void object_get_rotation(Object*, vec3);
 void object_set_position(Object*, vec3);
 void object_set_rotation(Object*, vec3);
 void object_set_subm_rotation(Object*, vec3, u32 slot_idx);
+
+void object_update(Object* obj);

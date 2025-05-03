@@ -100,6 +100,14 @@ void scene_set_selected_object(Scene* scene, Object* obj) {
 }
 
 
+void scene_update(Scene* scene) {
+    for (int i = 0; i < scene->objects_count; i++) {
+        Object* obj = scene->objects[i];
+        object_update(obj);
+    }
+}
+
+
 void scene_draw(Scene* scene) {
     gfx_begin_draw_objects();
 

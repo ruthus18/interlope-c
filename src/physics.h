@@ -16,9 +16,10 @@ typedef enum {
 void physics_init();
 void physics_destroy();
 
-void physics_create_ground();
-
-PhysicsObjectID physics_create_object(
+PhysicsObjectID physics_create_static_object(
+    PhysicsBodyType type, vec3 pos, vec3 rot, vec3 size
+);
+PhysicsObjectID physics_create_rigid_object(
     PhysicsBodyType type, vec3 pos, vec3 rot, vec3 size, f32 mass
 );
 bool physics_remove_object(PhysicsObjectID id);
@@ -28,5 +29,3 @@ bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest);
 bool physics_apply_force(PhysicsObjectID id, vec3 force);
 
 void physics_update();
-
-

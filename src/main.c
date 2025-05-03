@@ -87,19 +87,6 @@ void _update_sovsh_scene() {
 }
 
 
-void _update_physics_scene() {
-    vec3 obj_pos, obj_rot;
-    physics_get_object_position(1, obj_pos);
-    object_set_position(box, obj_pos);
-
-    physics_get_object_rotation(1, obj_rot);
-    object_set_rotation(box, obj_rot);
-
-    // glm_vec3_print(obj_pos, stdout);
-    // glm_vec3_print(obj_rot, stdout);
-}
-
-
 static
 void game_on_init() {
     cursor_set_visible(is_cursor_visible);
@@ -113,8 +100,6 @@ void game_on_init() {
 
     editor_init();
     editor_set_scene(scene);
-
-    physics_create_ground();
 }
 
 
@@ -170,10 +155,10 @@ void game_on_update() {
         camera_player_control(cam, w, s, a, d);
     }
 
-    _update_physics_scene();
     // _update_sovsh_scene();
 
     camera_upload_to_gfx(cam);
+    scene_update(scene);
     scene_draw(scene);
 
     editor_update(is_editor_visible);

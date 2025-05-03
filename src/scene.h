@@ -17,4 +17,5 @@ Object* scene_get_object(Scene*, u64 idx);
 Object* scene_find_object(Scene*, const char* base_id);
 void scene_set_selected_object(Scene*, Object*);
 
+void scene_update(Scene* scene);
 void scene_draw(Scene*);
