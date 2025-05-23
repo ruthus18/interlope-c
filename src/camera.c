@@ -85,6 +85,42 @@ void camera_rotate(Camera* cam, f64 yaw_delta, f64 pitch_delta) {
 }
 
 
+void get_wsad_movement_vec(Camera* cam, bool w, bool s, bool a, bool d, vec3 dest) {
+    vec3 v_movement_forwd = {cam->v_front[0], 0.0, cam->v_front[2]};
+    vec3 v_movement_slide;
+    glm_vec3_cross(v_movement_forwd, (vec3){0.0, 1.0, 0.0}, v_movement_slide);
+
+    vec3 v_delta;
+    glm_vec3_zero(v_delta);
+
+    if (w)  glm_vec3_add(v_delta, v_movement_forwd, v_delta);
+    if (s)  glm_vec3_sub(v_delta, v_movement_forwd, v_delta);
+    if (a)  glm_vec3_sub(v_delta, v_movement_slide, v_delta);
+    if (d)  glm_vec3_add(v_delta, v_movement_slide, v_delta);
+
+    if (!glm_vec3_eq(v_delta, 0.0)) {
+        glm_vec3_normalize(v_delta);
+    }
+    glm_vec3_scale(v_delta, time_get_dt() * CAMERA_MOVEMENT_SPEED * 1000, v_delta);
+
+    glm_vec3_copy(v_delta, dest);
+}
+
+
+void get_orient_vec(vec2 dest) {
+    vec2 mouse_delta;
+    double yaw_delta, pitch_delta;
+
+    input_get_mouse_delta(mouse_delta);
+
+      yaw_delta =  mouse_delta[0] * MOUSE_SENSITIVITY;
+    pitch_delta = -mouse_delta[1] * MOUSE_SENSITIVITY;
+
+    dest[0] = yaw_delta;
+    dest[1] = pitch_delta;
+}
+
+
 void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
     /* Rotation Handling */
 

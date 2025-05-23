@@ -9,7 +9,18 @@
 #include "platform/file.h"
 
 
-static constexpr u16 MAX_NAME_LEN = 64;
+#define MAX_MODEL_NAME_LEN 64
+
+
+static inline
+void model_dealloc(Model* model) {
+    free(model->names);
+    free(model->local_positions);
+    free(model->local_rotations);
+    free(model->meshes);
+    free(model);
+}
+
 
 static inline
 Model* model_alloc(u32 slots_count) {
@@ -26,26 +37,18 @@ Model* model_alloc(u32 slots_count) {
 
     if (!model->meshes || !model->local_positions || !model->local_rotations || !model->names) {
         log_error("Failed to allocate memory for Model arrays");
-        free(model->meshes);
-        free(model->local_positions);
-        free(model->local_rotations);
-        free(model->names);
-        free(model);
+        model_dealloc(model);
         return NULL;
     }
 
     for (int i = 0; i < slots_count; i++) {
-        model->names[i] = malloc(sizeof(char) * MAX_NAME_LEN);
+        model->names[i] = malloc(sizeof(char) * MAX_MODEL_NAME_LEN);
         if (!model->names[i]) {
             log_error("Failed to allocate memory for Model name string %d", i);
             for (int j = 0; j < i; j++) {
                 free(model->names[j]);
             }
-            free(model->names);
-            free(model->local_positions);
-            free(model->local_rotations);
-            free(model->meshes);
-            free(model);
+            model_dealloc(model);
             return NULL;
         }
     }
@@ -61,11 +64,7 @@ void model_destroy(Model* model) {
         gfx_mesh_unload(model->meshes[i]);
         free(model->names[i]);
     }
-    free(model->names);
-    free(model->local_positions);
-    free(model->local_rotations);
-    free(model->meshes);
-    free(model);
+    model_dealloc(model);
 }
 
 
@@ -75,23 +74,23 @@ Model* model_read(const char* model_relpath) {
     cgltf_options options = {0};
     cgltf_data* data = NULL;
 
-    const char* path = path_to_model(model_relpath);
-    parse_res = cgltf_parse_file(&options, path, &data);
-
-    if (parse_res != cgltf_result_success) {
-        if (parse_res == cgltf_result_file_not_found) {
-            log_error("Mesh not found: %s", model_relpath);
+    const char* path;
+    with_path_to_model(path, model_relpath, {
+        parse_res = cgltf_parse_file(&options, path, &data);
+    
+        if (parse_res != cgltf_result_success) {
+            if (parse_res == cgltf_result_file_not_found) {
+                log_error("Mesh not found: %s", model_relpath);
+            }
+            else {
+                log_error("Unknown error while loading GLTF mesh: %i", parse_res);
+            }
+    
+            return NULL;
         }
-        else {
-            log_error("Unknown error while loading GLTF mesh: %i", parse_res);
-        }
 
-        free((void*)path);
-        return NULL;
-    }
-
-    cgltf_load_buffers(&options, data, path);
-    free((void*)path);
+        cgltf_load_buffers(&options, data, path);
+    });
 
     /* -- Data Processing -- */
     assert(data->nodes_count == data->meshes_count);
@@ -100,14 +99,18 @@ Model* model_read(const char* model_relpath) {
     for (int i = 0; i < data->nodes_count; i++) {
         cgltf_node node = data->nodes[i];
 
-        if (node.name && strlen(node.name) >= MAX_NAME_LEN) {
-            log_error("GLTF node name '%s' is too long (>= %d chars). Truncating.", node.name, MAX_NAME_LEN);
+        if (node.name && strlen(node.name) >= MAX_MODEL_NAME_LEN) {
+            log_error(
+                "GLTF node name '%s' is too long (>= %d chars). Truncating.",
+                node.name,
+                MAX_MODEL_NAME_LEN
+            );
             // Intentionally allow truncation instead of exiting
         }
         // Use strncpy for safety, ensure null termination
         if (node.name) {
-             strncpy(model->names[i], node.name, MAX_NAME_LEN - 1);
-             model->names[i][MAX_NAME_LEN - 1] = '\0';
+             strncpy(model->names[i], node.name, MAX_MODEL_NAME_LEN - 1);
+             model->names[i][MAX_MODEL_NAME_LEN - 1] = '\0';
         } else {
              // Handle case where node has no name
              model->names[i][0] = '\0';

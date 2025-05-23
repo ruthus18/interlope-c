@@ -9,7 +9,7 @@
 
 #define __KEY_EMPTY -1
 
-constexpr u32 KEYP_STORAGE_SIZE = 8;
+#define KEYP_STORAGE_SIZE 8
 
 static struct Input {
     Window* window;

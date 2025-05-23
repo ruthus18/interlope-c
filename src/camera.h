@@ -28,5 +28,9 @@ void camera_set_position(Camera*, vec3 pos);
 void camera_transform(Camera*, vec3 pos_delta);
 void camera_set_rotation(Camera*, f64 yaw, f64 pitch);
 void camera_rotate(Camera*, f64 yaw_delta, f64 pitch_delta);
+
+void get_wsad_movement_vec(Camera* cam, bool w, bool s, bool a, bool d, vec3 dest);
+void get_orient_vec(vec2 dest);
+
 void camera_player_control(Camera*, bool w, bool s, bool a, bool d);
 void camera_upload_to_gfx(Camera*);

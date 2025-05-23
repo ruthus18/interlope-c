@@ -52,22 +52,4 @@ void player_update() {
 
     camera_player_control(self.camera, w, s, a, d);
     camera_upload_to_gfx(self.camera);
-
-    vec3 cam_pos;
-    camera_get_position(self.camera, cam_pos);
-
-    vec3 player_pos = {cam_pos[0], cam_pos[1] - PLAYER_HEIGHT, cam_pos[2]};
-
-    
-    vec3 physics_pos;
-    physics_get_object_position(self.physics_id, physics_pos);
-    physics_set_object_position(self.physics_id, (vec3){
-        player_pos[0],
-        physics_pos[1],
-        player_pos[2]
-    });
-
-    glm_vec3_print(physics_pos, stdout);
-
-    camera_set_position(self.camera, (vec3){physics_pos[0], physics_pos[1] + PLAYER_HEIGHT / 2, physics_pos[2]});
 }

@@ -59,12 +59,14 @@ static inline
 void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
     u32 shader_id = glCreateShader(shader_type);
 
-    const char* path = path_to_shader(rel_path);
-    const char* file_buffer = file_read_text(path);
+    const char* path;
+    with_path_to_shader(path, rel_path, {
 
-    glShaderSource(shader_id, 1, &file_buffer, NULL);
-    free((void*) path);
-    free((void*) file_buffer);
+        const char* content;
+        with_file_read(path, content, {
+            glShaderSource(shader_id, 1, &content, NULL);
+        });
+    });
 
     glCompileShader(shader_id);
     _check_gl_error();

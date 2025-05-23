@@ -8,17 +8,17 @@
 
 
 GfxTexture* texture_load_file(const char* texture_relpath) {
-	const char* path = path_to_texture(texture_relpath);
-	
-    /* -- Get File Size -- */
+	const char* path;
 	FILE* f;
-	if((f = fopen(path, "rb")) == 0)
+	
+	with_path_to_texture(path, texture_relpath, {
+		if((f = fopen(path, "rb")) == 0)
 		return 0;
+	});
+
 	fseek(f, 0, SEEK_END);
 	long file_size = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	
-	free((void*)path);
 	
     /* -- .dds Header Processing -- */
 	u8* header = malloc(128);
@@ -79,20 +79,23 @@ GfxTexture* _texture_load_file_png(const char* texture_relpath) {
 	u32 width = 0;
 	u32 height = 0;
 	int nr_channels = 0;
-	const char* path = path_to_texture(texture_relpath);
+	const char* path;
 
-	u8* data = stbi_load(path, (i32*)&width, (i32*)&height, &nr_channels, 0);
-	if (data == NULL) {
-		free((void*)path);
+	GfxTexture* texture;
 
-		log_error(stbi_failure_reason());	
-		log_exit("Cannot open texture file: %s", texture_relpath);
-	}
+	with_path_to_texture(path, texture_relpath, {
+		u8* data = stbi_load(path, (i32*)&width, (i32*)&height, &nr_channels, 0);
+		if (data == NULL) {	
+			log_error(stbi_failure_reason());	
+			log_exit("Cannot open texture file: %s", texture_relpath);
+			return texture;
+		}
+	
+		int gl_format = GL_RGBA;
+		texture = gfx_texture_load(data, width, height, gl_format);
+	
+		stbi_image_free(data);
+	});
 
-	int gl_format = GL_RGBA;
-	GfxTexture* texture = gfx_texture_load(data, width, height, gl_format);
-
-	stbi_image_free(data);
-	free((void*)path);
 	return texture;
 }

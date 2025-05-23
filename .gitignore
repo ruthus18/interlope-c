@@ -4,9 +4,6 @@
 # Build executables
 /bin
 
-# clangd server config
-/compile_flags.txt
-
 # Development notes & tmp files
 /dev
 

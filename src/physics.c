@@ -9,6 +9,7 @@
 #include "ode/collision.h"
 #include "ode/contact.h"
 #include "ode/mass.h"
+#include "ode/objects.h"
 #include "types.h"
 #include "log.h"
 
@@ -261,7 +262,7 @@ bool physics_get_object_position(PhysicsObjectID id, vec3 dest) {
         return false;
     }
 
-    const dReal* pos = dGeomGetPosition(obj->geom);
+    const dReal* pos = dBodyGetPosition(obj->body);
     glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
     return true;
 }
@@ -304,7 +305,8 @@ bool physics_apply_force(PhysicsObjectID id, vec3 force) {
         return false;
     }
     
-    dBodyAddForce(obj->body, force[0], -force[2], force[1]);
+    dBodySetLinearVel(obj->body, force[0], -force[2], force[1]);
+    // dBodyAddForce(obj->body, force[0], -force[2], force[1]);
     return true;
 }
 
