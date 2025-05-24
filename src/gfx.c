@@ -7,6 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
+#include "cglm/vec3.h"
+#include "cgm.h"
 #include "config.h"
 #include "gfx.h"
 #include "gfx_shader.h"
@@ -120,6 +122,7 @@ typedef struct GfxGeometry {
     u32 vao;
     u32 vbo;
     u64 vtx_count;
+    vec3 color;
 } GfxGeometry;
 
 
@@ -282,11 +285,29 @@ void gfx_texture_unload(GfxTexture* texture) {
 }
 
 
-GfxGeometry* gfx_geometry_load(f32* vtx_buf, u64 vtx_count) {
+GfxGeometry* gfx_geometry_load(f32* lines_buf, u64 vtx_count, vec3 color) {
     GfxGeometry* geom = malloc(sizeof(GfxGeometry));
     
-    // TODO ...
+    gfx_shader_use(self.shaders.geometry);
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
+    unsigned int VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vtx_count * 3, lines_buf, GL_STATIC_DRAW);
+
+    // Set vertex attribute pointers
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    geom->vao = VAO;
+    geom->vbo = VBO;
+    geom->vtx_count = vtx_count;
+    glm_vec3_copy(color, geom->color);
+
+    gfx_shader_use(NULL);
     return geom;
 }
 
@@ -301,6 +322,7 @@ void gfx_geometry_unload(GfxGeometry* geom) {
 /* ------------------------------------------------------------------------- */
 
 
+// TODO: save data to gfx, fill vars in shader loop
 void gfx_update_camera(mat4 m_persp, mat4 m_view) {
     gfx_shader_use(self.shaders.object);
     gfx_uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
@@ -309,6 +331,10 @@ void gfx_update_camera(mat4 m_persp, mat4 m_view) {
     gfx_shader_use(self.shaders.object_outline);
     gfx_uniform_set_mat4(self.shaders.object_outline, "m_persp", m_persp);
     gfx_uniform_set_mat4(self.shaders.object_outline, "m_view", m_view);
+
+    gfx_shader_use(self.shaders.geometry);
+    gfx_uniform_set_mat4(self.shaders.geometry, "m_persp", m_persp);
+    gfx_uniform_set_mat4(self.shaders.geometry, "m_view", m_view);
 
     gfx_shader_use(NULL);
 }
@@ -384,4 +410,25 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glDisable(GL_STENCIL_TEST);
+}
+
+
+void gfx_begin_draw_geometry() {
+    gfx_shader_use(self.shaders.geometry);
+}
+
+void gfx_end_draw_geometry() {
+    gfx_shader_use(NULL);
+}
+
+void gfx_draw_geometry(GfxGeometry* geom) {
+    gfx_uniform_set_vec3(self.shaders.geometry, "v_color", geom->color);
+
+    mat4 m_model;
+    cgm_model_mat((vec3){0.0, 2.0, 0.0}, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
+    gfx_uniform_set_mat4(self.shaders.geometry, "m_model", m_model);
+
+    glBindVertexArray(geom->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, geom->vbo);
+    glDrawArrays(GL_LINES, 0, geom->vtx_count);
 }

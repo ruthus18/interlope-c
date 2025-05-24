@@ -16,7 +16,7 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl4.h>
 
-// #include "log.h"
+#include "log.h"
 #include "scene.h"
 #include "types.h"
 #include "platform/window.h"
@@ -41,6 +41,9 @@ static struct _Editor {
     Scene* scene;
     i32 selected_obj_id;
     ObjectPanel object_panel;
+
+    char* show_physics_label;
+    bool show_physics;
 } self;
 
 
@@ -66,6 +69,9 @@ void editor_init() {
 
     self.ctx->style.window.spacing = nk_vec2(5,5);
     self.ctx->style.window.padding = nk_vec2(5,5);
+
+    self.show_physics = false;
+    self.show_physics_label = "[ ] Physics";
 }
 
 
@@ -77,6 +83,18 @@ void editor_destroy() {
 void editor_set_scene(Scene* scene) {
     self.scene = scene;
     self.selected_obj_id = -1;
+}
+
+
+void editor_switch_view_physics() {
+    self.show_physics = !self.show_physics;
+
+    if (self.show_physics) {
+        self.show_physics_label = "[X] Physics";
+    }
+    else {
+        self.show_physics_label = "[ ] Physics";
+    }
 }
 
 
@@ -239,13 +257,25 @@ void _draw_menu_bar() {
     struct nk_context* ctx = self.ctx;
 
     nk_menubar_begin(ctx);
-    nk_layout_row_begin(ctx, NK_STATIC, 15, 2);
+    nk_layout_row_begin(ctx, NK_STATIC, 15, 3);
 
     nk_layout_row_push(ctx, 60);
     if (nk_menu_begin_label(ctx, "Scene", NK_TEXT_LEFT, nk_vec2(200, 300))) {
         nk_layout_row_dynamic(ctx, 25, 1);
         if (nk_menu_item_label(ctx, "Open...", NK_TEXT_LEFT)) {}
         if (nk_menu_item_label(ctx, "Save", NK_TEXT_LEFT)) {}
+        if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
+
+        nk_menu_end(ctx);
+    }
+
+    nk_layout_row_push(ctx, 60);
+    if (nk_menu_begin_label(ctx, "View", NK_TEXT_LEFT, nk_vec2(200, 300))) {
+        nk_layout_row_dynamic(ctx, 25, 1);
+        if (nk_menu_item_label(ctx, self.show_physics_label, NK_TEXT_LEFT)) {
+            editor_switch_view_physics();
+        }
+        if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
         if (nk_menu_item_label(ctx, " ", NK_TEXT_LEFT)) {}
 
         nk_menu_end(ctx);

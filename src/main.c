@@ -73,6 +73,9 @@ void _init_physics_scene() {
 }
 
 
+GfxGeometry* geom[3];
+
+
 static
 void game_on_init() {    
     // _init_sovsh_scene();
@@ -84,11 +87,24 @@ void game_on_init() {
     editor_set_scene(scene);
 
     cursor_set_visible(is_cursor_visible);
+
+    // ---
+    f32 axis_x[] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
+    f32 axis_y[] = {0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
+    f32 axis_z[] = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+    geom[0] = gfx_geometry_load(axis_x, 2, (vec3){1.0, 0.0, 0.0});
+    geom[1] = gfx_geometry_load(axis_y, 2, (vec3){0.0, 1.0, 0.0});
+    geom[2] = gfx_geometry_load(axis_z, 2, (vec3){0.0, 0.0, 1.0});
 }
 
 
 static
 void game_on_destroy() {
+    gfx_geometry_unload(geom[0]);
+    gfx_geometry_unload(geom[1]);
+    gfx_geometry_unload(geom[2]);
+    // ---
+
     editor_destroy();
     player_destroy();
 
@@ -136,6 +152,12 @@ void game_on_update() {
 
     scene_update(scene);
     scene_draw(scene);
+
+    gfx_begin_draw_geometry();
+    gfx_draw_geometry(geom[0]);
+    gfx_draw_geometry(geom[1]);
+    gfx_draw_geometry(geom[2]);
+    gfx_end_draw_geometry();
 
     editor_update(is_editor_visible);
 }

@@ -9,3 +9,5 @@
 
 # (not licensed to upload in public)
 /assets
+
+**/.claude/settings.local.json
