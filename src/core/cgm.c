@@ -67,3 +67,24 @@ void cgm_front_vec(f64 yaw, f64 pitch, vec3 dest) {
     );
     glm_normalize(dest);
 }
+
+
+void cgm_wsad_vec(vec3 v_front, bool w, bool s, bool a, bool d, vec3 dest) {
+    vec3 v_forwd = {v_front[0], 0.0, v_front[2]};
+    vec3 v_slide;
+    glm_vec3_cross(v_forwd, (vec3){0.0, 1.0, 0.0}, v_slide);
+
+    vec3 v_delta;
+    glm_vec3_zero(v_delta);
+
+    if (w)  glm_vec3_add(v_delta, v_forwd, v_delta);
+    if (s)  glm_vec3_sub(v_delta, v_forwd, v_delta);
+    if (a)  glm_vec3_sub(v_delta, v_slide, v_delta);
+    if (d)  glm_vec3_add(v_delta, v_slide, v_delta);
+
+    if (!glm_vec3_eq(v_delta, 0.0)) {
+        glm_vec3_normalize(v_delta);
+    }
+
+    glm_vec3_copy(v_delta, dest);
+}

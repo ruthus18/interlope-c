@@ -4,12 +4,9 @@
 
 #include "./camera.h"
 #include "../core/cgm.h"
-#include "../platform/input.h"
-#include "../platform/time.h"
-#include "../render/gfx.h"
 #include "../core/config.h"
-#include "../core/log.h"
 #include "../core/types.h"
+#include "../platform/time.h"
 
 
 
@@ -85,86 +82,21 @@ void camera_rotate(Camera* cam, f64 yaw_delta, f64 pitch_delta) {
 }
 
 
-void get_wsad_movement_vec(Camera* cam, bool w, bool s, bool a, bool d, vec3 dest) {
-    vec3 v_movement_forwd = {cam->v_front[0], 0.0, cam->v_front[2]};
-    vec3 v_movement_slide;
-    glm_vec3_cross(v_movement_forwd, (vec3){0.0, 1.0, 0.0}, v_movement_slide);
-
+/*
+    IMPORTANT: You should call `camera_player_rotate` first to update front vector
+*/
+void camera_player_transform(Camera* cam, bool w, bool s, bool a, bool d) {
     vec3 v_delta;
-    glm_vec3_zero(v_delta);
+    cgm_wsad_vec(cam->v_front, w, s, a, d, v_delta);
 
-    if (w)  glm_vec3_add(v_delta, v_movement_forwd, v_delta);
-    if (s)  glm_vec3_sub(v_delta, v_movement_forwd, v_delta);
-    if (a)  glm_vec3_sub(v_delta, v_movement_slide, v_delta);
-    if (d)  glm_vec3_add(v_delta, v_movement_slide, v_delta);
-
-    if (!glm_vec3_eq(v_delta, 0.0)) {
-        glm_vec3_normalize(v_delta);
-    }
-    glm_vec3_scale(v_delta, time_get_dt() * CAMERA_MOVEMENT_SPEED * 1000, v_delta);
-
-    glm_vec3_copy(v_delta, dest);
-}
-
-
-void get_orient_vec(vec2 dest) {
-    vec2 mouse_delta;
-    double yaw_delta, pitch_delta;
-
-    input_get_mouse_delta(mouse_delta);
-
-      yaw_delta =  mouse_delta[0] * MOUSE_SENSITIVITY;
-    pitch_delta = -mouse_delta[1] * MOUSE_SENSITIVITY;
-
-    dest[0] = yaw_delta;
-    dest[1] = pitch_delta;
-}
-
-
-void camera_player_control(Camera* cam, bool w, bool s, bool a, bool d) {
-    /* Rotation Handling */
-
-    vec2 mouse_delta;
-    double yaw_delta, pitch_delta;
-
-    input_get_mouse_delta(mouse_delta);
-
-      yaw_delta =  mouse_delta[0] * MOUSE_SENSITIVITY;
-    pitch_delta = -mouse_delta[1] * MOUSE_SENSITIVITY;
-
-    camera_rotate(cam, yaw_delta, pitch_delta);
-
-    if (__DEBUG__LOG_CAMERA_ROTATION)
-        log_info("CAM[YAW:PITCH]  %f | %f", cam->yaw, cam->pitch);
-
-    /* Movement Handling */
-
-    vec3 v_movement_forwd = {cam->v_front[0], 0.0, cam->v_front[2]};
-    vec3 v_movement_slide;
-    glm_vec3_cross(v_movement_forwd, (vec3){0.0, 1.0, 0.0}, v_movement_slide);
-
-    vec3 v_delta;
-    glm_vec3_zero(v_delta);
-
-    if (w)  glm_vec3_add(v_delta, v_movement_forwd, v_delta);
-    if (s)  glm_vec3_sub(v_delta, v_movement_forwd, v_delta);
-    if (a)  glm_vec3_sub(v_delta, v_movement_slide, v_delta);
-    if (d)  glm_vec3_add(v_delta, v_movement_slide, v_delta);
-
-    if (!glm_vec3_eq(v_delta, 0.0)) {
-        glm_vec3_normalize(v_delta);
-    }
     glm_vec3_scale(v_delta, time_get_dt() * CAMERA_MOVEMENT_SPEED * 0.5, v_delta);
     camera_transform(cam, v_delta);
-
-    if (__DEBUG__LOG_CAMERA_POSITION)
-        log_info("CAM[POS]  %f  %f  %f", cam->position[0], cam->position[1], cam->position[2]);
-
-    if (__DEBUG__LOG_CAMERA_POSITION_DELTA)
-        log_info("CAM[POS Δ]  %f  %f  %f", v_delta[0], v_delta[1], v_delta[2]);
 }
 
 
-void camera_upload_to_gfx(Camera* cam) {
-    gfx_update_camera(cam->m_persp, cam->m_view);
+void camera_player_rotate(Camera* cam, vec2 mouse_dt) {
+    double yaw_delta =  mouse_dt[0] * CAMERA_SENSITIVITY;
+    double pitch_delta = -mouse_dt[1] * CAMERA_SENSITIVITY;
+
+    camera_rotate(cam, yaw_delta, pitch_delta);
 }

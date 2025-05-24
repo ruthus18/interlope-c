@@ -9,6 +9,7 @@
 
 #include "gfx.h"
 #include "./gfx_shader.h"
+#include "./camera.h"
 #include "../core/cgm.h"
 #include "../core/config.h"
 #include "../core/log.h"
@@ -322,18 +323,18 @@ void gfx_geometry_unload(GfxGeometry* geom) {
 
 
 // TODO: save data to gfx, fill vars in shader loop
-void gfx_update_camera(mat4 m_persp, mat4 m_view) {
+void gfx_update_camera(Camera* cam) {
     gfx_shader_use(self.shaders.object);
-    gfx_uniform_set_mat4(self.shaders.object, "m_persp", m_persp);
-    gfx_uniform_set_mat4(self.shaders.object, "m_view", m_view);
+    gfx_uniform_set_mat4(self.shaders.object, "m_persp", cam->m_persp);
+    gfx_uniform_set_mat4(self.shaders.object, "m_view", cam->m_view);
     
     gfx_shader_use(self.shaders.object_outline);
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_persp", m_persp);
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_view", m_view);
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_persp", cam->m_persp);
+    gfx_uniform_set_mat4(self.shaders.object_outline, "m_view", cam->m_view);
 
     gfx_shader_use(self.shaders.geometry);
-    gfx_uniform_set_mat4(self.shaders.geometry, "m_persp", m_persp);
-    gfx_uniform_set_mat4(self.shaders.geometry, "m_view", m_view);
+    gfx_uniform_set_mat4(self.shaders.geometry, "m_persp", cam->m_persp);
+    gfx_uniform_set_mat4(self.shaders.geometry, "m_view", cam->m_view);
 
     gfx_shader_use(NULL);
 }

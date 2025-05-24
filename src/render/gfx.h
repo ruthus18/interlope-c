@@ -2,6 +2,7 @@
 #pragma once
 #include <cglm/cglm.h>
 
+#include "./camera.h"
 #include "../core/types.h"
 
 /* ------ GFX Data ------ */
@@ -27,7 +28,7 @@ void gfx_destroy();
 bool gfx_need_stop();
 void gfx_stop();
 
-void gfx_update_camera(mat4 m_persp, mat4 m_view);  // TODO refactoring
+void gfx_update_camera(Camera* cam);  // TODO refactoring
 
 /* ------ Renderer: Object & Object Outline ------ */
 

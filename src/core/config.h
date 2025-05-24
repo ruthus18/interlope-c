@@ -31,12 +31,11 @@
 #define DIR_MODELS "assets/models/"
 #define DIR_TEXTURES "assets/textures/"
 
-/* --- Input --- */
-#define MOUSE_SENSITIVITY 130.0
 
 /* --- Camera --- */
 #define CAMERA_DEFAULT_FOV 75.0
 #define CAMERA_MOVEMENT_SPEED 6
+#define CAMERA_SENSITIVITY 130.0
 
 
 /* ------------------------------------------------------------------------- */

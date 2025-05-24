@@ -16,3 +16,4 @@ void cgm_model_mat(vec3 pos, vec3 rot, vec3 sc, mat4 dest);
 
 void cgm_rotation_mat(vec3 rot, mat4 dest);
 void cgm_front_vec(f64 yaw, f64 pitch, vec3 dest);
+void cgm_wsad_vec(vec3 v_front, bool w, bool s, bool a, bool d, vec3 dest);
