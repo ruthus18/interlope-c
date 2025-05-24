@@ -9,6 +9,8 @@ typedef struct Player {
     PhysicsObjectID physics_id;
     vec3 pos;
     vec2 rot;
+    f32 velocity_y;
+    bool is_grounded;
 } Player;
 
 
