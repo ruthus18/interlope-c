@@ -1,5 +1,5 @@
 #pragma once
-#include "../config.h"
+#include "../core/config.h"
 
 
 const char* _file_read_text(const char* path);

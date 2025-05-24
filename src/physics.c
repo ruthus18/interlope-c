@@ -3,15 +3,15 @@
 #include <ode/ode.h>
 #include <cglm/cglm.h>
 
-#include "physics.h"
-
-#include "config.h"
 #include "ode/collision.h"
 #include "ode/contact.h"
 #include "ode/mass.h"
 #include "ode/objects.h"
-#include "types.h"
-#include "log.h"
+
+#include "physics.h"
+#include "./core/config.h"
+#include "./core/types.h"
+#include "./core/log.h"
 
 
 // Documentation: https://ode.org/wiki/index.php/Manual

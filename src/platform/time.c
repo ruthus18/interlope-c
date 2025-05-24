@@ -6,9 +6,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "../config.h"
-#include "../types.h"
 #include "time.h"
+#include "../core/config.h"
+#include "../core/types.h"
 
 
 static f64 current_time = 0.0;       // GetTime value from GLFW

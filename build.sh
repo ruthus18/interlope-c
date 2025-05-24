@@ -15,28 +15,33 @@ time gcc \
     -lm -lGL -lGLEW -lglfw -lcglm -lode \
     -o ${BIN}/interlope\
     \
+    ${SRC}/assets/model.c \
+    ${SRC}/assets/texture.c \
+    \
+    ${SRC}/core/cgm.c \
+    ${SRC}/core/log.c \
+    \
+    ${SRC}/data_read/objdb_reader.c \
+    ${SRC}/data_read/scene_reader.c \
+    \
+    ${SRC}/editor/ui.c \
+    \
     ${SRC}/platform/file.c \
     ${SRC}/platform/input.c \
     ${SRC}/platform/time.c \
     ${SRC}/platform/window.c \
     \
-    ${SRC}/gfx.c \
-    ${SRC}/gfx_shader.c \
+    ${SRC}/render/camera.c \
+    ${SRC}/render/gfx.c \
+    ${SRC}/render/gfx_shader.c \
     \
-    ${SRC}/camera.c \
-    ${SRC}/cgm.c \
-    ${SRC}/editor.c \
-    ${SRC}/log.c \
-    ${SRC}/main.c \
-    ${SRC}/model.c \
-    ${SRC}/object.c \
-    ${SRC}/objdb.c \
-    ${SRC}/objdb_loader.c \
+    ${SRC}/world/objdb.c \
+    ${SRC}/world/object.c \
+    ${SRC}/world/player.c \
+    ${SRC}/world/scene.c \
+    \
     ${SRC}/physics.c \
-    ${SRC}/player.c \
-    ${SRC}/scene.c \
-    ${SRC}/scene_loader.c \
-    ${SRC}/texture.c \
+    ${SRC}/main.c \
     \
     ${VENDOR}/src/toml.c \
 

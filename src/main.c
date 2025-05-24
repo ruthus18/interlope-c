@@ -1,17 +1,16 @@
 #include <stdlib.h>
 
-#include "config.h"
-#include "gfx.h"
-#include "editor.h"
-#include "input_keys.h"
-#include "physics.h"
-#include "player.h"
-#include "scene.h"
-#include "scene_loader.h"
-#include "objdb_loader.h"
-#include "platform/input.h"
-#include "platform/time.h"
-#include "platform/window.h"
+#include "./core/config.h"
+#include "./data_read/scene_reader.h"
+#include "./data_read/objdb_reader.h"
+#include "./editor/ui.h"
+#include "./platform/input.h"
+#include "./platform/time.h"
+#include "./platform/window.h"
+#include "./render/gfx.h"
+#include "./world/player.h"
+#include "./world/scene.h"
+#include "./physics.h"
 
 
 static void game_on_init();
@@ -60,7 +59,7 @@ Object* door;
 
 
 void _init_sovsh_scene() {
-    objdb = objdb_load_toml("data/objects_sov.toml");
+    objdb = objdb_read_toml("data/objects_sov.toml");
     scene = scene_read_toml("data/scenes/sovsh_demo.toml", objdb);
 
     door = scene_find_object(scene, "sovsh_door_herm01");
@@ -68,7 +67,7 @@ void _init_sovsh_scene() {
 
 
 void _init_physics_scene() {
-    objdb = objdb_load_toml("data/objects.toml");
+    objdb = objdb_read_toml("data/objects.toml");
     scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
 }
 

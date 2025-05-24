@@ -5,8 +5,8 @@
 #include <GLFW/glfw3.h>
 
 #include "window.h"
-#include "../log.h"
-#include "../config.h"
+#include "../core/log.h"
+#include "../core/config.h"
 
 
 static Window* window = NULL;

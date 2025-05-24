@@ -2,7 +2,7 @@
 #include <cglm/cglm.h>
 #include <ode/ode.h>
 
-#include "types.h"
+#include "./core/types.h"
 
 
 typedef u32 PhysicsObjectID;

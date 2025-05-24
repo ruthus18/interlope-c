@@ -1,6 +1,8 @@
 #pragma once
 #include <cglm/cglm.h>
 
+#include "./input_keys.h"
+
 
 void input_init();
 void input_update();
