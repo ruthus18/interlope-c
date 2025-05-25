@@ -13,10 +13,14 @@
 [sovsh_floor]
     model = "dungeon/sovsh_floor01.glb"
     texture = "dungeon/floor_sov01.dds"
+    type = "STATIC"
+    physics = { shape = "BOX", size = [2.5, 0.05, 2.5], mass = 0.0 }
 
 [sovsh_wall]
     model = "dungeon/sovsh_wall01.glb"
     texture = "dungeon/wall_sov01.dds"
+    type = "STATIC"
+    physics = { shape = "BOX", size = [2.5, 2.5, 0.05], mass = 0.0 }
 
 [sovsh_ceil01]
     model = "dungeon/sovsh_ceil01.glb"
@@ -32,6 +36,8 @@
         "dungeon/wall_sov01.dds",
         "dungeon/concrete01.dds"
     ]
+    type = "STATIC"
+    physics = { shape = "BOX", size = [2.5, 2.5, 0.05], mass = 0.0 }
 
 [sovsh_wall_dr02]
     model = "dungeon/sovsh_wall_dr02.glb"
@@ -39,6 +45,8 @@
         "dungeon/wall_sov01.dds",
         "dungeon/concrete01.dds"
     ]
+    type = "STATIC"
+    physics = { shape = "BOX", size = [2.5, 2.5, 0.05], mass = 0.0 }
 
 # ------ Doors ------
 

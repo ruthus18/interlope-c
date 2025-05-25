@@ -41,4 +41,4 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
 
 void gfx_begin_draw_geometry();
 void gfx_end_draw_geometry();
-void gfx_draw_geometry(GfxGeometry* geom);
+void gfx_draw_geometry(GfxGeometry* geom, vec3 pos);

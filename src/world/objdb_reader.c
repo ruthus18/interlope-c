@@ -87,7 +87,8 @@ static ObjectType parse_object_type(toml_table_t* obj_record, char** obj_type_st
         *obj_type_str = _obj_type.u.s; // Store to free later
         if (strcmp(*obj_type_str, "RIGID_BODY") == 0)
             obj_type = ObjectType_RIGID_BODY;
-        // TODO: Add other types? Currently only RIGID_BODY is handled besides UNKNOWN.
+        if (strcmp(*obj_type_str, "STATIC") == 0)
+            obj_type = ObjectType_STATIC;
     }
     
     return obj_type;

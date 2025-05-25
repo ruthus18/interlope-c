@@ -22,6 +22,7 @@ time gcc \
     ${SRC}/core/log.c \
     \
     ${SRC}/editor/ui.c \
+    ${SRC}/editor/sys_geometry.c \
     \
     ${SRC}/gameplay/player.c \
     \
@@ -31,6 +32,7 @@ time gcc \
     ${SRC}/platform/window.c \
     \
     ${SRC}/render/camera.c \
+    ${SRC}/render/geometry.c \
     ${SRC}/render/gfx.c \
     ${SRC}/render/gfx_shader.c \
     \

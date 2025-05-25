@@ -38,6 +38,11 @@ typedef struct ObjectRecord {
     Model* __model;
 } ObjectRecord;
 
+typedef struct ObjectsDB {
+    ObjectRecord objects[1024]; // Using a define in the .c file
+    u64 objects_count;
+} ObjectsDB;
+
 
 ObjectRecord objrec_create(
     const char* id,
@@ -49,12 +54,6 @@ ObjectRecord objrec_create(
 void objrec_destroy(ObjectRecord* obj);
 void objrec_load_model(ObjectRecord* obj, const char* model_path);
 void objrec_load_texture(ObjectRecord* obj, const char* texture_path);
-
-
-typedef struct ObjectsDB {
-    ObjectRecord objects[1024]; // Using a define in the .c file
-    u64 objects_count;
-} ObjectsDB;
 
 ObjectsDB* objdb_create(void);
 void objdb_destroy(ObjectsDB*);

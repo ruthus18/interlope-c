@@ -66,7 +66,7 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
             );
         }
         else {
-            log_exit("Invalid object type: %s", object_get_type_string(obj));
+            log_exit("Invalid object type: %s (%s)", object_get_type_string(obj), obj->base_id);
         }
     }
 

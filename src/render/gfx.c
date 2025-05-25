@@ -421,11 +421,11 @@ void gfx_end_draw_geometry() {
     gfx_shader_use(NULL);
 }
 
-void gfx_draw_geometry(GfxGeometry* geom) {
+void gfx_draw_geometry(GfxGeometry* geom, vec3 pos) {
     gfx_uniform_set_vec3(self.shaders.geometry, "v_color", geom->color);
 
     mat4 m_model;
-    cgm_model_mat((vec3){0.0, 2.0, 0.0}, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
+    cgm_model_mat(pos, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
     gfx_uniform_set_mat4(self.shaders.geometry, "m_model", m_model);
 
     glBindVertexArray(geom->vao);

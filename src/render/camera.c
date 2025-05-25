@@ -7,14 +7,16 @@
 #include "../core/config.h"
 #include "../core/types.h"
 #include "../platform/time.h"
+#include "cglm/vec3.h"
 
 
 
 Camera* camera_create() {
     Camera* cam = malloc(sizeof(Camera));
 
-    camera_set_position(cam, (vec3){0.0, 0.0, 0.0});
-    camera_set_rotation(cam, 270.0, 0.0);
+    glm_vec3_copy((vec3){0.0, 0.0, 0.0}, cam->position);
+    cam->pitch = 0.0;
+    cam->yaw = 0.0;
 
     camera_update_persp_mat(cam);
     camera_update_view_mat(cam);

@@ -10,7 +10,7 @@
 Player self;
 
 const f64 PLAYER_THICKNESS = 0.4;
-const f64 PLAYER_HEIGHT = 1.7;
+const f64 PLAYER_HEIGHT = 1.65;
 #define PLAYER_SPEED 6
 #define GRAVITY -9.81f
 #define JUMP_FORCE 5.0f
