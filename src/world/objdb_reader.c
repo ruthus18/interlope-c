@@ -8,6 +8,10 @@
 #include "../core/log.h"
 #include "../core/types.h"
 
+
+static const u64 MAX_OBJECTS_DB_SIZE = 1024;
+
+
 static toml_table_t* load_toml_file(const char* toml_path) {
     FILE* fp;
     char errbuf[200];
@@ -25,10 +29,10 @@ static toml_table_t* load_toml_file(const char* toml_path) {
 }
 
 static u64 validate_db_size(toml_table_t* db) {
-    extern const u64 _MAX_OBJECTS_DB_SIZE;
+    extern const u64 MAX_OBJECTS_DB_SIZE;
     u64 db_size = toml_table_ntab(db);
     
-    if (db_size > _MAX_OBJECTS_DB_SIZE)
+    if (db_size > MAX_OBJECTS_DB_SIZE)
         log_exit("Objects db is too large to open! (size=%llu)", db_size);
         
     return db_size;

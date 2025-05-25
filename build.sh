@@ -21,10 +21,9 @@ time gcc \
     ${SRC}/core/cgm.c \
     ${SRC}/core/log.c \
     \
-    ${SRC}/data_read/objdb_reader.c \
-    ${SRC}/data_read/scene_reader.c \
-    \
     ${SRC}/editor/ui.c \
+    \
+    ${SRC}/gameplay/player.c \
     \
     ${SRC}/platform/file.c \
     ${SRC}/platform/input.c \
@@ -36,9 +35,10 @@ time gcc \
     ${SRC}/render/gfx_shader.c \
     \
     ${SRC}/world/objdb.c \
+    ${SRC}/world/objdb_reader.c \
     ${SRC}/world/object.c \
-    ${SRC}/world/player.c \
     ${SRC}/world/scene.c \
+    ${SRC}/world/scene_reader.c \
     \
     ${SRC}/physics.c \
     ${SRC}/main.c \

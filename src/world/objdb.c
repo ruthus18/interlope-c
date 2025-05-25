@@ -83,18 +83,18 @@ void objrec_load_model(ObjectRecord* obj, const char* model_path) {
 }
 
 
-constexpr u64 _MAX_OBJECT_TEXTURES = 8;
+static constexpr u64 MAX_OBJECT_TEXTURES = 8;
 
 void objrec_load_texture(ObjectRecord* obj, const char* texture_path) {
     if (obj->textures == NULL) {
-        obj->textures = malloc(sizeof(GfxTexture*) * _MAX_OBJECT_TEXTURES);
+        obj->textures = malloc(sizeof(GfxTexture*) * MAX_OBJECT_TEXTURES);
 
         if (obj->textures == NULL) {
             log_exit("Failed to allocate memory for object textures (ID: %s)", obj->id);
         }
     }
 
-    if (obj->textures_count > _MAX_OBJECT_TEXTURES) {
+    if (obj->textures_count > MAX_OBJECT_TEXTURES) {
         log_exit("Max textures per model reached");
     }
 
@@ -104,9 +104,6 @@ void objrec_load_texture(ObjectRecord* obj, const char* texture_path) {
 
 
 /* ========================================================================= */
-
-
-const u64 _MAX_OBJECTS_DB_SIZE = 1024;
 
 
 ObjectsDB* objdb_create(void) {

@@ -1,14 +1,14 @@
 #include <stdlib.h>
 
 #include "./core/config.h"
-#include "./data_read/scene_reader.h"
-#include "./data_read/objdb_reader.h"
+#include "./world/scene_reader.h"
+#include "./world/objdb_reader.h"
 #include "./editor/ui.h"
+#include "./gameplay/player.h"
 #include "./platform/input.h"
 #include "./platform/time.h"
 #include "./platform/window.h"
 #include "./render/gfx.h"
-#include "./world/player.h"
 #include "./world/scene.h"
 #include "./physics.h"
 
