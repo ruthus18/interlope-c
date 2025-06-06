@@ -117,8 +117,7 @@ Scene* scene_read_toml(const char* toml_path, ObjectsDB* objdb) {
     toml_array_t* objects = get_objects_array(toml_scene, &scene_size);
     
     // Make sure the scene isn't too large
-    extern const u64 _MAX_SCENE_OBJECTS;
-    if (scene_size > _MAX_SCENE_OBJECTS) {
+    if (scene_size > SCENE_MAX_OBJECTS) {
         log_exit("Scene is too large to open! (size=%llu)", scene_size);
     }
     

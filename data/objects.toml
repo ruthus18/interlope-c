@@ -1,16 +1,82 @@
 # --- Dungeon ---
 
-[floor_ceiling]
-    model = "ps1/floor_ceiling.glb"
+[living_plat]
+    model = "dungeon/living_platform.glb"
     textures = [
-        "dungeon/floor_sov01.dds",
-        # "ps1/tiles_floor_01.dds",
-        "ps1/concrete_01.dds",
+        "dungeon/living_floor1.dds",
+        "dungeon/living_ceiling.dds",
     ]
     type = "STATIC"
-    physics = { shape = "BOX", size = [4.0, 0.1, 4.0], mass = 0.0 }
+    physics = { shape = "BOX", size = [3.0, 0.1, 3.0], mass = 0.0 }
 
-# --- Clutter ---
+[living_plat_broom]
+    model = "dungeon/living_platform.glb"
+    textures = [
+        "dungeon/living_floor_broom.dds",
+        "dungeon/living_ceiling.dds",
+    ]
+    type = "STATIC"
+
+[living_wall]
+    model = "dungeon/living_wall.glb"
+    textures = [
+        "dungeon/living_wall1.dds",
+        "dungeon/living_wall1.dds",
+        "dungeon/living_decor2.dds",
+    ]
+    type = "STATIC"
+    physics = { shape = "BOX", size = [3.0, 3.0, 0.2], mass = 0.0 }
+
+[living_wall_broom]
+    model = "dungeon/living_wall.glb"
+    textures = [
+        "dungeon/living_wall_broom.dds",
+        "dungeon/living_wall1.dds",
+        "dungeon/living_decor2.dds",
+    ]
+    type = "STATIC"
+    physics = { shape = "BOX", size = [3.0, 3.0, 0.2], mass = 0.0 }
+
+[living_wall_dr1]
+    model = "dungeon/living_wall_dr1.glb"
+    textures = [
+        "dungeon/living_wall1.dds",
+        "dungeon/living_wall1.dds",
+        "dungeon/living_decor2.dds",
+    ]
+    # type = "STATIC"
+    # physics = { shape = "BOX", size = [3.0, 3.0, 0.2], mass = 0.0 }
+
+[living_wall_dr1_broom]
+    model = "dungeon/living_wall_dr1.glb"
+    textures = [
+        "dungeon/living_wall_broom.dds",
+        "dungeon/living_wall1.dds",
+        "dungeon/living_decor2.dds",
+    ]
+    # type = "STATIC"
+    # physics = { shape = "BOX", size = [3.0, 3.0, 0.2], mass = 0.0 }
+
+[living_wall_wn1]
+    model = "dungeon/living_wall_wn1.glb"
+    textures = [
+        "dungeon/living_wall1.dds",
+        "dungeon/living_wall1.dds",
+        "dungeon/living_decor2.dds",
+        "dungeon/living_window1.dds",
+    ]
+    type = "STATIC"
+    physics = { shape = "BOX", size = [3.0, 3.0, 0.2], mass = 0.0 }
+
+[living_door1]
+    model = "dungeon/living_door1.glb"
+    textures = [
+        "dungeon/living_door1.dds",
+        "dungeon/living_door_handle1.dds",
+        "dungeon/living_door_handle1.dds",
+    ]
+
+# # --- Clutter ---
 
 [box]
     model = "ps1/box01.glb"

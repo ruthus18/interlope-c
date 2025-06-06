@@ -12,7 +12,7 @@ time gcc \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
     -Wl,-rpath=${VENDOR} \
-    -lm -lGL -lGLEW -lglfw -lcglm -lode \
+    -lm -lGL -lGLEW -lglfw -lcglm -lode -lsqlite3 \
     -o ${BIN}/interlope\
     \
     ${SRC}/assets/model.c \

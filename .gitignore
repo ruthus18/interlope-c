@@ -10,4 +10,5 @@
 # (not licensed to upload in public)
 /assets
 
+__pycache__
 **/.claude/settings.local.json

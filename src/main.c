@@ -69,16 +69,16 @@ void _init_sovsh_scene() {
 
 void _init_physics_scene() {
     objdb = objdb_read_toml("data/objects.toml");
-    scene = scene_read_toml("data/scenes/cube_test.toml", objdb);
+    scene = scene_read_toml("data/scenes/rooms.toml", objdb);
 }
 
 
 static
 void game_on_init() {    
-    _init_sovsh_scene();
-    // _init_physics_scene();
+    // _init_sovsh_scene();
+    _init_physics_scene();
 
-    player_init((vec3){3.5, 0.0, 3.5}, -135.0, 0.0);
+    player_init((vec3){0.0, 0.0, 0.0}, 0.0, 0.0);
 
     editor_init();
     editor_set_scene(scene);

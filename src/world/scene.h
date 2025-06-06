@@ -6,7 +6,16 @@
 #include "../core/types.h"
 
 
-typedef struct Scene Scene;
+#define SCENE_MAX_OBJECTS 1024
+
+typedef struct Scene {
+    Object** objects;
+    u64 objects_count;
+    // Maximum number of objects that can be stored without resizing
+    u64 objects_capacity;
+
+    Object* selected_object;
+} Scene;
 
 Scene* scene_create(void);
 void scene_destroy(Scene*);

@@ -15,26 +15,13 @@
 #include "./scene.h"
 
 
-const u64 _MAX_SCENE_OBJECTS = 1024;
-
-
-typedef struct Scene {
-    Object** objects;
-    u64 objects_count;
-    // Maximum number of objects that can be stored without resizing
-    u64 objects_capacity;
-
-    Object* selected_object;
-} Scene;
-
-
 Scene* scene_create() {
     Scene* scene = malloc(sizeof(Scene));
     if (scene == NULL) {
         log_exit("Failed to allocate memory for Scene");
     }
     
-    scene->objects_capacity = _MAX_SCENE_OBJECTS;
+    scene->objects_capacity = SCENE_MAX_OBJECTS;
     scene->objects = malloc(sizeof(Object*) * scene->objects_capacity);
     if (scene->objects == NULL) {
         free(scene);
