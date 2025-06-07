@@ -16,6 +16,7 @@ time gcc \
     -o ${BIN}/interlope\
     \
     ${SRC}/assets/model.c \
+    ${SRC}/assets/storage.c \
     ${SRC}/assets/texture.c \
     \
     ${SRC}/core/cgm.c \
@@ -41,6 +42,7 @@ time gcc \
     ${SRC}/world/object.c \
     ${SRC}/world/scene.c \
     ${SRC}/world/scene_reader.c \
+    ${SRC}/world/world.c \
     \
     ${SRC}/physics.c \
     ${SRC}/main.c \

@@ -19,8 +19,10 @@ const f64 PLAYER_HEIGHT = 1.7;
 void player_init(vec3 pos, f64 pitch, f64 yaw) {
     glm_vec3_copy(pos, self.pos);
     glm_vec2_copy((vec2){pitch, yaw}, self.rot);
+
     self.velocity_y = 0.0f;
     self.is_grounded = false;
+    self.is_active = true;
     
     self.camera = camera_create();
     vec3 camera_pos = {
@@ -40,6 +42,11 @@ void player_init(vec3 pos, f64 pitch, f64 yaw) {
 
 void player_destroy() {
     camera_destroy(self.camera);
+}
+
+
+void player_set_is_active(bool value) {
+    self.is_active = value;
 }
 
 
@@ -161,5 +168,7 @@ void player_handle_movement() {
 
 
 void player_update() {
-    player_handle_movement();
+    if (self.is_active) {
+        player_handle_movement();
+    }
 }

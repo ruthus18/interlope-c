@@ -75,7 +75,7 @@ Model* model_read(const char* model_relpath) {
     cgltf_data* data = NULL;
 
     const char* path;
-    with_path_to_model(path, model_relpath, {
+    with_path_to_mesh(path, model_relpath, {
         parse_res = cgltf_parse_file(&options, path, &data);
     
         if (parse_res != cgltf_result_success) {

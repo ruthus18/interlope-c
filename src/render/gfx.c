@@ -26,6 +26,8 @@ static struct _Gfx {
         Shader* object_outline;
         Shader* geometry;
     } shaders;
+
+    int outline_id;
 } self;
 
 
@@ -68,6 +70,7 @@ void _destroy_shaders() {
 void gfx_init() {
     self.window = window_get();
     self.stop_ = false;
+    self.outline_id = -1;
 
     _log_startup_info();
     _init_shaders();
@@ -354,33 +357,17 @@ void gfx_end_draw_objects() {
 }
 
 
-void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
-
-    gfx_uniform_set_mat4(self.shaders.object, "m_model", m_model);
-    
-    glBindVertexArray(mesh->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-    
-    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
-    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-
-void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
+void gfx_draw_object_outlined__enter(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
     glEnable(GL_STENCIL_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glClear(GL_STENCIL_BUFFER_BIT);
 
     glStencilFunc(GL_ALWAYS, 1, 0xFF);
     glStencilMask(0xFF);
+}
 
-    gfx_draw_object(mesh, texture, m_model);
-    
+
+void gfx_draw_object_outlined__exit(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {    
     glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
     glStencilMask(0x00);
 
@@ -413,8 +400,37 @@ void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) 
 }
 
 
+void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model, i32 id) {
+    if (id == self.outline_id) {
+        gfx_draw_object_outlined__enter(mesh, texture, m_model);
+    }
+
+    gfx_uniform_set_mat4(self.shaders.object, "m_model", m_model);
+    
+    glBindVertexArray(mesh->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
+
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+    
+    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
+    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    if (id == self.outline_id) {
+        gfx_draw_object_outlined__exit(mesh, texture, m_model);
+    }
+}
+
+void gfx_set_outline_id(i32 value) {
+    self.outline_id = value;
+}
+
+
 void gfx_begin_draw_geometry() {
     gfx_shader_use(self.shaders.geometry);
+    glDisable(GL_DEPTH_TEST);
 }
 
 void gfx_end_draw_geometry() {

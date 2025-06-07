@@ -101,13 +101,12 @@ void scene_draw(Scene* scene) {
     for (int i = 0; i < scene->objects_count; i++) {
         Object* obj = scene->objects[i];
 
+        if (obj == scene->selected_object) {
+            gfx_set_outline_id(i);
+        }
+
         for (int j = 0; j < obj->slots_count; j++) {
-            if (obj != scene->selected_object) {
-                gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j]);
-            }
-            else {
-                gfx_draw_object_outlined(obj->meshes[j], obj->textures[j], obj->m_models[j]);
-            }
+            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j], i);
         }
     }
     gfx_end_draw_objects();

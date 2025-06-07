@@ -16,8 +16,8 @@ const char* _path_construct(const char* base, const char* child);
     inner \
     free((void*) path);
 
-#define with_path_to_model(path, rel_path, inner) \
-    path = _path_construct(DIR_MODELS, rel_path); \
+#define with_path_to_mesh(path, rel_path, inner) \
+    path = _path_construct(DIR_MESHES, rel_path); \
     inner \
     free((void*) path);
 

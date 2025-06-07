@@ -34,8 +34,8 @@ void gfx_update_camera(Camera* cam);  // TODO refactoring
 
 void gfx_begin_draw_objects();
 void gfx_end_draw_objects();
-void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
-void gfx_draw_object_outlined(GfxMesh* mesh, GfxTexture* texture, mat4 m_model);
+void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model, i32 id);
+void gfx_set_outline_id(i32);
 
 /* ------ Renderer: Geometry ------ */
 

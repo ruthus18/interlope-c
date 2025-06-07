@@ -10,11 +10,16 @@ typedef struct Player {
     vec3 pos;
     vec2 rot;
     f32 velocity_y;
+
+    bool is_active;
     bool is_grounded;
+
 } Player;
 
 
 void player_init(vec3 pos, f64 pitch, f64 yaw);
 void player_destroy();
+
+void player_set_is_active(bool value);
 
 void player_update();

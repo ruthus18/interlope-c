@@ -5,10 +5,7 @@
 /bin
 
 # Development notes & tmp files
-/dev
-
-# (not licensed to upload in public)
-/assets
+/.dev
 
 __pycache__
 **/.claude/settings.local.json

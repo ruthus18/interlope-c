@@ -19,6 +19,7 @@
 #include "../core/types.h"
 #include "../platform/window.h"
 #include "../world/scene.h"
+#include "../world/world.h"
 
 
 #define EDITOR_MAX_VERTEX_BUFFER  512 * 1024
@@ -71,17 +72,15 @@ void editor_init() {
 
     self.show_physics = false;
     self.show_physics_label = "[ ] Physics";
+
+    // --- Set Scene ---
+    self.scene = world_get_current_scene();
+    self.selected_obj_id = -1;
 }
 
 
 void editor_destroy() {
     nk_glfw3_shutdown();
-}
-
-
-void editor_set_scene(Scene* scene) {
-    self.scene = scene;
-    self.selected_obj_id = -1;
 }
 
 
