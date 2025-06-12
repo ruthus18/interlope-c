@@ -48,7 +48,7 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
             body_type = PHYSICS_BODY_BOX;
         }
         
-        if (obj->type == ObjectType_STATIC) {
+        if (obj->type == ObjectTypeD_STATIC) {
             obj->physics_id = physics_create_static_object(
                 body_type,
                 obj->pos,
@@ -56,7 +56,7 @@ Object* object_create(ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
                 objrec->physics.collision_size
             );
         }
-        else if (obj->type == ObjectType_RIGID_BODY) {
+        else if (obj->type == ObjectTypeD_RIGID_BODY) {
             obj->physics_id = physics_create_rigid_object(
                 body_type,
                 obj->pos,
@@ -133,13 +133,13 @@ const char* object_get_base_id(Object* obj) {
 
 
 const char* object_get_type_string(Object* obj) {
-    if (obj->type == ObjectType_UNKNOWN)
+    if (obj->type == ObjectTypeD_UNKNOWN)
         return "UNKNOWN";
 
-    if (obj->type == ObjectType_STATIC)
+    if (obj->type == ObjectTypeD_STATIC)
         return "STATIC";
 
-    if (obj->type == ObjectType_RIGID_BODY)
+    if (obj->type == ObjectTypeD_RIGID_BODY)
         return "RIGID_BODY";
 
     log_exit("Unmatched object type: %i", obj->type);
@@ -197,10 +197,10 @@ void object_set_subm_rotation(Object* obj, vec3 new_rot, u32 slot_idx) {
 
 
 void object_update(Object* obj) {
-    if (obj->type == ObjectType_STATIC) {
+    if (obj->type == ObjectTypeD_STATIC) {
 
     }
-    else if (obj->type == ObjectType_RIGID_BODY) {
+    else if (obj->type == ObjectTypeD_RIGID_BODY) {
         vec3 obj_pos, obj_rot;
         physics_get_object_position(obj->physics_id, obj_pos);
         object_set_position(obj, obj_pos);

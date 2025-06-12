@@ -13,7 +13,8 @@
 #include "../world/scene.h"
 
 
-static toml_table_t* load_toml_file(const char* toml_path) {
+static
+toml_table_t* _load_toml_file(const char* toml_path) {
     FILE* fp;
     char errbuf[200];
     toml_table_t* toml_scene;
@@ -29,7 +30,8 @@ static toml_table_t* load_toml_file(const char* toml_path) {
     return toml_scene;
 }
 
-static toml_array_t* get_objects_array(toml_table_t* toml_scene, u64* scene_size) {
+static 
+toml_array_t* _get_objects_array(toml_table_t* toml_scene, u64* scene_size) {
     toml_array_t* objects = toml_array_in(toml_scene, "obj");
     
     if (!objects) log_exit("Invalid scene file: no objects found");
@@ -39,7 +41,8 @@ static toml_array_t* get_objects_array(toml_table_t* toml_scene, u64* scene_size
     return objects;
 }
 
-static void parse_position(toml_array_t* pos_array, vec3 position, const char* obj_id_str) {
+static
+void _parse_position(toml_array_t* pos_array, vec3 position, const char* obj_id_str) {
     if (pos_array) {
         if (toml_array_nelem(pos_array) >= 3) {
             position[0] = toml_double_at(pos_array, 0).u.d;
@@ -57,7 +60,8 @@ static void parse_position(toml_array_t* pos_array, vec3 position, const char* o
     }
 }
 
-static void parse_rotation(toml_array_t* rot_array, vec3 rotation, const char* obj_id_str) {
+static
+void _parse_rotation(toml_array_t* rot_array, vec3 rotation, const char* obj_id_str) {
     if (rot_array) {
         if (toml_array_nelem(rot_array) >= 3) {
             rotation[0] = toml_double_at(rot_array, 0).u.d;
@@ -75,7 +79,8 @@ static void parse_rotation(toml_array_t* rot_array, vec3 rotation, const char* o
     }
 }
 
-static void process_object_record(
+static
+void _process_object_record(
     Scene* scene, 
     toml_table_t* obj_record, 
     ObjectsDB* objdb
@@ -91,10 +96,10 @@ static void process_object_record(
     vec3 position, rotation;
     
     toml_array_t* pos_array = toml_array_in(obj_record, "pos");
-    parse_position(pos_array, position, obj_id_str);
+    _parse_position(pos_array, position, obj_id_str);
     
     toml_array_t* rot_array = toml_array_in(obj_record, "rot");
-    parse_rotation(rot_array, rotation, obj_id_str);
+    _parse_rotation(rot_array, rotation, obj_id_str);
     
     ObjectRecord* objrec = objdb_find(objdb, obj_id_str);
     if (objrec == NULL) {
@@ -111,10 +116,10 @@ Scene* scene_read_toml(const char* toml_path, ObjectsDB* objdb) {
     u64 scene_size;
     
     // Load the TOML file
-    toml_table_t* toml_scene = load_toml_file(toml_path);
+    toml_table_t* toml_scene = _load_toml_file(toml_path);
     
     // Get the objects array and size
-    toml_array_t* objects = get_objects_array(toml_scene, &scene_size);
+    toml_array_t* objects = _get_objects_array(toml_scene, &scene_size);
     
     // Make sure the scene isn't too large
     if (scene_size > SCENE_MAX_OBJECTS) {
@@ -127,7 +132,7 @@ Scene* scene_read_toml(const char* toml_path, ObjectsDB* objdb) {
     // Process each object in the scene
     for (int i = 0; i < scene_size; i++) {
         toml_table_t* obj_record = toml_table_at(objects, i);
-        process_object_record(scene, obj_record, objdb);
+        _process_object_record(scene, obj_record, objdb);
     }
     
     log_info("Scene loaded, size: %llu", scene_size);

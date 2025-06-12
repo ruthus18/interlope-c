@@ -12,7 +12,7 @@ time gcc \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
     -Wl,-rpath=${VENDOR} \
-    -lm -lGL -lGLEW -lglfw -lcglm -lode -lsqlite3 \
+    -lm -lGL -lGLEW -lglfw -lcglm -lode -lsqlite3 -lcjson -lcjson_utils \
     -o ${BIN}/interlope\
     \
     ${SRC}/assets/model.c \
@@ -21,6 +21,9 @@ time gcc \
     \
     ${SRC}/core/cgm.c \
     ${SRC}/core/log.c \
+    \
+    ${SRC}/database/db.c \
+    ${SRC}/database/loader.c \
     \
     ${SRC}/editor/ui.c \
     ${SRC}/editor/sys_geometry.c \
@@ -44,6 +47,7 @@ time gcc \
     ${SRC}/world/scene_reader.c \
     ${SRC}/world/world.c \
     \
+    ${SRC}/engine.c \
     ${SRC}/physics.c \
     ${SRC}/main.c \
     \

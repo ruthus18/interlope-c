@@ -34,3 +34,27 @@
 [[obj]]
     id = "GridFloor"
     pos = [3.0, 0.0, 3.0]
+
+[[obj]]
+    id = "GridFloor"
+    pos = [6.0, 0.0, -3.0]
+
+[[obj]]
+    id = "GridFloor"
+    pos = [6.0, 0.0, 0.0]
+
+[[obj]]
+    id = "GridFloor"
+    pos = [6.0, 0.0, 3.0]
+
+[[obj]]
+    id = "GridWallDr"
+    pos = [4.5, 0.0, -3.0]
+
+[[obj]]
+    id = "GridWallWn"
+    pos = [4.5, 0.0, 0.0]
+
+[[obj]]
+    id = "GridWall"
+    pos = [4.5, 0.0, 3.0]

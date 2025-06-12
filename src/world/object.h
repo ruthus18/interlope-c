@@ -24,7 +24,7 @@ typedef struct Object {
     vec3* local_rotations;
     mat4* m_models;
 
-    ObjectType type;
+    ObjectTypeD type;
 
     PhysicsObjectID physics_id;
 } Object;

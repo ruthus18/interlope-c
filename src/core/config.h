@@ -23,22 +23,34 @@
 #define WINDOW_BG_COLOR         (f32)29 / 255, (f32)32 / 255, (f32)33 / 255, 1.0
 #define WINDOW_MAX_FRAMERATE    120.0
 
-/* --- GFX --- */
-#define GFX_WIREFRAME_MODE  false
-
 /* --- Paths & Dirs --- */
 #define DIR_SHADERS     "shaders/"
 #define DIR_MESHES      "assets/meshes/"
 #define DIR_TEXTURES    "assets/textures/"
+
+#define PATH_OBJECTS_DATA       "data/objects.json"
+#define PATH_INIT_SCENE_DATA    "data/scenes/test.json"
+
+/* --- GFX --- */
+#define GFX_WIREFRAME_MODE  false
+
+/* --- Physics --- */
+#define PHYSICS_GRAVITY -9.81
+
+/* --- World --- */
+#define WORLD_OBJDB_PATH        "data/objects.toml"
+#define WORLD_INIT_SCENE_PATH   "data/scenes/test.toml"
 
 /* --- Camera --- */
 #define CAMERA_DEFAULT_FOV      75.0
 #define CAMERA_MOVEMENT_SPEED   6
 #define CAMERA_SENSITIVITY      130.0
 
-/* --- World --- */
-#define WORLD_OBJDB_PATH        "data/objects.toml"
-#define WORLD_INIT_SCENE_PATH   "data/scenes/test.toml"
+/* --- Player --- */
+#define PLAYER_WIDTH        0.4
+#define PLAYER_HEIGHT       1.7
+#define PLAYER_SPEED        6.5
+#define PLAYER_JUMP_FORCE   5.0
 
 /* ------------------------------------------------------------------------- */
 /* --- Debugging --- */

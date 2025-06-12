@@ -19,6 +19,18 @@ void log_greeting(const char* msg, ...) {
 }
 
 
+void log_debug(const char* msg, ...) {
+    fprintf(stdout, TERM_CYAN);
+
+    va_list argp;
+    va_start(argp, msg);
+    vfprintf(stdout, msg, argp);
+    va_end(argp);
+
+    fprintf(stdout, "%s\n", TERM_RESET);
+}
+
+
 void log_info(const char* msg, ...) {
     va_list argp;
     va_start(argp, msg);

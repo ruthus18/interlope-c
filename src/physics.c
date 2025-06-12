@@ -17,7 +17,6 @@
 // Documentation: https://ode.org/wiki/index.php/Manual
 
 
-static const dReal GRAVITY = -9.81;
 // TODO: Dynamic timestep
 static const dReal TIMESTEP = (1.0 / WINDOW_MAX_FRAMERATE);
 
@@ -73,7 +72,7 @@ void physics_init() {
         self.objects[i].geom = NULL;
     }
 
-    dWorldSetGravity(self.world, 0.0, 0.0, GRAVITY);
+    dWorldSetGravity(self.world, 0.0, 0.0, (dReal)PHYSICS_GRAVITY);
     
     // Increase solver iterations for better stability with high mass objects
     dWorldSetQuickStepNumIterations(self.world, 100);

@@ -11,7 +11,7 @@
 
 ObjectRecord objrec_create(
     const char* id,
-    ObjectType type,
+    ObjectTypeD type,
     const char* model_path,
     const char** texture_paths,
     const PhysicsProperties* physics

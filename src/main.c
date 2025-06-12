@@ -1,15 +1,12 @@
 #include <stdlib.h>
 
-#include "./core/config.h"
-#include "./editor/sys_geometry.h"
-#include "./editor/ui.h"
-#include "./platform/input.h"
-#include "./platform/time.h"
-#include "./platform/window.h"
-#include "./render/gfx.h"
-#include "./world/world.h"
-#include "./physics.h"
+#include "core/log.h"
+#include "database/db.h"
+#include "editor/sys_geometry.h"
+#include "editor/ui.h"
 #include "gameplay/player.h"
+#include "platform/input.h"
+#include "engine.h"
 
 
 static void __game_on_init__();
@@ -19,45 +16,16 @@ static void __game_on_draw__();
 
 
 int main() {
-    window_init();
-    input_init();
-    gfx_init();
-    physics_init();
-    world_init();
+    engine_set_callback(__game_on_init__, ENGINECB_ON_INIT);
+    engine_set_callback(__game_on_destroy__, ENGINECB_ON_DESTROY);
+    engine_set_callback(__game_on_update__, ENGINECB_ON_UPDATE);
+    engine_set_callback(__game_on_draw__, ENGINECB_ON_DRAW);
 
-    __game_on_init__();
-
-    while (!gfx_need_stop()) {
-        window_poll_events();
-        time_update();
-        input_update();
-        physics_update();
-        world_update();
-        __game_on_update__();
-
-        world_draw();   
-        __game_on_draw__();
-
-        window_swap_buffers();
-        if (!WINDOW_VSYNC)  time_limit_framerate();
-    }
-    __game_on_destroy__();
-
-    world_destroy();
-    physics_destroy();
-    gfx_destroy();
-    window_destroy();
+    engine_run();
     return EXIT_SUCCESS;
 }
 
-
-void __exit() {
-    gfx_stop();
-}
-
-
-/* ------ Application Logic ------ */
-
+/* ------------------------------------------------------------------------- */
 
 bool is_editor_visible = false;
 bool is_cursor_visible = false;
@@ -69,6 +37,14 @@ void __game_on_init__() {
     editor_geometry_init();
 
     cursor_set_visible(is_cursor_visible);
+
+    // ---
+    Database* db = db_get();
+    log_debug("Objects DB size: %u", db->objects_count);
+    log_debug("Scene size: %u", db->scene->object_refs_count);
+
+    ObjectInfo* floor_info = db_get_object_info("GridFloor");
+
 }
 
 
@@ -81,7 +57,8 @@ void __game_on_destroy__() {
 
 static
 void __game_on_update__() {
-    if (input_is_keyp(IN_KEY_ESC)) __exit();
+    if (input_is_keyp(IN_KEY_ESC))
+        engine_exit();
 
     // Switch game/editor mode
     else if (input_is_keyp(IN_KEY_F1)) {
@@ -99,11 +76,13 @@ void __game_on_update__() {
         cursor_set_visible(is_cursor_visible);
         player_set_is_active(!is_cursor_visible);
     }
+
+    editor_update(is_editor_visible);
 }
 
 
 static
 void __game_on_draw__() {
     editor_geometry_draw();
-    editor_update(is_editor_visible);
 }
+

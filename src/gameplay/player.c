@@ -1,19 +1,14 @@
 #include "player.h"
+#include "../core/cgm.h"
+#include "../core/config.h"
+#include "../platform/input.h"
+#include "../platform/time.h"
 #include "../render/camera.h"
 #include "../render/gfx.h"
-#include "../platform/input.h"
 #include "../physics.h"
-#include "../core/cgm.h"
-#include "../platform/time.h"
 
 
 Player self;
-
-const f64 PLAYER_THICKNESS = 0.4;
-const f64 PLAYER_HEIGHT = 1.7;
-#define PLAYER_SPEED 6
-#define GRAVITY -9.81f
-#define JUMP_FORCE 5.0f
 
 
 void player_init(vec3 pos, f64 pitch, f64 yaw) {
@@ -35,7 +30,7 @@ void player_init(vec3 pos, f64 pitch, f64 yaw) {
         PHYSICS_BODY_CAPSULE,
         (vec3){pos[0], pos[1] + PLAYER_HEIGHT / 2 + 0.15, pos[2]},
         (vec3){0.0, 0.0, 0.0},
-        (vec3){PLAYER_THICKNESS / 2, PLAYER_HEIGHT, 0.0}
+        (vec3){PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0.0}
     );
 }
 
@@ -78,13 +73,13 @@ void player_handle_movement() {
 
     // --- Jump ---
     if (space && self.is_grounded) {
-        self.velocity_y = JUMP_FORCE;
+        self.velocity_y = PLAYER_JUMP_FORCE;
         self.is_grounded = false;
     }
 
     // --- Gravity ---
     if (!self.is_grounded) {
-        self.velocity_y += GRAVITY * dt;
+        self.velocity_y += PHYSICS_GRAVITY * dt;
     } else {
         self.velocity_y = 0.0f;
     }

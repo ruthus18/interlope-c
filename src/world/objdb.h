@@ -4,13 +4,13 @@
 #include "../assets/model.h"
 
 
-typedef enum ObjectType {
-    ObjectType_UNKNOWN,
-    ObjectType_PLAYER,
-    ObjectType_STATIC,
-    ObjectType_RIGID_BODY,
-    ObjectType_DOOR,
-} ObjectType;
+typedef enum ObjectTypeD {
+    ObjectTypeD_UNKNOWN,
+    ObjectTypeD_PLAYER,
+    ObjectTypeD_STATIC,
+    ObjectTypeD_RIGID_BODY,
+    ObjectTypeD_DOOR,
+} ObjectTypeD;
 
 
 typedef struct PhysicsProperties {
@@ -32,7 +32,7 @@ typedef struct ObjectRecord {
     vec3* local_positions;
     vec3* local_rotations;
     
-    ObjectType type;
+    ObjectTypeD type;
     PhysicsProperties physics;  // Physics properties
     
     Model* __model;
@@ -46,7 +46,7 @@ typedef struct ObjectsDB {
 
 ObjectRecord objrec_create(
     const char* id,
-    ObjectType type,
+    ObjectTypeD type,
     const char* model_path,
     const char** texture_paths,
     const PhysicsProperties* physics

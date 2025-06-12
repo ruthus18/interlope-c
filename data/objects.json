@@ -1,0 +1,48 @@
+{
+    "GridFloor": {
+        "type": "STATIC",
+        "model": {
+            "mesh": "dungeon/grid_floor.glb",
+            "textures": ["dungeon/grid_floor.dds"]
+        },
+        "physics": [{
+            "shape": "BOX",
+            "size": [3.0, 0.01, 3.0],
+            "pos": [0.0, 1.5, 0.0]
+        }]
+    },
+
+    "GridWall": {
+        "mesh": "dungeon/grid_wall.glb",
+        "textures": ["dungeon/grid_wall.dds"],
+        "type": "STATIC",
+        "physics": {
+            "shape": "BOX",
+            "size": [0.2, 3.0, 3.0],
+            "mass": 0.0
+        }
+    },
+
+    "GridWallDr": {
+        "mesh": "dungeon/grid_wall_dr.glb",
+        "textures": ["dungeon/grid_wall.dds"],
+        "type": "STATIC",
+        "physics": {
+            "shape": "BOX",
+            "size": [0.2, 3.0, 3.0],
+            "mass": 0.0
+        }
+    },
+
+    "GridWallWn": {
+        "mesh": "dungeon/grid_wall_wn.glb",
+        "textures": ["dungeon/grid_wall.dds"],
+        "type": "STATIC",
+        "physics": {
+            "shape": "BOX",
+            "size": [0.2, 3.0, 3.0],
+            "mass": 0.0
+        }
+    }
+
+}

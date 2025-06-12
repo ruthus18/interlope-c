@@ -77,18 +77,18 @@ static void parse_texture_paths(
         log_exit("Error while parsing object [%s]: `texture` or `textures` kwargs not set", obj_id);
 }
 
-static ObjectType parse_object_type(toml_table_t* obj_record, char** obj_type_str) {
-    ObjectType obj_type;
+static ObjectTypeD parse_object_type(toml_table_t* obj_record, char** obj_type_str) {
+    ObjectTypeD obj_type;
     
     toml_datum_t _obj_type = toml_string_in(obj_record, "type");
     if (!_obj_type.ok)
-        obj_type = ObjectType_UNKNOWN;
+        obj_type = ObjectTypeD_UNKNOWN;
     else {
         *obj_type_str = _obj_type.u.s; // Store to free later
         if (strcmp(*obj_type_str, "RIGID_BODY") == 0)
-            obj_type = ObjectType_RIGID_BODY;
+            obj_type = ObjectTypeD_RIGID_BODY;
         if (strcmp(*obj_type_str, "STATIC") == 0)
-            obj_type = ObjectType_STATIC;
+            obj_type = ObjectTypeD_STATIC;
     }
     
     return obj_type;
@@ -194,7 +194,7 @@ static void process_object_record(
     
     // Parse object type
     char* obj_type_str = NULL; // Store pointer to free later
-    ObjectType obj_type = parse_object_type(obj_record, &obj_type_str);
+    ObjectTypeD obj_type = parse_object_type(obj_record, &obj_type_str);
     
     // Parse physics properties
     PhysicsProperties physics;
