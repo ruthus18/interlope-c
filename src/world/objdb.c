@@ -83,7 +83,7 @@ void objrec_load_model(ObjectRecord* obj, const char* model_path) {
 }
 
 
-static constexpr u64 MAX_OBJECT_TEXTURES = 8;
+#define MAX_OBJECT_TEXTURES 8
 
 void objrec_load_texture(ObjectRecord* obj, const char* texture_path) {
     if (obj->textures == NULL) {

@@ -17,7 +17,9 @@ static struct World {
 
 void world_init() {
     Database* db = db_get();
+
     
+
     self.objdb = objdb_read_toml(WORLD_OBJDB_PATH);
     self.current_scene = scene_read_toml(WORLD_INIT_SCENE_PATH, self.objdb);
 

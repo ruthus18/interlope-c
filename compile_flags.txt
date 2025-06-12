@@ -1,3 +1,0 @@
--ferror-limit=0
--std=c23
--Ivendor/include

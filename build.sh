@@ -15,8 +15,8 @@ time gcc \
     -lm -lGL -lGLEW -lglfw -lcglm -lode -lsqlite3 -lcjson -lcjson_utils \
     -o ${BIN}/interlope\
     \
+    ${SRC}/assets/assets.c \
     ${SRC}/assets/model.c \
-    ${SRC}/assets/storage.c \
     ${SRC}/assets/texture.c \
     \
     ${SRC}/core/cgm.c \
@@ -46,6 +46,7 @@ time gcc \
     ${SRC}/world/scene.c \
     ${SRC}/world/scene_reader.c \
     ${SRC}/world/world.c \
+    ${SRC}/world/new_world.c \
     \
     ${SRC}/engine.c \
     ${SRC}/physics.c \

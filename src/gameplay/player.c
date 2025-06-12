@@ -16,8 +16,10 @@ void player_init(vec3 pos, f64 pitch, f64 yaw) {
     glm_vec2_copy((vec2){pitch, yaw}, self.rot);
 
     self.velocity_y = 0.0f;
+
     self.is_grounded = false;
     self.is_active = true;
+    self.gravity_enabled = false;
     
     self.camera = camera_create();
     vec3 camera_pos = {
@@ -39,9 +41,12 @@ void player_destroy() {
     camera_destroy(self.camera);
 }
 
-
 void player_set_is_active(bool value) {
     self.is_active = value;
+}
+
+void player_set_gravity_enabled(bool value) {
+    self.gravity_enabled = value;
 }
 
 
@@ -78,10 +83,11 @@ void player_handle_movement() {
     }
 
     // --- Gravity ---
-    if (!self.is_grounded) {
-        self.velocity_y += PHYSICS_GRAVITY * dt;
-    } else {
+    if (self.is_grounded || !self.gravity_enabled) {
         self.velocity_y = 0.0f;
+    }
+    else {
+        self.velocity_y += PHYSICS_GRAVITY * dt;
     }
 
     // --- Apply Movement with Per-Axis Collision Detection ---

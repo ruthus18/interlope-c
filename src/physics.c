@@ -20,8 +20,8 @@
 // TODO: Dynamic timestep
 static const dReal TIMESTEP = (1.0 / WINDOW_MAX_FRAMERATE);
 
-static constexpr i32 MAX_PHYSICS_OBJECTS = 1024;
-static constexpr i32 INVALID_PHYSICS_ID = 0;
+#define MAX_PHYSICS_OBJECTS 1024
+#define INVALID_PHYSICS_ID  0
 
 
 typedef struct PhysicsObject {

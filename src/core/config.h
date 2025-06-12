@@ -52,6 +52,13 @@
 #define PLAYER_SPEED        6.5
 #define PLAYER_JUMP_FORCE   5.0
 
+
+/* ------------------------------------------------------------------------- */
+#define MEM_MAX_PATH_LENGTH 256
+#define MEM_MAX_ID_LENGTH 64
+#define MEM_MAX_TEXTURE_NODES 16
+
+
 /* ------------------------------------------------------------------------- */
 /* --- Debugging --- */
 

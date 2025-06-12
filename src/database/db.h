@@ -16,5 +16,3 @@ void db_destroy();
 
 Database* db_get();
 ObjectInfo* db_get_object_info(char* obj_id);
-u32 db_get_objects_count();
-SceneInfo* db_get_scene_info();

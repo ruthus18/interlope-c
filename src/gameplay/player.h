@@ -13,7 +13,7 @@ typedef struct Player {
 
     bool is_active;
     bool is_grounded;
-
+    bool gravity_enabled;
 } Player;
 
 
@@ -21,5 +21,6 @@ void player_init(vec3 pos, f64 pitch, f64 yaw);
 void player_destroy();
 
 void player_set_is_active(bool value);
+void player_set_gravity_enabled(bool value);
 
 void player_update();
