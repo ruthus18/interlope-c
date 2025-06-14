@@ -17,7 +17,7 @@ typedef struct Player {
 } Player;
 
 
-void player_init(vec3 pos, f64 pitch, f64 yaw);
+void player_init(vec3 pos, vec2 rot);
 void player_destroy();
 
 void player_set_is_active(bool value);

@@ -1,113 +1,71 @@
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include <cglm/cglm.h>
-#include <toml.h>
+#include "scene.h"
+#include "./limits.h"
 
-#include "../assets/texture.h"
-#include "../core/log.h"
-#include "../core/types.h"
+#include "../core/utils.h"
 #include "../render/gfx.h"
-#include "./object.h"
-#include "./objdb.h"
-#include "./scene.h"
 
 
-Scene* scene_create() {
+static inline
+Scene* _scene_alloc() {
     Scene* scene = malloc(sizeof(Scene));
-    if (scene == NULL) {
-        log_exit("Failed to allocate memory for Scene");
-    }
-    
-    scene->objects_capacity = SCENE_MAX_OBJECTS;
-    scene->objects = malloc(sizeof(Object*) * scene->objects_capacity);
-    if (scene->objects == NULL) {
-        free(scene);
-        log_exit("Failed to allocate memory for Scene objects array");
-    }
-    
-    scene->objects_count = 0;
-    scene->selected_object = NULL;
+    memset(scene, 0, sizeof(Scene));
+
+    int scene_size = sizeof(ObjectRef*) * (WORLD_MAX_SCENE_OBJECTS + 1);
+    scene->object_refs = malloc(scene_size);
+    memset(scene->object_refs, 0, scene_size);
+
     return scene;
 }
 
-
-void scene_destroy(Scene* scene) {
-    for (u64 i = 0; i < scene->objects_count; i++) {
-        object_destroy(scene->objects[i]);
-    }
-    
-    free(scene->objects);
+static inline
+void _scene_free(Scene* scene) {
+    free(scene->object_refs);
     free(scene);
 }
 
 
-void scene_add_object(Scene* scene, ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc) {
-    if (scene->objects_count >= scene->objects_capacity) {
-        log_error(
-            "Cannot add object '%s': Maximum scene object limit (%llu) reached.",
-            objrec->id, scene->objects_capacity
-        );
-        return;
+Scene* scene_create_from_info(SceneInfo* info) {
+    Scene* scene = _scene_alloc();
+
+    int i = 0;
+    ObjectRefInfo* obj_ref_info;
+
+    for_each(obj_ref_info, info->object_refs) {
+        ObjectRef* obj_ref = object_ref_create_from_info(obj_ref_info);
+        scene->object_refs[i++] = obj_ref;
     }
-    
-    Object* obj = object_create(objrec, pos, rot, sc);
-    
-    scene->objects[scene->objects_count] = obj;
-    scene->objects_count++;
+
+    glm_vec3_copy(info->player_init_pos, scene->player_init_pos);
+    glm_vec2_copy(info->player_init_rot, scene->player_init_rot);
+
+    return scene;
 }
 
-
-u64 scene_get_objects_count(Scene* scene) {
-    return scene->objects_count;
-}
-
-Object* scene_get_object(Scene* scene, u64 idx) {
-    if (idx >= scene->objects_count) {
-        return NULL;
+void scene_destroy(Scene* scene) {
+    ObjectRef* obj_ref;
+    for_each(obj_ref, scene->object_refs) {
+        object_ref_destroy(obj_ref);
     }
-    return scene->objects[idx];
+
+    _scene_free(scene);
 }
-
-
-Object* scene_find_object(Scene* scene, const char* base_id) {
-    for (int i = 0; i < scene->objects_count ; i++) {
-        if (strcmp(scene->objects[i]->base_id, base_id) == 0) {
-            return scene->objects[i];
-        }
-    }
-    return NULL;
-}
-
-
-void scene_set_selected_object(Scene* scene, Object* obj) {
-    scene->selected_object = obj;
-}
-
 
 void scene_update(Scene* scene) {
-    for (int i = 0; i < scene->objects_count; i++) {
-        Object* obj = scene->objects[i];
-        object_update(obj);
+    ObjectRef* obj_ref;
+    for_each(obj_ref, scene->object_refs) {
+        object_ref_update(obj_ref);
     }
 }
-
 
 void scene_draw(Scene* scene) {
     gfx_begin_draw_objects();
 
-    for (int i = 0; i < scene->objects_count; i++) {
-        Object* obj = scene->objects[i];
-
-        if (obj == scene->selected_object) {
-            gfx_set_outline_id(i);
-        }
-
-        for (int j = 0; j < obj->slots_count; j++) {
-            gfx_draw_object(obj->meshes[j], obj->textures[j], obj->m_models[j], i);
-        }
+    ObjectRef* ref;
+    for_each(ref, scene->object_refs) {
+        object_ref_draw(ref);
     }
+
     gfx_end_draw_objects();
 }

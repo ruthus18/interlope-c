@@ -1,6 +1,7 @@
 #pragma once
 #include "cglm/cglm.h"
 
+#include "./limits.h"
 #include "../core/types.h"
 
 #define MAX_ID_LENGTH 64
@@ -57,7 +58,8 @@ typedef struct ObjectRefInfo {
 
 typedef struct SceneInfo {
     char id[MAX_ID_LENGTH];
+    ObjectRefInfo** object_refs;
 
-    ObjectRefInfo* object_refs;
-    u32 object_refs_count;
+    vec3 player_init_pos;
+    vec2 player_init_rot;
 } SceneInfo;

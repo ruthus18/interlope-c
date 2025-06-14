@@ -103,7 +103,7 @@ ObjectInfo** db_load_objects_data(char* path) {
         
         int object_count = cJSON_GetArraySize(root);
         objects = malloc(sizeof(ObjectInfo*) * (object_count + 1));
-        
+
         int i = 0;
         cJSON* object_json = NULL;
         cJSON_ArrayForEach(object_json, root) {
@@ -172,11 +172,9 @@ SceneInfo* db_load_scene_data(char* path) {
         
         // Extract scene name from path (remove .json extension)
         char* filename = strrchr(path, '/');
-        if (filename) {
-            filename++; // Skip the '/'
-        } else {
-            filename = path;
-        }
+
+        if (filename)   filename++;  // Skip the '/'
+        else            filename = path;
         
         char scene_name[MAX_ID_LENGTH];
         strncpy(scene_name, filename, MAX_ID_LENGTH - 1);
@@ -185,17 +183,43 @@ SceneInfo* db_load_scene_data(char* path) {
         if (dot) *dot = '\0'; // Remove extension
         strncpy(scene->id, scene_name, MAX_ID_LENGTH - 1);
         scene->id[MAX_ID_LENGTH - 1] = '\0';
+
+        /* --- Player Init --- */
+        cJSON* player_init = cJSON_GetObjectItem(root, "player_init");
+        if (player_init) {
+            cJSON* pos = cJSON_GetObjectItem(player_init, "pos");
+            if (pos && cJSON_IsArray(pos) && cJSON_GetArraySize(pos) >= 3) {
+                scene->player_init_pos[0] = cJSON_GetArrayItem(pos, 0)->valuedouble;
+                scene->player_init_pos[1] = cJSON_GetArrayItem(pos, 1)->valuedouble;
+                scene->player_init_pos[2] = cJSON_GetArrayItem(pos, 2)->valuedouble;
+            }
+            
+            cJSON* rot = cJSON_GetObjectItem(player_init, "rot");
+            if (rot && cJSON_IsArray(rot) && cJSON_GetArraySize(rot) >= 2) {
+                scene->player_init_rot[0] = cJSON_GetArrayItem(rot, 0)->valuedouble;
+                scene->player_init_rot[1] = cJSON_GetArrayItem(rot, 1)->valuedouble;
+            }
+        }
         
-        int object_count = cJSON_GetArraySize(root);
-        scene->object_refs_count = object_count;
-        scene->object_refs = malloc(sizeof(ObjectRefInfo) * object_count);
+        /* --- Object Refs --- */
+        cJSON* object_refs = cJSON_GetObjectItem(root, "object_refs");
+        if (!object_refs) {
+            printf("Warning: No object_refs found in scene JSON\n");
+            scene->object_refs = malloc(sizeof(ObjectRefInfo*));
+            scene->object_refs[0] = NULL;
+            cJSON_Delete(root);
+            return scene;
+        }
         
+        int object_count = cJSON_GetArraySize(object_refs);
+        scene->object_refs = malloc(sizeof(ObjectRefInfo*) * (object_count + 1));
+
         int i = 0;
         cJSON* object_json = NULL;
-        cJSON_ArrayForEach(object_json, root) {
-            ObjectRefInfo* obj_ref = &scene->object_refs[i];
+        cJSON_ArrayForEach(object_json, object_refs) {
+            ObjectRefInfo* obj_ref = malloc(sizeof(ObjectRefInfo));
             memset(obj_ref, 0, sizeof(ObjectRefInfo));
-            
+
             // Parse object ID
             cJSON* id = cJSON_GetObjectItem(object_json, "id");
             if (id && cJSON_IsString(id)) {
@@ -224,9 +248,10 @@ SceneInfo* db_load_scene_data(char* path) {
                 obj_ref->rot[2] = 0.0f;
             }
             
-            i++;
+            scene->object_refs[i++] = obj_ref;
         }
-        
+
+        scene->object_refs[object_count] = NULL;
         cJSON_Delete(root);
     });
     

@@ -20,7 +20,7 @@ void log_greeting(const char* msg, ...) {
 
 
 void log_debug(const char* msg, ...) {
-    fprintf(stdout, TERM_CYAN);
+    fprintf(stdout, TERM_GREY);
 
     va_list argp;
     va_start(argp, msg);

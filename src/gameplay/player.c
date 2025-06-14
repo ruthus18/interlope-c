@@ -11,9 +11,9 @@
 Player self;
 
 
-void player_init(vec3 pos, f64 pitch, f64 yaw) {
+void player_init(vec3 pos, vec2 rot) {
     glm_vec3_copy(pos, self.pos);
-    glm_vec2_copy((vec2){pitch, yaw}, self.rot);
+    glm_vec2_copy(rot, self.rot);
 
     self.velocity_y = 0.0f;
 
@@ -26,7 +26,7 @@ void player_init(vec3 pos, f64 pitch, f64 yaw) {
         pos[0], pos[1] + PLAYER_HEIGHT, pos[2]
     };
     camera_set_position(self.camera, camera_pos);
-    camera_set_rotation(self.camera, pitch, yaw);
+    camera_set_rotation(self.camera, rot[0], rot[1]);
 
     self.physics_id = physics_create_kinematic_object(
         PHYSICS_BODY_CAPSULE,

@@ -37,7 +37,7 @@ void _log_startup_info() {
     log_info("ENGINE VERSION: %s", ENGINE_VERSION);
     log_info("OPENGL VERSION: %s", glGetString(GL_VERSION));
     log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
-    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR);
+    log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
     log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
     log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
     log_info("WIN VSYNC: %i", WINDOW_VSYNC);
@@ -133,7 +133,9 @@ typedef struct GfxGeometry {
 #define VEC2_SIZE (2 * sizeof(f32))
 
 
-GfxMesh* gfx_mesh_load(const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw) {
+GfxMesh* gfx_mesh_load(
+    const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw
+) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
     if (!mesh) {
         log_error("Failed to allocate memory for GfxMesh");
@@ -216,10 +218,6 @@ void gfx_mesh_unload(GfxMesh* mesh){
 GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
     if (!texture) {
-        log_error("Failed to allocate memory for GfxTexture (DDS)");
-        return NULL;
-    }
-    if (!texture) {
         log_error("Failed to allocate memory for GfxTexture");
         return NULL;
     }
@@ -243,6 +241,10 @@ GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
 
 GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
+    if (!texture) {
+        log_error("Failed to allocate memory for GfxTexture (DDS)");
+        return NULL;
+    }
 
     gfx_shader_use(self.shaders.object);
     glGenTextures(1, &(texture->id));

@@ -65,7 +65,7 @@ GfxTexture* texture_load_dds(const char* texture_relpath) {
 	
     /* -- Read and Load Texture -- */
     u8* buffer = malloc(file_size - 128);
-    fread(buffer, 1, file_size - 128, f);
+    fread(buffer, 1, file_size, f);
 	
     GfxTexture* tex = gfx_texture_load_dds(buffer, width, height, format, mipmap_cnt, block_size);
 	

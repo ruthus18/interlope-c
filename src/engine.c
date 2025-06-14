@@ -21,11 +21,11 @@ static EngineCallback __on_draw__;
 
 void engine_set_callback(EngineCallback func, EngineCallbackType type) {
     switch (type) {
-        case ENGINECB_ON_INIT:      __on_init__ = func;     break;
-        case ENGINECB_ON_DESTROY:   __on_destroy__ = func;  break;
-        case ENGINECB_ON_UPDATE:    __on_update__ = func;   break;
-        case ENGINECB_ON_DRAW:      __on_draw__ = func;     break;
-        default:                    log_exit("NotImplemented");
+        case ENGINE_ON_INIT:      __on_init__ = func;     break;
+        case ENGINE_ON_DESTROY:   __on_destroy__ = func;  break;
+        case ENGINE_ON_UPDATE:    __on_update__ = func;   break;
+        case ENGINE_ON_DRAW:      __on_draw__ = func;     break;
+        default:                  log_exit("NotImplemented");
     }
 }
 

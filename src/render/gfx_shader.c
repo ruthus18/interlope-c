@@ -116,6 +116,7 @@ Shader* gfx_shader_create(const char* vert_path, const char* frag_path) {
 
 
 void gfx_shader_destroy(Shader* shader) {
+    glDeleteProgram(shader->program_id);
     free(shader);
 }
 

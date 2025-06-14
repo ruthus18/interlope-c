@@ -98,7 +98,7 @@ void objrec_load_texture(ObjectRecord* obj, const char* texture_path) {
         log_exit("Max textures per model reached");
     }
 
-    obj->textures[obj->textures_count] = texture_load_file(texture_path);
+    obj->textures[obj->textures_count] = texture_load_dds(texture_path);
     obj->textures_count++;
 }
 

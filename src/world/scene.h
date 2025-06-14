@@ -1,30 +1,20 @@
 #pragma once
-#include <cglm/cglm.h>
 
-#include "./object.h"
-#include "./objdb.h"
-#include "../core/types.h"
+#include "./object_ref.h"
 
+#include "../database/schemas.h"
 
-#define SCENE_MAX_OBJECTS 1024
 
 typedef struct Scene {
-    Object** objects;
-    u64 objects_count;
-    // Maximum number of objects that can be stored without resizing
-    u64 objects_capacity;
+    ObjectRef** object_refs;
 
-    Object* selected_object;
+    vec3 player_init_pos;
+    vec2 player_init_rot;
 } Scene;
 
-Scene* scene_create(void);
+
+Scene* scene_create_from_info(SceneInfo*);
 void scene_destroy(Scene*);
-void scene_add_object(Scene* scene, ObjectRecord* objrec, vec3 pos, vec3 rot, vec3 sc);
 
-u64 scene_get_objects_count(Scene*);
-Object* scene_get_object(Scene*, u64 idx);
-Object* scene_find_object(Scene*, const char* base_id);
-void scene_set_selected_object(Scene*, Object*);
-
-void scene_update(Scene* scene);
+void scene_update(Scene*);
 void scene_draw(Scene*);

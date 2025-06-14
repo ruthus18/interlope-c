@@ -4,10 +4,10 @@
 typedef void (*EngineCallback)(void);
 
 typedef enum EngineCallbackType {
-    ENGINECB_ON_INIT,
-    ENGINECB_ON_DESTROY,
-    ENGINECB_ON_UPDATE,
-    ENGINECB_ON_DRAW,
+    ENGINE_ON_INIT,
+    ENGINE_ON_DESTROY,
+    ENGINE_ON_UPDATE,
+    ENGINE_ON_DRAW,
 } EngineCallbackType;
 
 

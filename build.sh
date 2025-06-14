@@ -12,10 +12,10 @@ time gcc \
     -I ${VENDOR}/include \
     -L ${VENDOR} \
     -Wl,-rpath=${VENDOR} \
-    -lm -lGL -lGLEW -lglfw -lcglm -lode -lsqlite3 -lcjson -lcjson_utils \
-    -o ${BIN}/interlope\
+    -lm -lGL -lGLEW -lglfw -lcglm -lode -lcjson -lcjson_utils \
+    -o ${BIN}/interlope \
     \
-    ${SRC}/assets/assets.c \
+    ${SRC}/assets/mesh_gltf.c \
     ${SRC}/assets/model.c \
     ${SRC}/assets/texture.c \
     \
@@ -25,8 +25,7 @@ time gcc \
     ${SRC}/database/db.c \
     ${SRC}/database/loader.c \
     \
-    ${SRC}/editor/ui.c \
-    ${SRC}/editor/sys_geometry.c \
+    ${SRC}/editor/geometry.c \
     \
     ${SRC}/gameplay/player.c \
     \
@@ -40,13 +39,10 @@ time gcc \
     ${SRC}/render/gfx.c \
     ${SRC}/render/gfx_shader.c \
     \
-    ${SRC}/world/objdb.c \
-    ${SRC}/world/objdb_reader.c \
     ${SRC}/world/object.c \
+    ${SRC}/world/object_ref.c \
     ${SRC}/world/scene.c \
-    ${SRC}/world/scene_reader.c \
     ${SRC}/world/world.c \
-    ${SRC}/world/new_world.c \
     \
     ${SRC}/engine.c \
     ${SRC}/physics.c \
