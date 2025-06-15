@@ -42,11 +42,14 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo* info) {
     self->physics_id = 0;
     if (!info)  return;
     
+    vec3 relative_pos;
+    glm_vec3_add(self->position, info->pos, relative_pos);
+
     switch (info->shape) {
         case PHSHAPE_BOX:
             self->physics_id = physics_create_static_object(
                 PHYSICS_BODY_BOX,
-                self->position,
+                relative_pos,
                 self->rotation,
                 info->size
             );

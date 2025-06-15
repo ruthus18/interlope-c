@@ -420,9 +420,9 @@ bool physics_check_collision_at_position(PhysicsObjectID id, vec3 pos) {
             dContactGeom contact;
             int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
             if (n > 0) {
-                // Check if collision is significant (not just touching ground)
-                // Allow small vertical overlaps (for ground contact)
-                if (contact.depth > 0.01) {
+                // Check if collision is significant (not just touching surfaces)
+                // Only count meaningful collisions, ignore tiny overlaps
+                if (contact.depth > 0.05) {
                     has_collision = true;
                     break;
                 }
@@ -462,13 +462,13 @@ bool physics_check_ground_collision(PhysicsObjectID id, vec3 pos) {
         orig_body_z = original_body_pos[2];
         
         // Move body slightly down to test for ground
-        dBodySetPosition(obj->body, pos[0], -(pos[2] - 0.05), pos[1]);
+        dBodySetPosition(obj->body, pos[0], -(pos[2] - 0.02), pos[1]);
     } else {
         // Move geometry slightly down to test for ground
-        dGeomSetPosition(obj->geom, pos[0], -(pos[2] - 0.05), pos[1]);
+        dGeomSetPosition(obj->geom, pos[0], -(pos[2] - 0.02), pos[1]);
     }
     
-    // Check for any collision (simplified ground detection)
+    // Check for ground collision with proper normal filtering
     bool has_ground_collision = false;
     
     // Iterate through all objects in space
@@ -481,8 +481,12 @@ bool physics_check_ground_collision(PhysicsObjectID id, vec3 pos) {
             dContactGeom contact;
             int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
             if (n > 0) {
-                has_ground_collision = true;
-                break;
+                // Only count as ground if the contact normal points upward
+                // Normal vector in ODE: contact.normal[2] is the Y component in world space
+                if (contact.normal[2] > 0.7) {  // Surface pointing upward (ground-like)
+                    has_ground_collision = true;
+                    break;
+                }
             }
         }
     }
@@ -539,9 +543,9 @@ bool physics_check_wall_collision(PhysicsObjectID id, vec3 pos) {
             int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
             if (n > 0) {
                 // Only count as wall collision if:
-                // 1. Normal is NOT pointing upward (not ground)
-                // 2. Collision depth is significant (not just floor tile edges)
-                if (contact.normal[2] <= 0.5 && contact.depth > 0.02) {  // More strict ground check + depth threshold
+                // 1. Normal is NOT pointing strongly upward (not ground)
+                // 2. Has any collision depth
+                if (contact.normal[2] < 0.7 && contact.depth > 0.001) {  // Less restrictive wall detection
                     has_wall_collision = true;
                     break;
                 }

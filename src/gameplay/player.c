@@ -17,7 +17,7 @@ void player_init(vec3 pos, vec2 rot) {
 
     self.velocity_y = 0.0f;
 
-    self.is_grounded = false;
+    self.is_grounded = true;  // Start grounded so player can move immediately
     self.is_active = true;
     self.gravity_enabled = true;
     
@@ -91,7 +91,6 @@ void player_handle_movement() {
     }
 
     // --- Apply Movement with Per-Axis Collision Detection ---
-    // Check collision per axis for sliding movement
     vec3 allowed_move = {move_dt[0], self.velocity_y * dt, move_dt[2]};
     
     // Try X movement separately
@@ -102,7 +101,7 @@ void player_handle_movement() {
         x_test_pos[0], x_test_pos[1] + PLAYER_HEIGHT / 2 + 0.15, x_test_pos[2]
     };
     
-    if (physics_check_wall_collision(self.physics_id, x_physics_pos)) {
+    if (physics_check_collision_at_position(self.physics_id, x_physics_pos)) {
         allowed_move[0] = 0.0f;  // Block X movement
     }
     
@@ -115,45 +114,27 @@ void player_handle_movement() {
         z_test_pos[0], z_test_pos[1] + PLAYER_HEIGHT / 2 + 0.15, z_test_pos[2]
     };
     
-    if (physics_check_wall_collision(self.physics_id, z_physics_pos)) {
+    if (physics_check_collision_at_position(self.physics_id, z_physics_pos)) {
         allowed_move[2] = 0.0f;  // Block Z movement
-    }
-    
-    // Handle 90-degree corner sticking: if both X and Z are blocked, try smaller movements
-    if (allowed_move[0] == 0.0f && allowed_move[2] == 0.0f && (move_dt[0] != 0.0f || move_dt[2] != 0.0f)) {
-        // Try small movements to unstick from corners
-        const float unstick_factor = 0.3f;
-        
-        // Try reduced X movement
-        vec3 small_x_test = {self.pos[0] + move_dt[0] * unstick_factor, self.pos[1], self.pos[2]};
-        vec3 small_x_physics = {small_x_test[0], small_x_test[1] + PLAYER_HEIGHT / 2 + 0.15, small_x_test[2]};
-        if (!physics_check_wall_collision(self.physics_id, small_x_physics)) {
-            allowed_move[0] = move_dt[0] * unstick_factor;
-        }
-        
-        // Try reduced Z movement
-        vec3 small_z_test = {self.pos[0] + allowed_move[0], self.pos[1], self.pos[2] + move_dt[2] * unstick_factor};
-        vec3 small_z_physics = {small_z_test[0], small_z_test[1] + PLAYER_HEIGHT / 2 + 0.15, small_z_test[2]};
-        if (!physics_check_wall_collision(self.physics_id, small_z_physics)) {
-            allowed_move[2] = move_dt[2] * unstick_factor;
-        }
     }
     
     vec3 final_move = {allowed_move[0], allowed_move[1], allowed_move[2]};
     
-    // Apply final movement (with possible horizontal blocking)
+    // Apply final movement
     vec3 new_pos;
     glm_vec3_add(self.pos, final_move, new_pos);
-    vec3 new_physics_pos = {
-        new_pos[0], new_pos[1] + PLAYER_HEIGHT / 2 + 0.15, new_pos[2]
-    };
     
     // Check for ground collision if falling
-    if (self.velocity_y < 0 && physics_check_ground_collision(self.physics_id, new_physics_pos)) {
-        final_move[1] = 0.0f;
-        self.velocity_y = 0.0f;
-        self.is_grounded = true;
-        glm_vec3_add(self.pos, (vec3){final_move[0], 0, final_move[2]}, new_pos);
+    if (self.velocity_y < 0) {
+        vec3 new_physics_pos = {
+            new_pos[0], new_pos[1] + PLAYER_HEIGHT / 2 + 0.15, new_pos[2]
+        };
+        if (physics_check_ground_collision(self.physics_id, new_physics_pos)) {
+            final_move[1] = 0.0f;
+            self.velocity_y = 0.0f;
+            self.is_grounded = true;
+            glm_vec3_add(self.pos, (vec3){final_move[0], 0, final_move[2]}, new_pos);
+        }
     }
 
     // Apply final movement
