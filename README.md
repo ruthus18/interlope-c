@@ -33,21 +33,16 @@ git clone https://github.com/ruthus18/interlope-c.git
 ```
 
 ## Quick Start
-
-**IMPORTANT:** I cannot share assets due to they non-CC0 licensing, so you should add your own assets to corresponding directory and define they usage in `objects.toml`
-
 1. Run the engine:
 ```bash
 ./run.sh
 ```
 
 2. Controls:
+- ESC - Exit
 - WASD - Movement
 - Mouse - Look around
-- F1 - Toggle editor
-- ESC - Exit
-- ~ - Toggle cursor
-
+- F1 - Toggle cursor
 
 ## Project Structure
 ```

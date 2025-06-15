@@ -1,11 +1,9 @@
 # VS Code project settings
 /.vscode
-
-# Build executables
-/bin
-
-# Development notes & tmp files
 /.dev
-
-__pycache__
 .claude
+__pycache__
+
+# Build
+/.build
+/interlope
