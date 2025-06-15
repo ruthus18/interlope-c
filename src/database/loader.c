@@ -7,9 +7,9 @@
 static
 ObjectType _parse_object_type(const char* type_str) {
     if (strcmp(type_str, "STATIC") == 0) {
-        return OBJTYPE_STATIC;
+        return OBJECT_STATIC;
     }
-    return OBJTYPE_NULL;
+    return OBJECT_NULL;
 }
 
 static

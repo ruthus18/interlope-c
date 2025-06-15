@@ -1,5 +1,3 @@
-#include <assert.h>
-
 #include "engine.h"
 
 #include "core/config.h"

@@ -21,6 +21,8 @@ typedef struct ObjectRef {
 
 
 ObjectRef* object_ref_create_from_info(ObjectRefInfo*);
+void object_ref_create_physics(ObjectRef* self, PhysicsInfo* physics_info);
+
 void object_ref_destroy(ObjectRef*);
 
 void object_ref_update(ObjectRef*);

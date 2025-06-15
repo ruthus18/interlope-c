@@ -19,7 +19,7 @@ void player_init(vec3 pos, vec2 rot) {
 
     self.is_grounded = false;
     self.is_active = true;
-    self.gravity_enabled = false;
+    self.gravity_enabled = true;
     
     self.camera = camera_create();
     vec3 camera_pos = {

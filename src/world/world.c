@@ -5,7 +5,6 @@
 #include "./object.h"
 #include "./scene.h"
 
-#include "../core/config.h"
 #include "../core/log.h"
 #include "../core/utils.h"
 #include "../database/db.h"
@@ -49,6 +48,7 @@ void world_init() {
 
     /* --- */
     player_init(scene->player_init_pos, scene->player_init_rot);
+    world_print();
 }
 
 
@@ -62,6 +62,12 @@ void world_destroy() {
     scene_destroy(self.current_scene);
 
     _world_free();
+}
+
+
+void world_print() {
+    log_debug("total Object: %i", count_(self.objects));
+    log_debug("total ObjectRef: %i", count_(self.current_scene->object_refs));
 }
 
 

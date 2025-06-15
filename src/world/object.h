@@ -7,6 +7,7 @@ typedef struct Object {
     char base_id[MAX_ID_LENGTH];
 
     Model* model;
+    ObjectInfo* info;
 } Object;
 
 
