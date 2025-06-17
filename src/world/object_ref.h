@@ -16,12 +16,12 @@ typedef struct ObjectRef {
     vec3* node_positions;
     vec3* node_rotations;
 
-    PhysicsObjectID physics_id;
+    PhysicsObjectID* physics_ids;
 } ObjectRef;
 
 
 ObjectRef* object_ref_create_from_info(ObjectRefInfo*);
-void object_ref_create_physics(ObjectRef* self, PhysicsInfo* physics_info);
+void object_ref_create_physics(ObjectRef* self, PhysicsInfo** physics_infos);
 
 void object_ref_destroy(ObjectRef*);
 

@@ -23,6 +23,10 @@ void db_destroy() {
             free(obj->model);
         }
         if (obj->physics) {
+            PhysicsInfo* physics_info;
+            for_each(physics_info, obj->physics) {
+                free(physics_info);
+            }
             free(obj->physics);
         }
         free(obj);

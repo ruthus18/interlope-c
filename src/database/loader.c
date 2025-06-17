@@ -137,11 +137,20 @@ ObjectInfo** db_load_objects_data(char* path) {
             cJSON* physics = cJSON_GetObjectItem(object_json, "physics");
             if (physics) {
                 if (cJSON_IsArray(physics)) {
-                    // Handle array case (take first element)
-                    cJSON* first_physics = cJSON_GetArrayItem(physics, 0);
-                    obj->physics = _parse_physics_info(first_physics);
+                    // Handle array case
+                    int physics_count = cJSON_GetArraySize(physics);
+                    obj->physics = malloc(sizeof(PhysicsInfo*) * (physics_count + 1));
+                    
+                    for (int j = 0; j < physics_count; j++) {
+                        cJSON* physics_item = cJSON_GetArrayItem(physics, j);
+                        obj->physics[j] = _parse_physics_info(physics_item);
+                    }
+                    obj->physics[physics_count] = NULL;
                 } else {
-                    obj->physics = _parse_physics_info(physics);
+                    // Handle single physics body
+                    obj->physics = malloc(sizeof(PhysicsInfo*) * 2);
+                    obj->physics[0] = _parse_physics_info(physics);
+                    obj->physics[1] = NULL;
                 }
             }
             

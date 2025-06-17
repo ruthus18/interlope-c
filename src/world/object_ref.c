@@ -38,37 +38,50 @@ ObjectRef* object_ref_create_from_info(ObjectRefInfo* info) {
 }
 
 
-void object_ref_create_physics(ObjectRef* self, PhysicsInfo* info) {
-    self->physics_id = 0;
-    if (!info)  return;
+void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
+    self->physics_ids = NULL;
+    if (!infos)  return;
     
-    vec3 relative_pos;
-    glm_vec3_add(self->position, info->pos, relative_pos);
+    int physics_count = count_(infos);
+    if (physics_count == 0) return;
+    
+    int physics_size = sizeof(PhysicsObjectID) * (physics_count + 1);
+    self->physics_ids = malloc(physics_size);
+    memset(self->physics_ids, 0, physics_size);
+    
+    for (int i = 0; i < physics_count; i++) {
+        PhysicsInfo* info = infos[i];
+        if (!info)  continue;
+        
+        vec3 relative_pos;
+        glm_vec3_add(self->position, info->pos, relative_pos);
 
-    switch (info->shape) {
-        case PHSHAPE_BOX:
-            self->physics_id = physics_create_static_object(
-                PHYSICS_BODY_BOX,
-                relative_pos,
-                self->rotation,
-                info->size
-            );
-            break;
-            
-        case PHSHAPE_AABB:
-            log_error("AABB phyics shape unsupported for now...");
-            break;
+        switch (info->shape) {
+            case PHSHAPE_BOX:
+                self->physics_ids[i] = physics_create_static_object(
+                    PHYSICS_BODY_BOX,
+                    relative_pos,
+                    self->rotation,
+                    info->size
+                );
+                break;
+                
+            case PHSHAPE_AABB:
+                log_error("AABB phyics shape unsupported for now...");
+                break;
 
-        case PHSHAPE_NULL:
-            log_error("Unknown physics shape in object: %s", self->obj->base_id);
-            break;
-    }
+            case PHSHAPE_NULL:
+                log_error("Unknown physics shape in object: %s", self->obj->base_id);
+                break;
+        }
+    }   
 }
 
 
 void object_ref_destroy(ObjectRef* self) {
     if (self->node_positions)  free(self->node_positions);
     if (self->node_rotations)  free(self->node_rotations);
+    if (self->physics_ids)     free(self->physics_ids);
 
     free(self);
 }

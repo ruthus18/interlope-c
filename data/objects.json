@@ -5,11 +5,11 @@
             "mesh": "dungeon/grid_floor.glb",
             "textures": ["dungeon/grid_floor.dds"]
         },
-        "physics": [{
+        "physics": {
             "shape": "BOX",
             "size": [3.0, 0.01, 3.0],
             "pos": [0.0, -0.01, 0.0]
-        }]
+        }
     },
 
     "GridWall": {
@@ -26,7 +26,24 @@
     "GridWallDr": {
         "mesh": "dungeon/grid_wall_dr.glb",
         "textures": ["dungeon/grid_wall.dds"],
-        "type": "STATIC"
+        "type": "STATIC",
+        "physics": [
+            {
+                "shape": "BOX",
+                "size": [0.2, 3.0, 1.0],
+                "pos": [0.0, 1.5, 1.0]
+            },
+            {
+                "shape": "BOX",
+                "size": [0.2, 3.0, 1.0],
+                "pos": [0.0, 1.5, -1.0]
+            },
+            {
+                "shape": "BOX",
+                "size": [0.2, 0.9, 3.0],
+                "pos": [0.0, 2.55, 0.0]
+            }
+        ]
     },
 
     "GridWallWn": {

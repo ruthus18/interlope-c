@@ -45,7 +45,7 @@ typedef struct ObjectInfo {
     ObjectType type;
 
     ModelInfo* model;
-    PhysicsInfo* physics;
+    PhysicsInfo** physics;
 } ObjectInfo;
 
 
