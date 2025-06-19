@@ -12,14 +12,15 @@
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL4_IMPLEMENTATION
 #define NK_KEYSTATE_BASED_INPUT
-
 #include <nuklear.h>
 #include <nuklear_glfw_gl4.h>
 
-#include "../core/types.h"
-#include "../platform/window.h"
-#include "../world/scene.h"
-#include "../world/world.h"
+#include "ui.h"
+
+#include "core/types.h"
+#include "platform/window.h"
+#include "world/scene.h"
+#include "world/world.h"
 
 
 #define EDITOR_MAX_VERTEX_BUFFER  512 * 1024

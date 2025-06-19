@@ -1,11 +1,11 @@
 #include <string.h>
 
 #include "model.h"
-#include "./mesh_gltf.h"
-#include "./texture.h"
+#include "assets/mesh_gltf.h"
+#include "assets/texture.h"
 
-#include "../core/log.h"
-#include "../core/utils.h"
+#include "core/log.h"
+#include "core/utils.h"
 
 
 static inline

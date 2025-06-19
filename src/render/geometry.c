@@ -1,6 +1,7 @@
+#include "geometry.h"
+#include "render/gfx.h"
 
-#include "../core/types.h"
-#include "./gfx.h"
+#include "core/types.h"
 
 
 GfxGeometry* geometry_create_cube(f64 size_x, f64 size_y, f64 size_z) {

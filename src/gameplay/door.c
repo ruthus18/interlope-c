@@ -1,6 +1,6 @@
 // #include "../world/object.h"
-#include "../world/scene.h"
-#include "../world/world.h"
+#include "world/scene.h"
+#include "world/world.h"
 
 
 // static float rot_angle = 0.0;

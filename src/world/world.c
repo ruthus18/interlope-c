@@ -1,14 +1,14 @@
 #include <string.h>
 
 #include "world.h"
-#include "./limits.h"
-#include "./object.h"
-#include "./scene.h"
+#include "world/object.h"
+#include "world/scene.h"
 
-#include "../core/log.h"
-#include "../core/utils.h"
-#include "../database/db.h"
-#include "../gameplay/player.h"
+#include "core/memory.h"
+#include "core/log.h"
+#include "core/utils.h"
+#include "database/db.h"
+#include "gameplay/player.h"
 
 
 static struct World {
@@ -19,7 +19,7 @@ static struct World {
 
 static inline
 void _world_alloc() {
-    int objects_size = sizeof(Object*) * (WORLD_MAX_OBJECTS + 1);
+    int objects_size = sizeof(Object*) * (MEM_WORLD_OBJECTS + 1);
 
     self.objects = malloc(objects_size);
     memset(self.objects, 0, objects_size);

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cgltf.h>
-#include "./model.h"
+
+#include "assets/model.h"
 
 
 typedef cgltf_data GLTF_Asset;

@@ -1,5 +1,6 @@
 #pragma once
-#include "../world/scene.h"
+
+#include "world/scene.h"
 
 
 void editor_init();

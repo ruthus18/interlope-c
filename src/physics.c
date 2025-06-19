@@ -3,15 +3,11 @@
 #include <ode/ode.h>
 #include <cglm/cglm.h>
 
-#include "ode/collision.h"
-#include "ode/contact.h"
-#include "ode/mass.h"
-#include "ode/objects.h"
-
 #include "physics.h"
-#include "./core/config.h"
-#include "./core/types.h"
-#include "./core/log.h"
+
+#include "core/config.h"
+#include "core/types.h"
+#include "core/log.h"
 
 
 // Documentation: https://ode.org/wiki/index.php/Manual
@@ -20,7 +16,7 @@
 // TODO: Dynamic timestep
 static const dReal TIMESTEP = (1.0 / WINDOW_MAX_FRAMERATE);
 
-#define MAX_PHYSICS_OBJECTS 1024
+#define MAX_PHYSICS_OBJECTS 128
 #define INVALID_PHYSICS_ID  0
 
 
@@ -441,31 +437,10 @@ bool physics_check_collision_at_position(PhysicsObjectID id, vec3 pos) {
 }
 
 
-bool physics_check_ground_collision(PhysicsObjectID id, vec3 pos) {
+bool physics_check_ground_collision(PhysicsObjectID id) {
     PhysicsObject* obj = find_physics_object(id);
     if (!obj || !obj->geom) {
         return false;
-    }
-    
-    // Store original positions
-    const dReal* original_geom_pos = dGeomGetPosition(obj->geom);
-    dReal orig_geom_x = original_geom_pos[0];
-    dReal orig_geom_y = original_geom_pos[1];
-    dReal orig_geom_z = original_geom_pos[2];
-    
-    const dReal* original_body_pos = NULL;
-    dReal orig_body_x, orig_body_y, orig_body_z;
-    if (obj->body) {
-        original_body_pos = dBodyGetPosition(obj->body);
-        orig_body_x = original_body_pos[0];
-        orig_body_y = original_body_pos[1];
-        orig_body_z = original_body_pos[2];
-        
-        // Move body slightly down to test for ground
-        dBodySetPosition(obj->body, pos[0], -(pos[2] - 0.02), pos[1]);
-    } else {
-        // Move geometry slightly down to test for ground
-        dGeomSetPosition(obj->geom, pos[0], -(pos[2] - 0.02), pos[1]);
     }
     
     // Check for ground collision with proper normal filtering
@@ -490,15 +465,37 @@ bool physics_check_ground_collision(PhysicsObjectID id, vec3 pos) {
             }
         }
     }
-    
-    // Restore original positions
-    if (obj->body) {
-        dBodySetPosition(obj->body, orig_body_x, orig_body_y, orig_body_z);
-    } else {
-        dGeomSetPosition(obj->geom, orig_geom_x, orig_geom_y, orig_geom_z);
+ 
+    return has_ground_collision;
+}
+
+
+bool physics_check_ceil_collision(PhysicsObjectID id) {
+    PhysicsObject* obj = find_physics_object(id);
+    if (!obj || !obj->geom) {
+        return false;
     }
     
-    return has_ground_collision;
+    bool has_ceil_collision = false;
+    
+    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
+        if (!self.objects[i].in_use || self.objects[i].id == id) {
+            continue;
+        }
+        
+        if (self.objects[i].geom) {
+            dContactGeom contact;
+            int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
+            if (n > 0) {
+                if (contact.normal[2] < -0.7) {  // Surface pointing upward (ground-like)
+                    has_ceil_collision = true;
+                    break;
+                }
+            }
+        }
+    }
+ 
+    return has_ceil_collision;
 }
 
 
@@ -566,6 +563,32 @@ bool physics_check_wall_collision(PhysicsObjectID id, vec3 pos) {
 
 static const int MAX_CONTACTS = 8;
 
+
+static inline
+void _contact_surface_kinematic_params(dContact contact) {
+    // For kinematic bodies, create contact only for the kinematic body (player gets blocked, cube doesn't move)
+    contact.surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
+    contact.surface.mu = 0.0;  // No friction
+    contact.surface.mu2 = 0;
+    contact.surface.bounce = 0.001;  // Almost no bounce
+    contact.surface.bounce_vel = 0.001;
+    contact.surface.soft_erp = 0.15;  // Strong enough to block player
+    contact.surface.soft_cfm = 0.02;
+}
+
+static inline
+void _contact_surface_rigid_params(dContact contact) {
+    // Normal contact for rigid-rigid collisions
+    contact.surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
+    contact.surface.mu = dInfinity;
+    contact.surface.mu2 = 0;
+    contact.surface.bounce = 0.1;
+    contact.surface.bounce_vel = 0.1;
+    contact.surface.soft_erp = 0.2;
+    contact.surface.soft_cfm = 0.001;
+}
+
+
 static
 void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
     dBodyID body1 = dGeomGetBody(geom1);
@@ -587,31 +610,20 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
         if (body2 && dBodyIsKinematic(body2)) is_kinematic = true;
         
         if (is_kinematic) {
-            // For kinematic bodies, create contact only for the kinematic body (player gets blocked, cube doesn't move)
-            contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
-            contact[i].surface.mu = 0.0;  // No friction
-            contact[i].surface.mu2 = 0;
-            contact[i].surface.bounce = 0.001;  // Almost no bounce
-            contact[i].surface.bounce_vel = 0.001;
-            contact[i].surface.soft_erp = 0.15;  // Strong enough to block player
-            contact[i].surface.soft_cfm = 0.02;
+            _contact_surface_kinematic_params(contact[i]);
             
             // Only attach contact to kinematic body (player), not the rigid body (cube)
             dJointID c = dJointCreateContact(self.world, self.contact_group, &contact[i]);
+            // dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
+            
+            // TODO: Questionable
             if (body1 && dBodyIsKinematic(body1)) {
                 dJointAttach(c, body1, NULL);  // Only kinematic body feels the force
             } else if (body2 && dBodyIsKinematic(body2)) {
                 dJointAttach(c, body2, NULL);  // Only kinematic body feels the force
             }
         } else {
-            // Normal contact for rigid-rigid collisions
-            contact[i].surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
-            contact[i].surface.mu = dInfinity;
-            contact[i].surface.mu2 = 0;
-            contact[i].surface.bounce = 0.1;
-            contact[i].surface.bounce_vel = 0.1;
-            contact[i].surface.soft_erp = 0.2;
-            contact[i].surface.soft_cfm = 0.001;
+            _contact_surface_rigid_params(contact[i]);
             
             dJointID c = dJointCreateContact(self.world, self.contact_group, &contact[i]);
             dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));

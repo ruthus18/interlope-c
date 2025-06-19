@@ -1,5 +1,6 @@
 #pragma once
-#include "./schemas.h"
+
+#include "database/schemas.h"
 
 
 // WARNING: these functions requiring explicit `free` call after usage

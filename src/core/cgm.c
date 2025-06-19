@@ -1,8 +1,8 @@
 #include <cglm/cglm.h>
 
 #include "cgm.h"
-#include "./config.h"
-#include "./types.h"
+#include "core/config.h"
+#include "core/types.h"
 
 
 vec3 v_up_x = {1.0, 0.0, 0.0};

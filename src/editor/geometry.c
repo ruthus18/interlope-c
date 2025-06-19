@@ -1,8 +1,10 @@
 #include <cglm/cglm.h>
 
-#include "../core/types.h"
-#include "../render/gfx.h"
-#include "../render/geometry.h"
+#include "geometry.h"
+
+#include "core/types.h"
+#include "render/gfx.h"
+#include "render/geometry.h"
 
 
 static GfxGeometry* axis_geom[3];

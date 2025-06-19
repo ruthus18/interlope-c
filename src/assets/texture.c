@@ -2,9 +2,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "../core/log.h"
-#include "../platform/file.h"
-#include "../render/gfx.h"
+#include "texture.h"
+
+#include "core/log.h"
+#include "platform/file.h"
 
 
 GfxTexture* texture_load_dds(const char* texture_relpath) {

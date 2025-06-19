@@ -2,8 +2,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <cglm/cglm.h>
-
 #include "log.h"
 
 

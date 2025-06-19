@@ -1,11 +1,13 @@
 #include "player.h"
-#include "../core/cgm.h"
-#include "../core/config.h"
-#include "../platform/input.h"
-#include "../platform/time.h"
-#include "../render/camera.h"
-#include "../render/gfx.h"
-#include "../physics.h"
+
+#include "core/cgm.h"
+#include "core/log.h"
+#include "core/config.h"
+#include "platform/input.h"
+#include "platform/time.h"
+#include "render/camera.h"
+#include "render/gfx.h"
+#include "physics.h"
 
 
 Player self;
@@ -17,9 +19,10 @@ void player_init(vec3 pos, vec2 rot) {
 
     self.velocity_y = 0.0f;
 
-    self.is_grounded = true;  // Start grounded so player can move immediately
     self.is_active = true;
-    self.gravity_enabled = true;
+    self.is_clipping = true;
+    self.is_grounded = true;
+    self.is_ceiled = false;
     
     self.camera = camera_create();
     vec3 camera_pos = {
@@ -41,12 +44,17 @@ void player_destroy() {
     camera_destroy(self.camera);
 }
 
+void player_print() {
+    log_debug("--- Player ---");
+    log_debug("ground: %i ; ceil: %i", self.is_grounded, self.is_ceiled);
+}
+
 void player_set_is_active(bool value) {
     self.is_active = value;
 }
 
-void player_set_gravity_enabled(bool value) {
-    self.gravity_enabled = value;
+void player_set_clipping(bool value) {
+    self.is_clipping = value;
 }
 
 
@@ -63,30 +71,25 @@ void player_handle_movement() {
     bool s = input_is_keyrp(IN_KEY_S);
     bool a = input_is_keyrp(IN_KEY_A);
     bool d = input_is_keyrp(IN_KEY_D);
-    bool space = input_is_keyrp(IN_KEY_SPACE);
+    bool is_jump = input_is_keyp(IN_KEY_SPACE);
 
     vec3 move_dt;
     cgm_wsad_vec(self.camera->v_front, w, s, a, d, move_dt);
-    glm_vec3_scale(move_dt, dt * PLAYER_SPEED * 0.5, move_dt);
+    glm_vec3_scale(move_dt, dt * PLAYER_SPEED, move_dt);
     move_dt[1] = 0.0f; // No Y movement from WASD
 
-    // --- Ground Detection ---
-    vec3 ground_check_pos = {
-        self.pos[0], self.pos[1] + PLAYER_HEIGHT / 2, self.pos[2]
-    };
-    self.is_grounded = physics_check_ground_collision(self.physics_id, ground_check_pos);
+    if (self.is_clipping) {
+        self.is_grounded = physics_check_ground_collision(self.physics_id);
+        self.is_ceiled = physics_check_ceil_collision(self.physics_id);
 
-    // --- Jump ---
-    if (space && self.is_grounded) {
-        self.velocity_y = PLAYER_JUMP_FORCE;
-        self.is_grounded = false;
-    }
-
-    // --- Gravity ---
-    if (self.is_grounded || !self.gravity_enabled) {
-        self.velocity_y = 0.0f;
-    }
-    else {
+        if (self.is_grounded && is_jump) {
+            // handle jump
+            self.velocity_y = PLAYER_JUMP_FORCE;
+            self.is_grounded = false;
+        }
+        if (self.is_grounded || self.is_ceiled) {
+            self.velocity_y = 0.0;
+        }
         self.velocity_y += PHYSICS_GRAVITY * dt;
     }
 
@@ -129,7 +132,7 @@ void player_handle_movement() {
         vec3 new_physics_pos = {
             new_pos[0], new_pos[1] + PLAYER_HEIGHT / 2 + 0.15, new_pos[2]
         };
-        if (physics_check_ground_collision(self.physics_id, new_physics_pos)) {
+        if (physics_check_ground_collision(self.physics_id)) {
             final_move[1] = 0.0f;
             self.velocity_y = 0.0f;
             self.is_grounded = true;
@@ -150,7 +153,7 @@ void player_handle_movement() {
 
 
 void player_update() {
-    if (self.is_active) {
-        player_handle_movement();
-    }
+    if (!self.is_active)  return;
+
+    player_handle_movement();
 }

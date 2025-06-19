@@ -1,9 +1,10 @@
-#include "./db.h"
-
 #include <string.h>
-#include "../core/config.h"
-#include "../core/utils.h"
-#include "./loader.h"
+
+#include "db.h"
+#include "database/loader.h"
+
+#include "core/config.h"
+#include "core/utils.h"
 
 
 static Database self;

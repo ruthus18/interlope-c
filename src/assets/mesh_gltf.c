@@ -4,11 +4,11 @@
 #define CGLTF_IMPLEMENTATION
 
 #include "mesh_gltf.h"
-#include "./limits.h"
-#include "./model.h"
+#include "assets/model.h"
 
-#include "../core/log.h"
-#include "../platform/file.h"
+#include "core/log.h"
+#include "core/memory.h"
+#include "platform/file.h"
 
 
 GLTF_Asset* gltf_open(char* path) {
@@ -52,18 +52,18 @@ void gltf_load_model_nodes(GLTF_Asset* data, ModelNode** dest) {
     for (int i = 0; i < gltf_get_nodes_count(data); i++) {
         cgltf_node node = data->nodes[i];
 
-        if (node.name && strlen(node.name) >= MAX_MESH_NAME_LEN) {
+        if (node.name && strlen(node.name) >= MEM_MESH_NAME_LEN) {
             log_error(
                 "GLTF node name '%s' is too long (>= %d chars). Truncating.",
                 node.name,
-                MAX_MESH_NAME_LEN
+                MEM_MESH_NAME_LEN
             );
             // Intentionally allow truncation instead of exiting
         }
         // Use strncpy for safety, ensure null termination
         if (node.name) {
-             strncpy(dest[i]->name, node.name, MAX_MESH_NAME_LEN - 1);
-             dest[i]->name[MAX_MESH_NAME_LEN - 1] = '\0';
+             strncpy(dest[i]->name, node.name, MEM_MESH_NAME_LEN - 1);
+             dest[i]->name[MEM_MESH_NAME_LEN - 1] = '\0';
         } else {
              // Handle case where node has no name
              dest[i]->name[0] = '\0';

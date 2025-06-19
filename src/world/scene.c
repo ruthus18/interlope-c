@@ -1,10 +1,9 @@
 #include <string.h>
 
 #include "scene.h"
-#include "./limits.h"
-
-#include "../core/utils.h"
-#include "../render/gfx.h"
+#include "core/memory.h"
+#include "core/utils.h"
+#include "render/gfx.h"
 
 
 static inline
@@ -12,7 +11,7 @@ Scene* _scene_alloc() {
     Scene* scene = malloc(sizeof(Scene));
     memset(scene, 0, sizeof(Scene));
 
-    int scene_size = sizeof(ObjectRef*) * (WORLD_MAX_SCENE_OBJECTS + 1);
+    int scene_size = sizeof(ObjectRef*) * (MEM_SCENE_OBJECTS + 1);
     scene->object_refs = malloc(scene_size);
     memset(scene->object_refs, 0, scene_size);
 
@@ -39,6 +38,9 @@ Scene* scene_create_from_info(SceneInfo* info) {
 
     glm_vec3_copy(info->player_init_pos, scene->player_init_pos);
     glm_vec2_copy(info->player_init_rot, scene->player_init_rot);
+
+    // TODO tmp, need to rm player collision offsets
+    scene->player_init_pos[1] += 0.5;
 
     return scene;
 }

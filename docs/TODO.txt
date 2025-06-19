@@ -2,9 +2,6 @@ Assets:
     * Load meshes and textures once, then reuse in objects
     * get AABB mesh for data located in `from GLTF.accessors.min/max`
 
-Tools:
-    * Incremental builds
-
 Rendering:
     * Basic lighting
     * Shadows
@@ -22,6 +19,7 @@ Player:
     * Walking sound
 
 Physics:
+    * Move out to separate thread
     * Need refactoring
     * Support local position of physics body attached to world object
 

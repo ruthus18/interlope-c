@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <cglm/cglm.h>
 
-#include "./camera.h"
-#include "../core/cgm.h"
-#include "../core/config.h"
-#include "../core/types.h"
-#include "../platform/time.h"
+#include "camera.h"
 
+#include "core/cgm.h"
+#include "core/config.h"
+#include "core/types.h"
+#include "platform/time.h"
 
 
 Camera* camera_create() {

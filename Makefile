@@ -3,7 +3,7 @@
 
 CC = gcc
 CFLAGS = -std=c23 -g
-INCLUDES = -I vendor/include
+INCLUDES = -I src -I vendor/include
 LDFLAGS = -L vendor -Wl,-rpath=vendor
 LIBS = -lm -lGL -lGLEW -lglfw -lcglm -lode -lcjson -lcjson_utils
 
@@ -19,6 +19,7 @@ SOURCES = \
 	$(SRC_DIR)/assets/texture.c \
 	$(SRC_DIR)/core/cgm.c \
 	$(SRC_DIR)/core/log.c \
+	$(SRC_DIR)/core/memory.c \
 	$(SRC_DIR)/database/db.c \
 	$(SRC_DIR)/database/loader.c \
 	$(SRC_DIR)/editor/geometry.c \
@@ -46,6 +47,8 @@ OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)/%.o)
 # Dependency files
 DEPS = $(OBJECTS:.o=.d)
 
+.ONESHELL:
+.SHELLFLAGS := -ec
 .PHONY: all clean
 
 all: 

@@ -7,13 +7,14 @@
 #include <cglm/cglm.h>
 
 #include "gfx.h"
-#include "./gfx_shader.h"
-#include "./camera.h"
-#include "../core/cgm.h"
-#include "../core/config.h"
-#include "../core/log.h"
-#include "../core/types.h"
-#include "../platform/window.h"
+#include "gfx_shader.h"
+#include "camera.h"
+
+#include "core/cgm.h"
+#include "core/config.h"
+#include "core/log.h"
+#include "core/types.h"
+#include "platform/window.h"
 
 
 static struct _Gfx {

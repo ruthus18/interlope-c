@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../render/camera.h"
-#include "../physics.h"
+#include "render/camera.h"
+#include "physics.h"
 
 
 typedef struct Player {
@@ -13,14 +13,16 @@ typedef struct Player {
 
     bool is_active;
     bool is_grounded;
-    bool gravity_enabled;
+    bool is_ceiled;
+    bool is_clipping;
 } Player;
 
 
 void player_init(vec3 pos, vec2 rot);
 void player_destroy();
+void player_print();
 
 void player_set_is_active(bool value);
-void player_set_gravity_enabled(bool value);
+void player_set_clipping(bool value);
 
 void player_update();

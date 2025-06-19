@@ -2,8 +2,9 @@
 #pragma once
 #include <cglm/cglm.h>
 
-#include "./camera.h"
-#include "../core/types.h"
+#include "render/camera.h"
+
+#include "core/types.h"
 
 /* ------ GFX Data ------ */
 

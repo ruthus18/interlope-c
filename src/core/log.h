@@ -1,6 +1,4 @@
-/* log.h - Logging Utils */
 #pragma once
-#include <cglm/cglm.h>
 
 
 /* Terminal colors */
@@ -16,6 +14,7 @@
 
 #define TERM_RESET    "\033[0;0m"
 // More: https://en.wikipedia.org/wiki/ANSI_escape_code#In_C
+
 
 void log_greeting(const char* msg, ...);
 void log_debug(const char* msg, ...);

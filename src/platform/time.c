@@ -1,14 +1,15 @@
 #include <math.h>
 #include <stdio.h>
-#define __USE_XOPEN_EXTENDED
+#define __USE_XOPEN_EXTENDED  // FIXME
 #include <unistd.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "time.h"
-#include "../core/config.h"
-#include "../core/types.h"
+
+#include "core/config.h"
+#include "core/types.h"
 
 
 static f64 current_time = 0.0;       // GetTime value from GLFW

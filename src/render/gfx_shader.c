@@ -3,9 +3,10 @@
 #include <cglm/cglm.h>
 
 #include "gfx_shader.h"
-#include "../core/log.h"
-#include "../platform/file.h"
-#include "../core/types.h"
+
+#include "core/log.h"
+#include "platform/file.h"
+#include "core/types.h"
 
 
 static inline

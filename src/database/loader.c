@@ -1,8 +1,9 @@
 #include <string.h>
 #include <cJSON.h>
 
-#include "./loader.h"
-#include "../platform/file.h"
+#include "loader.h"
+
+#include "platform/file.h"
 
 static
 ObjectType _parse_object_type(const char* type_str) {

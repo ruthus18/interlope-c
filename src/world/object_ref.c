@@ -56,12 +56,17 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
         vec3 relative_pos;
         glm_vec3_add(self->position, info->pos, relative_pos);
 
+        vec3 relative_rot;
+        // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
+        glm_vec3_copy(self->rotation, relative_rot);
+        glm_vec3_negate(relative_rot);
+
         switch (info->shape) {
             case PHSHAPE_BOX:
                 self->physics_ids[i] = physics_create_static_object(
                     PHYSICS_BODY_BOX,
                     relative_pos,
-                    self->rotation,
+                    relative_rot,
                     info->size
                 );
                 break;

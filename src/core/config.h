@@ -1,8 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-#include <cglm/cglm.h>
-
 
 #define ENGINE_VERSION  "0.0.1a"
 
@@ -49,14 +47,8 @@
 /* --- Player --- */
 #define PLAYER_WIDTH        0.4
 #define PLAYER_HEIGHT       1.7
-#define PLAYER_SPEED        6.5
+#define PLAYER_SPEED        4.0
 #define PLAYER_JUMP_FORCE   5.0
-
-
-/* ------------------------------------------------------------------------- */
-#define MEM_MAX_PATH_LENGTH 256
-#define MEM_MAX_ID_LENGTH 64
-#define MEM_MAX_TEXTURE_NODES 16
 
 
 /* ------------------------------------------------------------------------- */

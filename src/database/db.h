@@ -1,7 +1,9 @@
 #pragma once
 
-#include "../core/types.h"
-#include "./schemas.h"
+#include "database/schemas.h"
+
+#include "core/types.h"
+
 
 typedef struct Database {
     ObjectInfo** objects;

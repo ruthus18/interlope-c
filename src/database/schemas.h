@@ -1,8 +1,7 @@
 #pragma once
 #include "cglm/cglm.h"
 
-#include "./limits.h"
-#include "../core/types.h"
+#include "core/types.h"
 
 #define MAX_ID_LENGTH 64
 #define MAX_MESH_PATH_LENGTH 256

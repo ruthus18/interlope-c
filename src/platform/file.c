@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../core/log.h"
+#include "file.h"
+
+#include "core/log.h"
 
 
 const char* _file_read_text(const char* path) {

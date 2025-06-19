@@ -6,6 +6,30 @@
   "object_refs": [
     {
       "id": "GridFloor",
+      "pos": [-3.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor", 
+      "pos": [0.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [3.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [6.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [9.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [12.0, 0.0, -6.0]
+    },
+    {
+      "id": "GridFloor",
       "pos": [-3.0, 0.0, -3.0]
     },
     {
@@ -15,6 +39,18 @@
     {
       "id": "GridFloor",
       "pos": [3.0, 0.0, -3.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [6.0, 0.0, -3.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [9.0, 0.0, -3.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [12.0, 0.0, -3.0]
     },
     {
       "id": "GridFloor",
@@ -30,6 +66,18 @@
     },
     {
       "id": "GridFloor",
+      "pos": [6.0, 0.0, 0.0]
+    },
+        {
+      "id": "GridFloor",
+      "pos": [9.0, 0.0, 0.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [12.0, 0.0, 0.0]
+    },
+    {
+      "id": "GridFloor",
       "pos": [-3.0, 0.0, 3.0]
     },
     {
@@ -42,27 +90,88 @@
     },
     {
       "id": "GridFloor",
-      "pos": [6.0, 0.0, -3.0]
-    },
-    {
-      "id": "GridFloor",
-      "pos": [6.0, 0.0, 0.0]
-    },
-    {
-      "id": "GridFloor",
       "pos": [6.0, 0.0, 3.0]
     },
     {
-      "id": "GridWallDr",
-      "pos": [4.5, 0.0, -3.0]
+      "id": "GridFloor",
+      "pos": [9.0, 0.0, 3.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [12.0, 0.0, 3.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [-3.0, 0.0, 6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [0.0, 0.0, 6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [3.0, 0.0, 6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [6.0, 0.0, 6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [9.0, 0.0, 6.0]
+    },
+    {
+      "id": "GridFloor",
+      "pos": [12.0, 0.0, 6.0]
     },
     {
       "id": "GridWallWn",
+      "pos": [4.5, 0.0, -3.0]
+    },
+    {
+      "id": "GridWallDr",
       "pos": [4.5, 0.0, 0.0]
     },
     {
       "id": "GridWall",
       "pos": [4.5, 0.0, 3.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [10.5, 0.0, -3.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [10.5, 0.0, 0.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [10.5, 0.0, 3.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [6.0, 0.0, -4.5],
+      "rot": [0.0, 90.0, 0.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [9.0, 0.0, -4.5],
+      "rot": [0.0, 90.0, 0.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [6.0, 0.0, 4.5],
+      "rot": [0.0, 90.0, 0.0]
+    },
+    {
+      "id": "GridWall",
+      "pos": [9.0, 0.0, 4.5],
+      "rot": [0.0, 90.0, 0.0]
+    },
+    {
+      "id": "GridWallChk",
+      "pos": [8.0, 0.0, 0.0],
+      "rot": [0.0, 60.0, 0.0]
     }
   ]
 }

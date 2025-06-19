@@ -34,7 +34,8 @@ void physics_set_kinematic_position(PhysicsObjectID id, vec3 pos);
 bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest);
 bool physics_apply_force(PhysicsObjectID id, vec3 force);
 bool physics_check_collision_at_position(PhysicsObjectID id, vec3 pos);
-bool physics_check_ground_collision(PhysicsObjectID id, vec3 pos);
+bool physics_check_ground_collision(PhysicsObjectID id);
+bool physics_check_ceil_collision(PhysicsObjectID id);
 bool physics_check_wall_collision(PhysicsObjectID id, vec3 pos);
 
 void physics_update();

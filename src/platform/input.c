@@ -1,10 +1,11 @@
 #include <GLFW/glfw3.h>
 
-#include "../core/config.h"
-#include "../core/log.h"
-#include "../core/types.h"
 #include "input.h"
-#include "window.h"
+#include "platform/window.h"
+
+#include "core/config.h"
+#include "core/log.h"
+#include "core/types.h"
 
 
 #define __KEY_EMPTY -1

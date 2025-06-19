@@ -2,7 +2,7 @@
 #pragma once
 #include <cglm/cglm.h>
 
-#include "./types.h"
+#include "core/types.h"
 
 
 #define min(a,b) (((a)<(b))?(a):(b))
