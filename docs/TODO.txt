@@ -1,6 +1,10 @@
 Assets:
     * Load meshes and textures once, then reuse in objects
-    * get AABB mesh for data located in `from GLTF.accessors.min/max`
+    * get AABB mesh from data located in `from GLTF.accessors.min/max`
+
+Memory:
+    * Allocator for list structures
+      (maybe combine the whole world in set of arena chunks ?)
 
 Rendering:
     * Basic lighting
@@ -11,7 +15,6 @@ Rendering:
     * Terrain
 
 Player:
-    * Refactor current controller logic
     * State machine
     * Crouching
     * Sprinting
@@ -21,7 +24,6 @@ Player:
 Physics:
     * Move out to separate thread
     * Need refactoring
-    * Support local position of physics body attached to world object
 
 Editor:
     * Need refactoring and state management

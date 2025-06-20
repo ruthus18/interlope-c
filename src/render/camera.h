@@ -6,28 +6,16 @@
 
 typedef struct Camera {
     vec3 position;
-    f64 yaw;
-    f64 pitch;
+    vec2 direction;
 
     vec3 v_front;
-
     mat4 m_persp;
     mat4 m_view;
-
 } Camera;
 
 
-Camera* camera_create();
+Camera* camera_create(vec3 position, vec2 direction);
 void camera_destroy(Camera*);
-void camera_update_persp_mat(Camera* cam);
-void camera_update_view_mat(Camera* cam);
 
-void camera_get_position(Camera* cam, vec3 dest);
 void camera_set_position(Camera*, vec3 pos);
-void camera_transform(Camera*, vec3 pos_delta);
-
-void camera_set_rotation(Camera*, f64 yaw, f64 pitch);
-void camera_rotate(Camera*, f64 yaw_delta, f64 pitch_delta);
-
-void camera_player_transform(Camera* cam, bool w, bool s, bool a, bool d);
-void camera_player_rotate(Camera* cam, vec2 mouse_dt);
+void camera_set_rotation(Camera*, vec2 direction);

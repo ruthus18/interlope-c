@@ -5,7 +5,16 @@ CC = gcc
 CFLAGS = -std=c23 -g
 INCLUDES = -I src -I vendor/include
 LDFLAGS = -L vendor -Wl,-rpath=vendor
-LIBS = -lm -lGL -lGLEW -lglfw -lcglm -lode -lcjson -lcjson_utils
+LIBS = \
+	-lm \
+	-lGL \
+	-lGLEW \
+	-lglfw \
+	-lcglm \
+	-lode \
+	-lcjson \
+	-lcjson_utils \
+	-lpthread \
 
 TARGET = interlope
 BUILD_DIR = .build

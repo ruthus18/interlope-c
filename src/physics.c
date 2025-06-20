@@ -1,6 +1,8 @@
+#include <assert.h>
 #include <stdio.h>
 #include <math.h>
 #include <ode/ode.h>
+#include <ode/threading_impl.h>
 #include <cglm/cglm.h>
 
 #include "physics.h"
@@ -209,13 +211,7 @@ PhysicsObjectID physics_create_rigid_object(
             dMassSetCapsuleTotal(&mass_, mass, 3, size[0], size[1]);
             obj->geom = dCreateCapsule(self.space, size[0], size[1]);
             break;
-        
-        // Future types can be added here
-        // case PHYSICS_BODY_SPHERE:
-        //     dMassSetSphereTotal(&mass_, mass, size[0]);
-        //     obj->geom = dCreateSphere(self.space, size[0]);
-        //     break;
-        
+
         default:
             log_info("Physics error: Unsupported body type %d", type);
             dBodyDestroy(obj->body);
@@ -364,209 +360,96 @@ bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest) {
 }
 
 
-bool physics_apply_force(PhysicsObjectID id, vec3 force) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->body) {
-        return false;
-    }
-    
-    dBodySetLinearVel(obj->body, force[0], -force[2], force[1]);
-    // dBodyAddForce(obj->body, force[0], -force[2], force[1]);
-    return true;
+/* Player Physics */
+/* ------------------------------------------------------------------------- */
+
+PhysicsObject* player_obj;
+bool player_is_grounded;
+bool player_is_ceiled;
+bool player_near_wall;
+
+
+void player_physics_set(PhysicsObjectID id) {
+    player_obj = find_physics_object(id);
 }
 
+bool player_physics_is_grounded() {
+    return player_is_grounded;
+}
 
-bool physics_check_collision_at_position(PhysicsObjectID id, vec3 pos) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->geom) {
-        return false;
+bool player_physics_is_ceiled() {    
+    return player_is_ceiled;
+}
+
+static
+void _wall_collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
+    dGeomID player_geom = player_obj->geom;
+
+    if (geom1 != player_geom && geom2 != player_geom)  return;
+    
+    dGeomID wall_geom = (geom1 == player_geom ? geom2 : geom1);
+    
+    dContactGeom contact;
+    int n = dCollide(player_geom, wall_geom, 1, &contact, sizeof(dContactGeom));
+    if (n > 0) {
+        f32 normal_y = contact.normal[2];
+        if (normal_y > -0.1 && normal_y < 0.1)
+            player_near_wall = true;
     }
-    
-    // Store original positions
-    const dReal* original_geom_pos = dGeomGetPosition(obj->geom);
-    dReal orig_geom_x = original_geom_pos[0];
-    dReal orig_geom_y = original_geom_pos[1];
-    dReal orig_geom_z = original_geom_pos[2];
-    
-    const dReal* original_body_pos = NULL;
-    dReal orig_body_x, orig_body_y, orig_body_z;
-    if (obj->body) {
-        original_body_pos = dBodyGetPosition(obj->body);
-        orig_body_x = original_body_pos[0];
-        orig_body_y = original_body_pos[1];
-        orig_body_z = original_body_pos[2];
-        
-        // Move body to test position
-        dBodySetPosition(obj->body, pos[0], -pos[2], pos[1]);
-    } else {
-        // Move geometry to test position
-        dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
-    }
-    
-    // Check for collisions with all other geometries in space
-    bool has_collision = false;
-    
-    // Iterate through all objects in space
-    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
-        if (!self.objects[i].in_use || self.objects[i].id == id) {
-            continue;
-        }
-        
-        if (self.objects[i].geom) {
-            dContactGeom contact;
-            int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
-            if (n > 0) {
-                // Check if collision is significant (not just touching surfaces)
-                // Only count meaningful collisions, ignore tiny overlaps
-                if (contact.depth > 0.05) {
-                    has_collision = true;
-                    break;
-                }
-            }
-        }
-    }
+}
+
+static
+bool _check_wall_collision(vec3 orig_pos, vec3 test_pos) {
+    PhysicsObject* obj = player_obj;
+
+    // Move body to test position
+    dBodySetPosition(obj->body, test_pos[0], -test_pos[2], test_pos[1]);
+
+    // Check for collisions
+    player_near_wall = false;
+    dSpaceCollide(self.space, 0, _wall_collision_callback);
     
     // Restore original positions
-    if (obj->body) {
-        dBodySetPosition(obj->body, orig_body_x, orig_body_y, orig_body_z);
-    } else {
-        dGeomSetPosition(obj->geom, orig_geom_x, orig_geom_y, orig_geom_z);
-    }
-    
-    return has_collision;
+    dBodySetPosition(obj->body, orig_pos[0], -orig_pos[2], orig_pos[1]);
+    return player_near_wall;
 }
 
+void player_physics_transform(vec3 transform) {
+    vec3 orig_pos, x_test_pos, z_test_pos;
 
-bool physics_check_ground_collision(PhysicsObjectID id) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->geom) {
-        return false;
-    }
+    physics_get_object_position(player_obj->id, orig_pos);
+    glm_vec3_copy(orig_pos, x_test_pos);
+    glm_vec3_copy(orig_pos, z_test_pos);
+    x_test_pos[0] += transform[0];
+    z_test_pos[2] += transform[2];
+
+    if (_check_wall_collision(orig_pos, x_test_pos))
+        transform[0] = 0.0f;
     
-    // Check for ground collision with proper normal filtering
-    bool has_ground_collision = false;
-    
-    // Iterate through all objects in space
-    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
-        if (!self.objects[i].in_use || self.objects[i].id == id) {
-            continue;
-        }
-        
-        if (self.objects[i].geom) {
-            dContactGeom contact;
-            int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
-            if (n > 0) {
-                // Only count as ground if the contact normal points upward
-                // Normal vector in ODE: contact.normal[2] is the Y component in world space
-                if (contact.normal[2] > 0.7) {  // Surface pointing upward (ground-like)
-                    has_ground_collision = true;
-                    break;
-                }
-            }
-        }
-    }
- 
-    return has_ground_collision;
+    if (_check_wall_collision(orig_pos, z_test_pos))
+        transform[2] = 0.0f;
 }
 
-
-bool physics_check_ceil_collision(PhysicsObjectID id) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->geom) {
-        return false;
+static inline
+void player_collision_callback(dGeomID geom, dContactGeom* contact, i32 n) {
+    if (contact->normal[2] > 0.7) {
+        player_is_grounded = true;
     }
-    
-    bool has_ceil_collision = false;
-    
-    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
-        if (!self.objects[i].in_use || self.objects[i].id == id) {
-            continue;
-        }
-        
-        if (self.objects[i].geom) {
-            dContactGeom contact;
-            int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
-            if (n > 0) {
-                if (contact.normal[2] < -0.7) {  // Surface pointing upward (ground-like)
-                    has_ceil_collision = true;
-                    break;
-                }
-            }
-        }
+    else if (contact->normal[2] < -0.7) {
+        player_is_ceiled = true;
     }
- 
-    return has_ceil_collision;
 }
 
-
-bool physics_check_wall_collision(PhysicsObjectID id, vec3 pos) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->geom) {
-        return false;
-    }
-    
-    // Store original positions
-    const dReal* original_geom_pos = dGeomGetPosition(obj->geom);
-    dReal orig_geom_x = original_geom_pos[0];
-    dReal orig_geom_y = original_geom_pos[1];
-    dReal orig_geom_z = original_geom_pos[2];
-    
-    const dReal* original_body_pos = NULL;
-    dReal orig_body_x, orig_body_y, orig_body_z;
-    if (obj->body) {
-        original_body_pos = dBodyGetPosition(obj->body);
-        orig_body_x = original_body_pos[0];
-        orig_body_y = original_body_pos[1];
-        orig_body_z = original_body_pos[2];
-        
-        // Move body to test position
-        dBodySetPosition(obj->body, pos[0], -pos[2], pos[1]);
-    } else {
-        // Move geometry to test position
-        dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
-    }
-    
-    // Check for wall/cube collisions (exclude ground)
-    bool has_wall_collision = false;
-    
-    // Iterate through all objects in space
-    for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
-        if (!self.objects[i].in_use || self.objects[i].id == id) {
-            continue;
-        }
-        
-        if (self.objects[i].geom) {
-            dContactGeom contact;
-            int n = dCollide(obj->geom, self.objects[i].geom, 1, &contact, sizeof(dContactGeom));
-            if (n > 0) {
-                // Only count as wall collision if:
-                // 1. Normal is NOT pointing strongly upward (not ground)
-                // 2. Has any collision depth
-                if (contact.normal[2] < 0.7 && contact.depth > 0.001) {  // Less restrictive wall detection
-                    has_wall_collision = true;
-                    break;
-                }
-            }
-        }
-    }
-    
-    // Restore original positions
-    if (obj->body) {
-        dBodySetPosition(obj->body, orig_body_x, orig_body_y, orig_body_z);
-    } else {
-        dGeomSetPosition(obj->geom, orig_geom_x, orig_geom_y, orig_geom_z);
-    }
-    
-    return has_wall_collision;
-}
+/* ------------------------------------------------------------------------- */
 
 
 static const int MAX_CONTACTS = 8;
 
 
+// For kinematic bodies, create contact only for the kinematic body
+// (player gets blocked, cube doesn't move)
 static inline
-void _contact_surface_kinematic_params(dContact contact) {
-    // For kinematic bodies, create contact only for the kinematic body (player gets blocked, cube doesn't move)
+void _kinematic_contact_surface_params(dContact contact) {
     contact.surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
     contact.surface.mu = 0.0;  // No friction
     contact.surface.mu2 = 0;
@@ -576,9 +459,9 @@ void _contact_surface_kinematic_params(dContact contact) {
     contact.surface.soft_cfm = 0.02;
 }
 
+// Normal contact for rigid-rigid collisions
 static inline
-void _contact_surface_rigid_params(dContact contact) {
-    // Normal contact for rigid-rigid collisions
+void _rigid_contact_surface_params(dContact contact) {
     contact.surface.mode = dContactBounce | dContactSoftERP | dContactSoftCFM;
     contact.surface.mu = dInfinity;
     contact.surface.mu2 = 0;
@@ -594,46 +477,50 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
     dBodyID body1 = dGeomGetBody(geom1);
     dBodyID body2 = dGeomGetBody(geom2);
     
+    /* --- Collision Validation --- */
     // Skip self-collisions for the same body
     if (body1 && body2 && body1 == body2) return;
     
     // Skip collisions between two static objects (both without bodies)
     if (!body1 && !body2) return;
 
-    dContact contact[MAX_CONTACTS];
-    int n = dCollide(geom1, geom2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
+    bool is_kinematic = false;
+    if (body1 && dBodyIsKinematic(body1))  is_kinematic = true;
+    if (body2 && dBodyIsKinematic(body2))  is_kinematic = true;
 
-    for (int i = 0; i < n; i++) {
-        // Check if either body is kinematic for zero friction
-        bool is_kinematic = false;
-        if (body1 && dBodyIsKinematic(body1)) is_kinematic = true;
-        if (body2 && dBodyIsKinematic(body2)) is_kinematic = true;
-        
+    /* --- Collision Handling --- */
+    dContact contact[MAX_CONTACTS];
+    i32 n = dCollide(geom1, geom2, MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
+
+    for (int i = 0; i < n; i++) {        
         if (is_kinematic) {
-            _contact_surface_kinematic_params(contact[i]);
-            
-            // Only attach contact to kinematic body (player), not the rigid body (cube)
-            dJointID c = dJointCreateContact(self.world, self.contact_group, &contact[i]);
-            // dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
-            
-            // TODO: Questionable
-            if (body1 && dBodyIsKinematic(body1)) {
-                dJointAttach(c, body1, NULL);  // Only kinematic body feels the force
-            } else if (body2 && dBodyIsKinematic(body2)) {
-                dJointAttach(c, body2, NULL);  // Only kinematic body feels the force
-            }
-        } else {
-            _contact_surface_rigid_params(contact[i]);
-            
+            _kinematic_contact_surface_params(contact[i]);
+        }
+        else {
+            _rigid_contact_surface_params(contact[i]);
             dJointID c = dJointCreateContact(self.world, self.contact_group, &contact[i]);
             dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
         }
+    }
+    // log_info("G1: %i, G2: %i, n: %i", geom1, geom2, n);
+
+    assert(player_obj);
+    if (geom1 == player_obj->geom || geom2 == player_obj->geom) {
+        player_collision_callback(
+            geom1 == player_obj->geom ? geom2 : geom1,
+            &contact[0].geom,
+            n
+        );
     }
 }
 
 
 void physics_update() {
+    player_is_grounded = false;
+    player_is_ceiled = false;
+
     dSpaceCollide(self.space, 0, collision_callback);
     dWorldQuickStep(self.world, TIMESTEP);
     dJointGroupEmpty(self.contact_group);
+    // log_info("<FRAME>");
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include <stdbool.h>
 
 
 #define ENGINE_VERSION  "0.0.1a"
@@ -32,24 +32,9 @@
 /* --- GFX --- */
 #define GFX_WIREFRAME_MODE  false
 
-/* --- Physics --- */
-#define PHYSICS_GRAVITY -9.81
-
 /* --- World --- */
 #define WORLD_OBJDB_PATH        "data/objects.toml"
 #define WORLD_INIT_SCENE_PATH   "data/scenes/test.toml"
-
-/* --- Camera --- */
-#define CAMERA_DEFAULT_FOV      75.0
-#define CAMERA_MOVEMENT_SPEED   6
-#define CAMERA_SENSITIVITY      130.0
-
-/* --- Player --- */
-#define PLAYER_WIDTH        0.4
-#define PLAYER_HEIGHT       1.7
-#define PLAYER_SPEED        4.0
-#define PLAYER_JUMP_FORCE   5.0
-
 
 /* ------------------------------------------------------------------------- */
 /* --- Debugging --- */

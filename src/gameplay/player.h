@@ -7,22 +7,30 @@
 typedef struct Player {
     Camera* camera;
     PhysicsObjectID physics_id;
-    vec3 pos;
-    vec2 rot;
-    f32 velocity_y;
+    f32 camera_y_offset;
+    f32 physics_y_offset;
+
+    vec3 position;
+    vec2 direction;
+    vec3 velocity;
+    f32 speed;
+
+    vec2 v_input;
+    vec3 v_movement;
 
     bool is_active;
+    bool is_colliding;
     bool is_grounded;
     bool is_ceiled;
-    bool is_clipping;
 } Player;
 
 
-void player_init(vec3 pos, vec2 rot);
+void player_init(vec3 position, vec2 direction);
 void player_destroy();
 void player_print();
 
-void player_set_is_active(bool value);
-void player_set_clipping(bool value);
+void player_set_active(bool);
+void player_set_colliding(bool);
 
+void player_update_physics();
 void player_update();

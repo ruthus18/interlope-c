@@ -12,9 +12,7 @@ bool is_cursor_visible = false;
 
 static
 void on_init() {
-    // editor_init();
     editor_geometry_init();
-
     cursor_set_visible(is_cursor_visible);
 }
 
@@ -22,7 +20,6 @@ void on_init() {
 static
 void on_destroy() {    
     editor_geometry_destroy();
-    // editor_destroy();
 }
 
 
@@ -37,7 +34,7 @@ void on_update() {
         is_cursor_visible = is_editor_visible;
 
         cursor_set_visible(is_cursor_visible);
-        player_set_is_active(!is_cursor_visible);
+        player_set_active(!is_cursor_visible);
     }
 
     // Switch cursor/camera mouse control
@@ -45,10 +42,8 @@ void on_update() {
         is_cursor_visible = !is_cursor_visible;
 
         cursor_set_visible(is_cursor_visible);
-        player_set_is_active(!is_cursor_visible);
+        player_set_active(!is_cursor_visible);
     }
-
-    // editor_update(is_editor_visible);
 }
 
 
