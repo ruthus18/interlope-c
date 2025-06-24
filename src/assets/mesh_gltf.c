@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #define CGLTF_IMPLEMENTATION
 
@@ -220,4 +221,41 @@ void gltf_load_model_nodes(GLTF_Asset* data, ModelNode** dest) {
         
         dest[i]->mesh = gfx_mesh;
     }
+}
+
+
+bool gltf_get_mesh_aabb(GLTF_Asset* data, int node_index, vec3 aabb_min, vec3 aabb_max) {
+    if (!data || node_index < 0 || node_index >= data->nodes_count) {
+        return false;
+    }
+
+    cgltf_node* node = &data->nodes[node_index];
+    if (!node->mesh) {
+        return false;
+    }
+
+    cgltf_mesh* mesh = node->mesh;
+    if (mesh->primitives_count == 0) {
+        return false;
+    }
+
+    cgltf_primitive* primitive = &mesh->primitives[0];
+    cgltf_accessor* pos_accessor = NULL;
+
+    for (int i = 0; i < primitive->attributes_count; i++) {
+        cgltf_attribute* attr = &primitive->attributes[i];
+        if (attr->type == cgltf_attribute_type_position) {
+            pos_accessor = attr->data;
+            break;
+        }
+    }
+
+    if (!pos_accessor || !pos_accessor->has_min || !pos_accessor->has_max) {
+        return false;
+    }
+
+    glm_vec3_copy(pos_accessor->min, aabb_min);
+    glm_vec3_copy(pos_accessor->max, aabb_max);
+
+    return true;
 }

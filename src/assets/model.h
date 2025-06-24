@@ -11,11 +11,21 @@ typedef struct ModelNode {
 
     vec3 position;
     vec3 rotation;
+    
+    vec3 aabb_min;
+    vec3 aabb_max;
 } ModelNode;
 
 typedef struct Model {
-    char id[MAX_ID_LENGTH];
+    // char id[MAX_ID_LENGTH];
     ModelNode** nodes;
+
+    struct {
+        vec3 min;
+        vec3 max;
+        vec3 size;
+        vec3 offset;
+    } aabb;
 } Model;
 
 
