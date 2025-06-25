@@ -10,6 +10,7 @@ Object* object_create_from_info(ObjectInfo* info) {
     memset(obj, 0, sizeof(Object));
 
     strcpy(obj->base_id, info->id);
+    obj->type = info->type;
     obj->info = info;
 
     Model* model = model_create_from_info(info->model);

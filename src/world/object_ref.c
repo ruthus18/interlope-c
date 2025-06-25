@@ -53,32 +53,38 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
         PhysicsInfo* info = infos[i];
         if (!info)  continue;
         
-        vec3 relative_pos;
-        glm_vec3_add(self->position, info->pos, relative_pos);
+        vec3 pos, rot, size;
+        PhysicsBodyType body_type;
 
-        vec3 relative_rot;
-        // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
-        glm_vec3_copy(self->rotation, relative_rot);
-        glm_vec3_negate(relative_rot);
-
-        switch (info->shape) {
-            case PHSHAPE_BOX:
-                self->physics_ids[i] = physics_create_static_object(
-                    PHYSICS_BODY_BOX,
-                    relative_pos,
-                    relative_rot,
-                    info->size
-                );
-                break;
-                
-            case PHSHAPE_AABB:
-                log_error("AABB phyics shape unsupported for now...");
-                break;
-
-            case PHSHAPE_NULL:
-                log_error("Unknown physics shape in object: %s", self->obj->base_id);
-                break;
+        if (info->shape == PHSHAPE_BOX) {
+            glm_vec3_add(self->position, info->pos, pos);
+            // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
+            glm_vec3_copy(self->rotation, rot);
+            glm_vec3_negate(rot);
+            glm_vec3_copy(info->size, size);
+            body_type = PHYSICS_BODY_BOX;
         }
+        else if (info->shape == PHSHAPE_AABB) {
+            glm_vec3_add(self->position, self->obj->model->aabb.offset, pos);
+            // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
+            glm_vec3_copy(self->rotation, rot);
+            glm_vec3_negate(rot);
+            glm_vec3_copy(self->obj->model->aabb.size, size);
+            body_type = PHYSICS_BODY_BOX;
+        }
+        else if (info->shape == PHSHAPE_NULL) {
+            log_error("Unknown physics shape in object: %s", self->obj->base_id);
+            return;
+        }
+        else {
+            log_exit("Unhandled physics shape");
+        }
+
+        if (self->obj->type == OBJECT_STATIC)
+            self->physics_ids[i] = physics_create_static_object(body_type, pos, rot, size);
+
+        else if (self->obj->type == OBJECT_ITEM)
+            self->physics_ids[i] = physics_create_rigid_object(body_type, pos, rot, size, 1.0);
     }   
 }
 
@@ -87,13 +93,21 @@ void object_ref_destroy(ObjectRef* self) {
     if (self->node_positions)  free(self->node_positions);
     if (self->node_rotations)  free(self->node_rotations);
     if (self->physics_ids)     free(self->physics_ids);
-
     free(self);
 }
 
 
 void object_ref_update(ObjectRef* self) {
+    object_update(self->obj);
 
+    if (self->obj->type == OBJECT_ITEM) {
+        vec3 pos, rot;
+        // TODO: check on `object_ref_create` that there is only 1 physics body 
+        physics_get_object_position(self->physics_ids[0], pos);
+        physics_get_object_rotation(self->physics_ids[0], rot);
+        glm_vec3_copy(pos, self->position);
+        glm_vec3_copy(rot, self->rotation);
+    }
 }
 
 

@@ -72,14 +72,6 @@ void _model_calc_aabb(Model* m) {
     glm_vec3_scale(half_size, 0.5, half_size);
 
     glm_vec3_sub(m->aabb.max, half_size, m->aabb.offset);
-
-    // log_info(
-    //     "[AABB] min (%.3f  %.3f  %.3f)   max (%.3f  %.3f  %.3f)   size (%.3f  %.3f  %.3f)   offset (%.3f  %.3f  %.3f),",
-    //     model->aabb.min[0], model->aabb.min[1], model->aabb.min[2],
-    //     model->aabb.max[0], model->aabb.max[1], model->aabb.max[2],
-    //     model->aabb.size[0], model->aabb.size[1], model->aabb.size[2],
-    //     model->aabb.offset[0], model->aabb.offset[1], model->aabb.offset[2]
-    // );
 }
 
 

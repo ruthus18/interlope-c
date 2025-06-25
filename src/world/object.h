@@ -8,6 +8,7 @@ typedef struct Object {
 
     Model* model;
     ObjectInfo* info;
+    ObjectType type;
 } Object;
 
 

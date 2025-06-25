@@ -10,6 +10,9 @@ ObjectType _parse_object_type(const char* type_str) {
     if (strcmp(type_str, "STATIC") == 0) {
         return OBJECT_STATIC;
     }
+    if (strcmp(type_str, "ITEM") == 0) {
+        return OBJECT_ITEM;
+    }
     return OBJECT_NULL;
 }
 

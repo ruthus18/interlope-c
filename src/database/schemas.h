@@ -12,6 +12,7 @@
 typedef enum {
     OBJECT_NULL,
     OBJECT_STATIC,
+    OBJECT_ITEM,
 } ObjectType;
 
 typedef enum {
