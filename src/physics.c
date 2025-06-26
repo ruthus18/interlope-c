@@ -16,7 +16,7 @@
 
 
 // TODO: Dynamic timestep
-static const dReal TIMESTEP = (1.0 / WINDOW_MAX_FRAMERATE);
+static const dReal TIMESTEP = (1.0 / PHYSICS_MAX_RATE);
 
 #define MAX_PHYSICS_OBJECTS 128
 #define INVALID_PHYSICS_ID  0
@@ -388,13 +388,22 @@ void _wall_collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
     if (geom1 != player_geom && geom2 != player_geom)  return;
     
     dGeomID wall_geom = (geom1 == player_geom ? geom2 : geom1);
+
+    vec3 player_pos;
+    physics_get_object_position(player_obj->id, player_pos);
     
     dContactGeom contact;
     int n = dCollide(player_geom, wall_geom, 1, &contact, sizeof(dContactGeom));
     if (n > 0) {
         f32 normal_y = contact.normal[2];
-        if (normal_y > -0.1 && normal_y < 0.1)
+        f32 pos_y = contact.pos[2];
+        f32 player_pos_y = player_pos[1];
+
+        bool contact_near_floor = (pos_y - (player_pos_y - 1.7 / 2)) > 0.1;
+
+        if (normal_y > -0.1 && normal_y < 0.1 && contact_near_floor) {
             player_near_wall = true;
+        }
     }
 }
 

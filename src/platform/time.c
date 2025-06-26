@@ -61,6 +61,8 @@ int time_get_fps() {
 // Temporary solution, not thread-safe
 */
 void time_limit_framerate() {
+    if (WINDOW_MAX_FRAMERATE == 0.0)  return;
+
     f64 min_frame_duration = 1.0 / WINDOW_MAX_FRAMERATE;
     f64 frame_duration = glfwGetTime() - current_time;
 

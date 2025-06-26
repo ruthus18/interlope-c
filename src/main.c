@@ -66,7 +66,7 @@ void on_draw() {
     int fps_ = time_get_fps();
     sprintf(fps, "%d", fps_);
 
-    gfx_draw_ui(fps, ui_data, (vec2){0.96, 0.04}, (vec3){1.0, 1.0, 0.0});
+    gfx_draw_ui(fps, ui_data, (vec2){0.95, 0.04}, (vec3){1.0, 1.0, 0.0});
     gfx_end_draw_ui();
 
     editor_geometry_draw();

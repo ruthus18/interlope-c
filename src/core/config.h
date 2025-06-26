@@ -5,12 +5,12 @@
 #define ENGINE_VERSION  "0.0.1a"
 
 /* --- Window (User) --- */
-// #define WINDOW_WIDTH 1366
-// #define WINDOW_HEIGHT 768
-// #define WINDOW_FULLSC false
-#define WINDOW_WIDTH    1680
-#define WINDOW_HEIGHT   1050
-#define WINDOW_FULLSC   true
+#define WINDOW_WIDTH 1366
+#define WINDOW_HEIGHT 768
+#define WINDOW_FULLSC false
+// #define WINDOW_WIDTH    1680
+// #define WINDOW_HEIGHT   1050
+// #define WINDOW_FULLSC   true
 #define WINDOW_XPOS     0
 #define WINDOW_YPOS     0
 #define WINDOW_BORDER   false
@@ -20,6 +20,7 @@
 #define WINDOW_TITLE            "Interlope Engine"
 #define WINDOW_BG_COLOR         (f32)29 / 255, (f32)32 / 255, (f32)33 / 255, 1.0
 #define WINDOW_MAX_FRAMERATE    120.0
+#define PHYSICS_MAX_RATE        120.0
 
 /* --- Paths & Dirs --- */
 #define DIR_SHADERS     "shaders/"
