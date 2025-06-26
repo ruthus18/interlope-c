@@ -22,12 +22,10 @@ GLTF_Asset* gltf_open(char* path) {
         parse_res = cgltf_parse_file(&options, full_path, &data);
     
         if (parse_res != cgltf_result_success) {
-            if (parse_res == cgltf_result_file_not_found) {
+            if (parse_res == cgltf_result_file_not_found)
                 log_error("Mesh not found: %s", path);
-            }
-            else {
+            else
                 log_error("Unknown error while loading GLTF mesh: %i", parse_res);
-            }
     
             return NULL;
         }
@@ -215,7 +213,7 @@ void gltf_load_model_nodes(GLTF_Asset* data, ModelNode** dest) {
             }
         }
         
-        GfxMesh* gfx_mesh = gfx_mesh_load(mesh->name, vtx_buf, ind_buf, vtx_count, ind_count, false);
+        GfxMesh* gfx_mesh = gfx_load_mesh(mesh->name, vtx_buf, ind_buf, vtx_count, ind_count, false);
         free(vtx_buf);
         free(ind_buf);
         

@@ -28,5 +28,5 @@ GfxGeometry* geometry_create_cube(f64 size_x, f64 size_y, f64 size_z) {
          wx, -wy,  wz,    wx,  wy,  wz,
     };
     int vtx_count = sizeof(data) / sizeof(f32) / 3;
-    return gfx_geometry_load(data, vtx_count, (vec3){1.0, 1.0, 0.0});
+    return gfx_load_geometry(data, vtx_count, (vec3){1.0, 1.0, 0.0});
 }

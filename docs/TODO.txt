@@ -10,7 +10,6 @@ Rendering:
     * Basic lighting
     * Shadows
     * Skybox
-    * Fonts Rendering
     * Deffered Rendering, framebuffers support
     * Terrain
 
@@ -32,3 +31,6 @@ Editor:
 
 Animation:
     * Basic rigs, bones and animations support
+
+Other:
+    * Refactor functions naming (unify as described in `c-naming.md`)

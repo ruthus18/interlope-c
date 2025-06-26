@@ -53,6 +53,9 @@ f64 time_get_dt() {
     return dt;
 }
 
+int time_get_fps() {
+    return fps;
+}
 
 /*
 // Temporary solution, not thread-safe

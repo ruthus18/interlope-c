@@ -10,6 +10,7 @@
 #include "gfx_shader.h"
 #include "camera.h"
 
+#include "assets/font.h"
 #include "core/cgm.h"
 #include "core/config.h"
 #include "core/log.h"
@@ -24,6 +25,7 @@ static struct _Gfx {
     struct {
         Shader* object;
         Shader* object_outline;
+        Shader* ui;
         Shader* geometry;
     } shaders;
 
@@ -50,8 +52,11 @@ void _init_shaders() {
     self.shaders.object = gfx_shader_create(
         "object.vert", "object.frag"
     );
-    self.shaders.object_outline = gfx_shader_create(
+    self.shaders.object_outline = gfx_shader_create(  // TODO: DEPRECATED
         "object_outline.vert", "object_outline.frag"
+    );
+    self.shaders.ui = gfx_shader_create(
+        "ui.vert", "ui.frag"
     );
     self.shaders.geometry = gfx_shader_create(
         "geometry.vert", "geometry.frag"
@@ -62,7 +67,8 @@ void _init_shaders() {
 static inline
 void _destroy_shaders() {
     gfx_shader_destroy(self.shaders.object);
-    gfx_shader_destroy(self.shaders.object_outline);
+    gfx_shader_destroy(self.shaders.object_outline);  // TODO: DEPRECATED
+    gfx_shader_destroy(self.shaders.ui);
     gfx_shader_destroy(self.shaders.geometry);
 }
 
@@ -79,6 +85,7 @@ void gfx_init() {
     glLineWidth(2);
 
     glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_LINE : GL_POLYGON);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 
@@ -129,11 +136,18 @@ typedef struct GfxGeometry {
 } GfxGeometry;
 
 
+typedef struct GfxUI {
+    u32 vao;
+    u32 vbo;
+    mat4 persp_mat;
+} GfxUI;
+
+
 #define VEC3_SIZE (3 * sizeof(f32))
 #define VEC2_SIZE (2 * sizeof(f32))
 
 
-GfxMesh* gfx_mesh_load(
+GfxMesh* gfx_load_mesh(
     const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw
 ) {
     GfxMesh* mesh = malloc(sizeof(GfxMesh));
@@ -203,7 +217,7 @@ GfxMesh* gfx_mesh_load(
 }
 
 
-void gfx_mesh_unload(GfxMesh* mesh){
+void gfx_unload_mesh(GfxMesh* mesh){
     if (!mesh) return;
 
     glDeleteVertexArrays(1, &mesh->vao);
@@ -215,7 +229,7 @@ void gfx_mesh_unload(GfxMesh* mesh){
 }
 
 
-GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
+GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, int gl_format) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
     if (!texture) {
         log_error("Failed to allocate memory for GfxTexture");
@@ -239,7 +253,7 @@ GfxTexture* gfx_texture_load(u8* data, u32 width, u32 height, int gl_format) {
 }
 
 
-GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
+GfxTexture* gfx_load_dds_texture(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
     if (!texture) {
         log_error("Failed to allocate memory for GfxTexture (DDS)");
@@ -283,22 +297,44 @@ GfxTexture* gfx_texture_load_dds(u8* data, u32 width, u32 height, i32 gl_format,
     return texture;
 }
 
+GfxTexture* gfx_load_font_texture(u32 width, u32 height, void* data) {
+    GfxTexture* texture = malloc(sizeof(GfxTexture));
+    if (!texture) {
+        log_error("Failed to allocate memory for GfxTexture (Font)");
+        return NULL;
+    }
+    gfx_shader_use(self.shaders.ui);
+    
+    glGenTextures(1, &(texture->id));
+    glBindTexture(GL_TEXTURE_2D, texture->id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    gfx_shader_use(NULL);
+    return texture;
+}
 
-void gfx_texture_unload(GfxTexture* texture) {
+
+void gfx_unload_texture(GfxTexture* texture) {
+    if (!texture)  return;
+
     glDeleteTextures(1, &texture->id);
     free(texture);
 }
 
 
-GfxGeometry* gfx_geometry_load(f32* lines_buf, u64 vtx_count, vec3 color) {
+GfxGeometry* gfx_load_geometry(f32* lines_buf, u64 vtx_count, vec3 color) {
     GfxGeometry* geom = malloc(sizeof(GfxGeometry));
+    u32 VAO, VBO;
     
     gfx_shader_use(self.shaders.geometry);
-    unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vtx_count * 3, lines_buf, GL_STATIC_DRAW);
@@ -316,9 +352,39 @@ GfxGeometry* gfx_geometry_load(f32* lines_buf, u64 vtx_count, vec3 color) {
     return geom;
 }
 
-
-void gfx_geometry_unload(GfxGeometry* geom) {
+void gfx_unload_geometry(GfxGeometry* geom) {
     free(geom);
+}
+
+
+GfxUI* gfx_load_ui_data() {
+    GfxUI* ui_data = malloc(sizeof(GfxUI));
+    u32 VAO, VBO;
+
+    gfx_shader_use(self.shaders.ui);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    ui_data->vao = VAO;
+    ui_data->vbo = VBO;
+    glm_ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, -1.0f, 1.0f, ui_data->persp_mat);
+
+    gfx_shader_use(NULL);
+    return ui_data;
+}
+
+void gfx_unload_ui_data(GfxUI* ui_data) {
+    free(ui_data);
 }
 
 
@@ -429,6 +495,65 @@ void gfx_set_outline_id(i32 value) {
     self.outline_id = value;
 }
 
+/* ------------------------------------------------------------------------- */
+
+void gfx_begin_draw_ui() {
+    gfx_shader_use(self.shaders.ui);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void gfx_end_draw_ui() {
+    glEnable(GL_BLEND);
+    gfx_shader_use(NULL);
+}
+
+void gfx_draw_ui(char* text, GfxUI* ui_data, vec2 pos, vec3 color) {
+    Font* font = font_get_default();
+    f32 scale = 0.5;
+    
+    // Convert normalized coordinates [0.0-1.0] to screen pixels (top-left origin)
+    f32 screen_x = pos[0] * WINDOW_WIDTH;
+    f32 screen_y = (1.0 - pos[1]) * WINDOW_HEIGHT;
+
+    gfx_uniform_set_mat4(self.shaders.ui, "projection", ui_data->persp_mat);
+    gfx_uniform_set_vec3(self.shaders.ui, "text_color", color);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(ui_data->vao);
+
+    for (int i = 0; i < strlen(text); i++) {
+        char ch = text[i];
+        Glyph* glyph = &font->chars[(unsigned char)ch];
+
+        f32 xpos = screen_x + glyph->bearing[0] * scale;
+        f32 ypos = screen_y - (glyph->size[1] - glyph->bearing[1]) * scale;
+        
+        f32 w = glyph->size[0] * scale;
+        f32 h = glyph->size[1] * scale;
+
+        f32 verticles[6][4] = {
+            {xpos,      ypos + h,   0.0, 0.0},
+            {xpos,      ypos,       0.0, 1.0},
+            {xpos + w,  ypos,       1.0, 1.0},
+
+            {xpos,      ypos + h,   0.0, 0.0},
+            {xpos + w,  ypos,       1.0, 1.0},
+            {xpos + w,  ypos + h,   1.0, 0.0}
+        };
+        glBindTexture(GL_TEXTURE_2D, glyph->texture->id);
+        glBindBuffer(GL_ARRAY_BUFFER, ui_data->vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verticles), verticles);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        screen_x += (glyph->advance >> 6) * scale;
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+/* ------------------------------------------------------------------------- */
 
 void gfx_begin_draw_geometry() {
     gfx_shader_use(self.shaders.geometry);
@@ -436,17 +561,20 @@ void gfx_begin_draw_geometry() {
 }
 
 void gfx_end_draw_geometry() {
+    glEnable(GL_DEPTH_TEST);
     gfx_shader_use(NULL);
 }
 
 void gfx_draw_geometry(GfxGeometry* geom, vec3 pos) {
     gfx_uniform_set_vec3(self.shaders.geometry, "v_color", geom->color);
-
+    
     mat4 m_model;
     cgm_model_mat(pos, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
     gfx_uniform_set_mat4(self.shaders.geometry, "m_model", m_model);
-
+    
     glBindVertexArray(geom->vao);
     glBindBuffer(GL_ARRAY_BUFFER, geom->vbo);
     glDrawArrays(GL_LINES, 0, geom->vtx_count);
 }
+
+/* ------------------------------------------------------------------------- */

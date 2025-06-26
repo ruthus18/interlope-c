@@ -78,11 +78,12 @@ void _model_calc_aabb(Model* m) {
 Model* model_create_from_info(ModelInfo* info) {
     GLTF_Asset* gltf = gltf_open(info->mesh);
     int nodes_count = gltf_get_nodes_count(gltf);
+
+    // allow only 1 texture per node (mesh)
+    assert(info->texture_count == nodes_count);
     
     Model* model = _model_alloc(nodes_count);
     gltf_load_model_nodes(gltf, model->nodes);
-
-    assert(info->texture_count == nodes_count);
 
     int i = 0;
     ModelNode* node;
@@ -106,8 +107,8 @@ Model* model_create_from_info(ModelInfo* info) {
 void model_destroy(Model* model) {
     ModelNode* node;
     for_each(node, model->nodes) {
-        gfx_mesh_unload(node->mesh);
-        gfx_texture_unload(node->texture);
+        gfx_unload_mesh(node->mesh);
+        gfx_unload_texture(node->texture);
     };
 
     _model_free(model);

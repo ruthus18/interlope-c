@@ -4,21 +4,32 @@
 #include "editor/geometry.h"
 #include "gameplay/player.h"
 #include "platform/input.h"
+#include "platform/time.h"
+#include "render/gfx.h"
+
+#include "assets/font.h"
 
 
 bool is_editor_visible = false;
 bool is_cursor_visible = false;
+
+GfxUI* ui_data;
 
 
 static
 void on_init() {
     editor_geometry_init();
     cursor_set_visible(is_cursor_visible);
+
+    font_load_default();
+    ui_data = gfx_load_ui_data();
 }
 
 
 static
-void on_destroy() {    
+void on_destroy() {
+    font_unload_default();
+    gfx_unload_ui_data(ui_data);
     editor_geometry_destroy();
 }
 
@@ -49,6 +60,15 @@ void on_update() {
 
 static
 void on_draw() {
+    gfx_begin_draw_ui();
+
+    char fps[8];
+    int fps_ = time_get_fps();
+    sprintf(fps, "%d", fps_);
+
+    gfx_draw_ui(fps, ui_data, (vec2){0.96, 0.04}, (vec3){1.0, 1.0, 0.0});
+    gfx_end_draw_ui();
+
     editor_geometry_draw();
 }
 

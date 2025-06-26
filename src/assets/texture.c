@@ -68,7 +68,7 @@ GfxTexture* texture_load_dds(const char* texture_relpath) {
     u8* buffer = malloc(file_size - 128);
     fread(buffer, 1, file_size - 128, f);
 	
-    GfxTexture* tex = gfx_texture_load_dds(buffer, width, height, format, mipmap_cnt, block_size);
+    GfxTexture* tex = gfx_load_dds_texture(buffer, width, height, format, mipmap_cnt, block_size);
 	
     free(buffer);
 	fclose(f);
@@ -93,7 +93,7 @@ GfxTexture* texture_load_png(const char* texture_relpath) {
 		}
 	
 		int gl_format = GL_RGBA;
-		texture = gfx_texture_load(data, width, height, gl_format);
+		texture = gfx_load_texture(data, width, height, gl_format);
 	
 		stbi_image_free(data);
 	});

@@ -3,8 +3,11 @@
 
 CC = gcc
 CFLAGS = -std=c23 -g
-INCLUDES = -I src -I vendor/include
 LDFLAGS = -L vendor -Wl,-rpath=vendor
+INCLUDES = \
+	-I src \
+	-I vendor/include \
+	-I/usr/include/freetype2
 LIBS = \
 	-lm \
 	-lGL \
@@ -13,8 +16,7 @@ LIBS = \
 	-lcglm \
 	-lode \
 	-lcjson \
-	-lcjson_utils \
-	-lpthread \
+	-lfreetype
 
 TARGET = interlope
 BUILD_DIR = .build
@@ -23,6 +25,7 @@ VENDOR_DIR = vendor
 
 # Source files
 SOURCES = \
+	$(SRC_DIR)/assets/font.c \
 	$(SRC_DIR)/assets/mesh_gltf.c \
 	$(SRC_DIR)/assets/model.c \
 	$(SRC_DIR)/assets/texture.c \
@@ -39,8 +42,9 @@ SOURCES = \
 	$(SRC_DIR)/platform/window.c \
 	$(SRC_DIR)/render/camera.c \
 	$(SRC_DIR)/render/geometry.c \
-	$(SRC_DIR)/render/gfx.c \
 	$(SRC_DIR)/render/gfx_shader.c \
+	$(SRC_DIR)/render/gfx_ui.c \
+	$(SRC_DIR)/render/gfx.c \
 	$(SRC_DIR)/world/object.c \
 	$(SRC_DIR)/world/object_ref.c \
 	$(SRC_DIR)/world/scene.c \
