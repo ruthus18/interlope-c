@@ -24,7 +24,6 @@ static struct _Gfx {
 
     struct {
         Shader* object;
-        Shader* object_outline;
         Shader* ui;
         Shader* geometry;
     } shaders;
@@ -52,9 +51,6 @@ void _init_shaders() {
     self.shaders.object = gfx_shader_create(
         "object.vert", "object.frag"
     );
-    self.shaders.object_outline = gfx_shader_create(  // TODO: DEPRECATED
-        "object_outline.vert", "object_outline.frag"
-    );
     self.shaders.ui = gfx_shader_create(
         "ui.vert", "ui.frag"
     );
@@ -67,7 +63,6 @@ void _init_shaders() {
 static inline
 void _destroy_shaders() {
     gfx_shader_destroy(self.shaders.object);
-    gfx_shader_destroy(self.shaders.object_outline);  // TODO: DEPRECATED
     gfx_shader_destroy(self.shaders.ui);
     gfx_shader_destroy(self.shaders.geometry);
 }
@@ -76,7 +71,6 @@ void _destroy_shaders() {
 void gfx_init() {
     self.window = window_get();
     self.stop_ = false;
-    self.outline_id = -1;
 
     _log_startup_info();
     _init_shaders();
@@ -398,10 +392,6 @@ void gfx_update_camera(Camera* cam) {
     gfx_shader_use(self.shaders.object);
     gfx_uniform_set_mat4(self.shaders.object, "m_persp", cam->m_persp);
     gfx_uniform_set_mat4(self.shaders.object, "m_view", cam->m_view);
-    
-    gfx_shader_use(self.shaders.object_outline);
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_persp", cam->m_persp);
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_view", cam->m_view);
 
     gfx_shader_use(self.shaders.geometry);
     gfx_uniform_set_mat4(self.shaders.geometry, "m_persp", cam->m_persp);
@@ -425,54 +415,7 @@ void gfx_end_draw_objects() {
 }
 
 
-void gfx_draw_object_outlined__enter(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
-    glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glClear(GL_STENCIL_BUFFER_BIT);
-
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glStencilMask(0xFF);
-}
-
-
-void gfx_draw_object_outlined__exit(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {    
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-
-    gfx_shader_use(self.shaders.object_outline);
-    
-    gfx_uniform_set_mat4(self.shaders.object_outline, "m_model", m_model);
-    
-    // Set the outline thickness - adjust based on mesh size if needed
-    // float outline_thickness = 0.02;
-    // gfx_uniform_set_float(self.shaders.object_outline, "outline_thickness", outline_thickness);
-    
-    // Set both gradient colors
-    // vec3 outline_color1 = {0.8, 0.25, 0.0};
-    // vec3 outline_color2 = {0.0, 0.8, 0.2};
-    // gfx_uniform_set_vec3(self.shaders.object_outline, "outline_color1", outline_color1);
-    // gfx_uniform_set_vec3(self.shaders.object_outline, "outline_color2", outline_color2);
-    
-    glBindVertexArray(mesh->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-    
-    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
-    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
-    
-    gfx_shader_use(self.shaders.object);
-
-    glStencilMask(0xFF);
-    glStencilFunc(GL_ALWAYS, 1, 0xFF);
-    glDisable(GL_STENCIL_TEST);
-}
-
-
 void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model, i32 id) {
-    if (id == self.outline_id) {
-        gfx_draw_object_outlined__enter(mesh, texture, m_model);
-    }
-
     gfx_uniform_set_mat4(self.shaders.object, "m_model", m_model);
     
     glBindVertexArray(mesh->vao);
@@ -485,10 +428,6 @@ void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model, i32 id) {
     glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    if (id == self.outline_id) {
-        gfx_draw_object_outlined__exit(mesh, texture, m_model);
-    }
 }
 
 void gfx_set_outline_id(i32 value) {
