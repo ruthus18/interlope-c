@@ -45,6 +45,7 @@ SOURCES = \
 	$(SRC_DIR)/render/gfx_shader.c \
 	$(SRC_DIR)/render/gfx_ui.c \
 	$(SRC_DIR)/render/gfx.c \
+	$(SRC_DIR)/ui/ui.c \
 	$(SRC_DIR)/world/object.c \
 	$(SRC_DIR)/world/object_ref.c \
 	$(SRC_DIR)/world/scene.c \

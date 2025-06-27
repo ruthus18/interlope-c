@@ -7,6 +7,7 @@
 #include "platform/time.h"
 #include "platform/window.h"
 #include "render/gfx.h"
+#include "ui/ui.h"
 #include "world/world.h"
 #include "physics.h"
 
@@ -43,6 +44,7 @@ void engine_run() {
     input_init();
     gfx_init();
     physics_init();
+    ui_init();
 
     db_init();
     world_init();
@@ -57,7 +59,8 @@ void engine_run() {
         world_update();
         __on_update__();
 
-        world_draw();   
+        world_draw();
+        ui_draw();  
         __on_draw__();
 
         window_swap_buffers();
@@ -68,6 +71,7 @@ void engine_run() {
     world_destroy();
     db_destroy();
 
+    ui_cleanup();
     physics_destroy();
     gfx_destroy();
     window_destroy();

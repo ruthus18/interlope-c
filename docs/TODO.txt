@@ -1,19 +1,20 @@
 Assets:
     * Load meshes and textures once, then reuse in objects
-    * get AABB mesh from data located in `from GLTF.accessors.min/max`
 
-Memory:
-    * Allocator for list structures
+Assets/Animation:
+    * Basic rigs, bones and animations support
+
+Core:
+    * Memory allocator for list structures
       (maybe combine the whole world in set of arena chunks ?)
+    * Load config from .toml
 
-Rendering:
-    * Basic lighting
-    * Shadows
-    * Skybox
-    * Deffered Rendering, framebuffers support
-    * Terrain
+Editor:
+    * Need refactoring and state management
+    * Assets viewer
+    * Physics info support (w. multiple bodies)
 
-Player:
+Gameplay/Player:
     * State machine
     * Crouching
     * Sprinting
@@ -24,13 +25,16 @@ Physics:
     * Move out to separate thread
     * Need refactoring
 
-Editor:
-    * Need refactoring and state management
-    * Assets viewer
-    * Physics info support (w. multiple bodies)
+Render:
+    * Basic lighting
+    * Shadows
+    * Skybox
+    * Deffered Rendering, framebuffers support
+    * Terrain
 
-Animation:
-    * Basic rigs, bones and animations support
+UI:
+    * Font outlining
+    * Element aligning (centered, left, right)
 
 Other:
     * Refactor functions naming (unify as described in `c-naming.md`)

@@ -5,12 +5,12 @@
 #define ENGINE_VERSION  "0.0.1a"
 
 /* --- Window (User) --- */
-#define WINDOW_WIDTH 1366
-#define WINDOW_HEIGHT 768
-#define WINDOW_FULLSC false
-// #define WINDOW_WIDTH    1680
-// #define WINDOW_HEIGHT   1050
-// #define WINDOW_FULLSC   true
+// #define WINDOW_WIDTH 1366
+// #define WINDOW_HEIGHT 768
+// #define WINDOW_FULLSC false
+#define WINDOW_WIDTH    1680
+#define WINDOW_HEIGHT   1050
+#define WINDOW_FULLSC   true
 #define WINDOW_XPOS     0
 #define WINDOW_YPOS     0
 #define WINDOW_BORDER   false
