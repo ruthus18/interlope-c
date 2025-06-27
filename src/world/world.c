@@ -18,7 +18,7 @@ static struct World {
 
 
 static inline
-void _world_alloc() {
+void _world_new() {
     int objects_size = sizeof(Object*) * (MEM_WORLD_OBJECTS + 1);
 
     self.objects = malloc(objects_size);
@@ -32,18 +32,18 @@ void _world_free() {
 
 
 void world_init() {
-    _world_alloc();
+    _world_new();
     Database* db = db_get();
 
     /* --- Objects Loading --- */
     int i = 0;
     ObjectInfo* obj_info;
     for_each(obj_info, db->objects) {
-        self.objects[i++] = object_create_from_info(obj_info);
+        self.objects[i++] = object_new(obj_info);
     }
 
     /* --- Scene Loading --- */
-    Scene* scene = scene_create_from_info(db->scene);
+    Scene* scene = scene_new(db->scene);
     self.current_scene = scene;
 
     /* --- */
@@ -54,12 +54,12 @@ void world_init() {
 
 void world_destroy() {
     player_destroy();
-    
+
     Object* obj;
     for_each(obj, self.objects) {
-        object_destroy(obj);
+        object_free(obj);
     }
-    scene_destroy(self.current_scene);
+    scene_free(self.current_scene);
 
     _world_free();
 }

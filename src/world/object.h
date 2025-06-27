@@ -12,6 +12,6 @@ typedef struct Object {
 } Object;
 
 
-Object* object_create_from_info(ObjectInfo*);
-void object_destroy(Object*);
+Object* object_new(ObjectInfo*);
+void object_free(Object*);
 void object_update(Object* obj);

@@ -71,9 +71,10 @@ void engine_run() {
     world_destroy();
     db_destroy();
 
-    ui_cleanup();
+    ui_destroy();
     physics_destroy();
     gfx_destroy();
+    input_destroy();
     window_destroy();
 }
 

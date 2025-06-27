@@ -5,7 +5,7 @@
 #include "../assets/model.h"
 
 
-Object* object_create_from_info(ObjectInfo* info) {
+Object* object_new(ObjectInfo* info) {
     Object* obj = malloc(sizeof(Object));
     memset(obj, 0, sizeof(Object));
 
@@ -20,7 +20,7 @@ Object* object_create_from_info(ObjectInfo* info) {
 }
 
 
-void object_destroy(Object* obj) {
+void object_free(Object* obj) {
     model_destroy(obj->model);
     free(obj);
 }

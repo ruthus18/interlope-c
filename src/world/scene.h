@@ -13,8 +13,8 @@ typedef struct Scene {
 } Scene;
 
 
-Scene* scene_create_from_info(SceneInfo*);
-void scene_destroy(Scene*);
+Scene* scene_new(SceneInfo*);
+void scene_free(Scene*);
 
 void scene_update(Scene*);
 void scene_draw(Scene*);

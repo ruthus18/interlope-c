@@ -25,14 +25,14 @@ void _scene_free(Scene* scene) {
 }
 
 
-Scene* scene_create_from_info(SceneInfo* info) {
+Scene* scene_new(SceneInfo* info) {
     Scene* scene = _scene_alloc();
 
     int i = 0;
     ObjectRefInfo* obj_ref_info;
 
     for_each(obj_ref_info, info->object_refs) {
-        ObjectRef* obj_ref = object_ref_create_from_info(obj_ref_info);
+        ObjectRef* obj_ref = object_ref_new(obj_ref_info);
         scene->object_refs[i++] = obj_ref;
     }
 
@@ -45,10 +45,10 @@ Scene* scene_create_from_info(SceneInfo* info) {
     return scene;
 }
 
-void scene_destroy(Scene* scene) {
+void scene_free(Scene* scene) {
     ObjectRef* obj_ref;
     for_each(obj_ref, scene->object_refs) {
-        object_ref_destroy(obj_ref);
+        object_ref_free(obj_ref);
     }
 
     _scene_free(scene);

@@ -40,7 +40,7 @@ void ui_init() {
     glm_vec3_copy(COLOR_AMBER, self.components.interaction.color);
 }
 
-void ui_cleanup() {
+void ui_destroy() {
     gfx_unload_ui_data(self.gfx_data);
     font_unload_default();
 }

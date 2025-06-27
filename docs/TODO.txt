@@ -35,6 +35,3 @@ Render:
 UI:
     * Font outlining
     * Element aligning (centered, left, right)
-
-Other:
-    * Refactor functions naming (unify as described in `c-naming.md`)

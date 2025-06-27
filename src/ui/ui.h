@@ -3,7 +3,7 @@
 
 
 void ui_init();
-void ui_cleanup();
+void ui_destroy();
 
 void ui_enable_fps(bool value);
 void ui_enable_interaction(bool value);

@@ -20,10 +20,10 @@ typedef struct ObjectRef {
 } ObjectRef;
 
 
-ObjectRef* object_ref_create_from_info(ObjectRefInfo*);
+ObjectRef* object_ref_new(ObjectRefInfo*);
 void object_ref_create_physics(ObjectRef* self, PhysicsInfo** physics_infos);
 
-void object_ref_destroy(ObjectRef*);
+void object_ref_free(ObjectRef*);
 
 void object_ref_update(ObjectRef*);
 void object_ref_draw(ObjectRef*);

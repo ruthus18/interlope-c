@@ -39,6 +39,8 @@ void input_init() {
     }
 }
 
+void input_destroy() {}
+
 
 static bool __1st_iter = true;
 

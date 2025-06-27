@@ -11,7 +11,7 @@
 #include "../core/utils.h"
 
 
-ObjectRef* object_ref_create_from_info(ObjectRefInfo* info) {
+ObjectRef* object_ref_new(ObjectRefInfo* info) {
     ObjectRef* self = malloc(sizeof(ObjectRef));
     memset(self, 0, sizeof(ObjectRef));
 
@@ -89,7 +89,7 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
 }
 
 
-void object_ref_destroy(ObjectRef* self) {
+void object_ref_free(ObjectRef* self) {
     if (self->node_positions)  free(self->node_positions);
     if (self->node_rotations)  free(self->node_rotations);
     if (self->physics_ids)     free(self->physics_ids);
@@ -102,7 +102,7 @@ void object_ref_update(ObjectRef* self) {
 
     if (self->obj->type == OBJECT_ITEM) {
         vec3 pos, rot;
-        // TODO: check on `object_ref_create` that there is only 1 physics body 
+        // TODO: check on `object_ref_new` that there is only 1 physics body 
         physics_get_object_position(self->physics_ids[0], pos);
         physics_get_object_rotation(self->physics_ids[0], rot);
         glm_vec3_copy(pos, self->position);
