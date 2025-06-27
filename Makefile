@@ -42,9 +42,9 @@ SOURCES = \
 	$(SRC_DIR)/platform/window.c \
 	$(SRC_DIR)/render/camera.c \
 	$(SRC_DIR)/render/geometry.c \
-	$(SRC_DIR)/render/gfx_shader.c \
 	$(SRC_DIR)/render/gfx_ui.c \
 	$(SRC_DIR)/render/gfx.c \
+	$(SRC_DIR)/render/shader.c \
 	$(SRC_DIR)/ui/ui.c \
 	$(SRC_DIR)/world/object.c \
 	$(SRC_DIR)/world/object_ref.c \

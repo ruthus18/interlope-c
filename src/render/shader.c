@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
-#include "gfx_shader.h"
+#include "shader.h"
 
 #include "core/log.h"
 #include "platform/file.h"
@@ -84,7 +84,7 @@ void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
 }
 
 
-Shader* gfx_shader_create(const char* vert_path, const char* frag_path) {
+Shader* shader_new(const char* vert_path, const char* frag_path) {
     i32 program;
     Shader* shader;
 
@@ -116,13 +116,13 @@ Shader* gfx_shader_create(const char* vert_path, const char* frag_path) {
 }
 
 
-void gfx_shader_destroy(Shader* shader) {
+void shader_free(Shader* shader) {
     glDeleteProgram(shader->program_id);
     free(shader);
 }
 
 
-void gfx_shader_use(Shader* shader) {
+void shader_use(Shader* shader) {
     glUseProgram((shader != NULL) ? shader->program_id : 0);
 }
 
@@ -130,7 +130,7 @@ void gfx_shader_use(Shader* shader) {
 #define __NO_UNIFORM -1
 
 
-void gfx_uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
+void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
@@ -140,7 +140,7 @@ void gfx_uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
 }
 
 
-void gfx_uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
+void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
@@ -150,7 +150,7 @@ void gfx_uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
 }
 
 
-void gfx_uniform_set_float(Shader* shader, const char* name, float value) {
+void uniform_set_float(Shader* shader, const char* name, float value) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
