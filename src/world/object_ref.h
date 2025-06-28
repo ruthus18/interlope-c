@@ -1,10 +1,10 @@
 #pragma once
 
-#include "./object.h"
+#include "object.h"
 
-#include "../core/types.h"
-#include "../database/schemas.h"
-#include "../physics.h"
+#include "core/types.h"
+#include "database/schemas.h"
+#include "physics/physics.h"
 
 
 typedef struct ObjectRef {
@@ -16,7 +16,7 @@ typedef struct ObjectRef {
     vec3* node_positions;
     vec3* node_rotations;
 
-    PhysicsObjectID* physics_ids;
+    PhysicsObject** physics;
 } ObjectRef;
 
 

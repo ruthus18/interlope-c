@@ -3,19 +3,19 @@
 #include "core/config.h"
 #include "core/log.h"
 #include "database/db.h"
+#include "physics/physics.h"
 #include "platform/input.h"
 #include "platform/time.h"
 #include "platform/window.h"
 #include "render/gfx.h"
 #include "ui/ui.h"
 #include "world/world.h"
-#include "physics.h"
 
 
 static EngineCallback __on_init__ = NULL;
-static EngineCallback __on_destroy__;
-static EngineCallback __on_update__;
-static EngineCallback __on_draw__;
+static EngineCallback __on_destroy__ = NULL;
+static EngineCallback __on_update__ = NULL;
+static EngineCallback __on_draw__ = NULL;
 
 
 void engine_set_callback(EngineCallback func, EngineCallbackType type) {
@@ -43,7 +43,7 @@ void engine_run() {
     window_init();
     input_init();
     gfx_init();
-    physics_init();
+    px_init();
     ui_init();
 
     db_init();
@@ -55,7 +55,7 @@ void engine_run() {
         window_poll_events();
         time_update();
         input_update();
-        physics_update();
+        px_update();
         world_update();
         __on_update__();
 
@@ -73,7 +73,7 @@ void engine_run() {
     db_destroy();
 
     ui_destroy();
-    physics_destroy();
+    px_destroy();
     gfx_destroy();
     input_destroy();
     window_destroy();

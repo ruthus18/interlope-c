@@ -1,9 +1,9 @@
 #pragma once
 #include <uthash.h>
 
-#include "../assets/model.h"
-#include "../core/map.h"
-#include "../database/schemas.h"
+#include "assets/model.h"
+#include "core/types/map.h"
+#include "database/schemas.h"
 
 
 typedef struct Object {

@@ -8,8 +8,9 @@
 #include "assets/model.h"
 
 #include "core/log.h"
-#include "core/memory.h"
 #include "platform/file.h"
+
+#define MEM_MESH_NAME_LEN  64
 
 
 GLTF_Asset* gltf_open(char* path) {

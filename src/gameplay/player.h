@@ -1,14 +1,12 @@
 #pragma once
 
+#include "physics/physics.h"
 #include "render/camera.h"
-#include "physics.h"
 
 
 typedef struct Player {
     Camera* camera;
-    PhysicsObjectID physics_id;
     f32 camera_y_offset;
-    f32 physics_y_offset;
 
     vec3 position;
     vec2 direction;

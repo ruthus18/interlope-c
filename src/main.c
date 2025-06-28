@@ -6,22 +6,40 @@
 #include "gameplay/player.h"
 #include "platform/input.h"
 #include "ui/ui.h"
-#include "core/map.h"
+#include "core/types/map.h"
+
+#define CVECTOR_LINEAR_GROWTH
+#include <cvector.h>
+#include <cvector_utils.h>
 
 
 bool is_editor_visible = false;
 bool is_cursor_visible = false;
 
 
+typedef struct Test {
+    int num;
+} Test;
+
 static
 void on_init() {
     ui_enable_fps(true);
-    ui_enable_interaction(true);
+    // ui_enable_interaction(true);
 
     editor_geometry_init();
     cursor_set_visible(is_cursor_visible);
 
-    map(int) int_mapper = NULL;
+
+    // cvector(Test) nums = NULL;
+    // cvector_push_back(nums, (Test){100});
+    // cvector_push_back(nums, (Test){200});
+    // cvector_push_back(nums, (Test){300});
+    
+    // Test* last = cvector_back(nums);
+    // cvector_erase(nums, 0);
+    // cvector_push_back(nums, (Test){400});
+
+    // log_exit("%i", last->num);
 }
 
 

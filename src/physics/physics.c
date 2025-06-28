@@ -22,15 +22,6 @@ static const dReal TIMESTEP = (1.0 / PHYSICS_MAX_RATE);
 #define INVALID_PHYSICS_ID  0
 
 
-typedef struct PhysicsObject {
-    PhysicsObjectID id;
-    PhysicsBodyType type;
-    dBodyID body;
-    dGeomID geom;
-    bool in_use;
-} PhysicsObject;
-
-
 static struct PhysicsStorage {
     dWorldID world;
     dSpaceID space;
@@ -54,7 +45,7 @@ void custom_message_handler(int num, const char *msg, va_list args) {
 }
 
 
-void physics_init() {
+void px_init() {
     dSetMessageHandler(custom_message_handler);
     dInitODE();
 
@@ -80,8 +71,7 @@ void physics_init() {
     dWorldSetCFM(self.world, 1e-5); // Constraint force mixing
 }
 
-static
-PhysicsObject* find_physics_object(PhysicsObjectID id) {
+PhysicsObject* px_get_object(PhysicsObjectID id) {
     if (id == INVALID_PHYSICS_ID) return NULL;
     
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
@@ -103,7 +93,7 @@ PhysicsObject* find_empty_slot() {
 }
 
 
-void physics_destroy() {
+void px_destroy() {
     for (int i = 0; i < MAX_PHYSICS_OBJECTS; i++) {
         if (self.objects[i].in_use) {
             if (self.objects[i].geom) {
@@ -133,7 +123,7 @@ void physics_destroy() {
 }
 
 
-PhysicsObjectID physics_create_static_object(
+PhysicsObject* px_static_create(
     PhysicsBodyType type,
     vec3 pos,
     vec3 rot,
@@ -166,11 +156,11 @@ PhysicsObjectID physics_create_static_object(
     obj->type = type;
     obj->in_use = true;
 
-    return obj->id;
+    return obj;
 }
 
 
-PhysicsObjectID physics_create_rigid_object(
+PhysicsObject* px_rigid_create(
     PhysicsBodyType type,
     vec3 pos,
     vec3 rot,
@@ -225,21 +215,22 @@ PhysicsObjectID physics_create_rigid_object(
     obj->type = type;
     obj->in_use = true;
     
-    return obj->id;
+    return obj;
 }
 
 
-PhysicsObjectID physics_create_kinematic_object(
+PhysicsObject* px_kinematic_create(
     PhysicsBodyType type,
     vec3 pos,
     vec3 rot,
     vec3 size
 ) {
     PhysicsObject* obj = find_empty_slot();
-    if (!obj) {
-        log_info("Physics error: Maximum number of physics objects reached (%d)", MAX_PHYSICS_OBJECTS);
-        return INVALID_PHYSICS_ID;
-    }
+    if (!obj)
+        log_exit(
+            "Physics error: Maximum number of physics objects reached (%d)",
+            MAX_PHYSICS_OBJECTS
+        );
     
     // Create the body
     obj->body = dBodyCreate(self.world);
@@ -259,33 +250,29 @@ PhysicsObjectID physics_create_kinematic_object(
     dBodySetKinematic(obj->body);
     
     // Create geometry based on type
-    switch (type) {
-        case PHYSICS_BODY_BOX:
-            obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
-            break;
-
-        case PHYSICS_BODY_CAPSULE:
-            obj->geom = dCreateCapsule(self.space, size[0], size[1]);
-            break;
-        
-        default:
-            log_info("Physics error: Unsupported body type %d", type);
-            dBodyDestroy(obj->body);
-            return INVALID_PHYSICS_ID;
+    if (type == PHYSICS_BODY_BOX) {
+        obj->geom = dCreateBox(self.space, size[0], size[2], size[1]);
     }
-    
+    else if (type == PHYSICS_BODY_CAPSULE) {
+        obj->geom = dCreateCapsule(self.space, size[0], size[1] - size[0]);
+    }
+    else {
+        log_error("Physics error: Unsupported body type %d", type);
+        dBodyDestroy(obj->body);
+        return NULL;
+    }
     dGeomSetBody(obj->geom, obj->body);
 
     obj->id = self.next_id++;
     obj->type = type;
     obj->in_use = true;
     
-    return obj->id;
+    return obj;
 }
 
 
-bool physics_remove_object(PhysicsObjectID id) {
-    PhysicsObject* obj = find_physics_object(id);
+bool px_remove_object(PhysicsObjectID id) {
+    PhysicsObject* obj = px_get_object(id);
     if (!obj) {
         return false;
     }
@@ -307,44 +294,38 @@ bool physics_remove_object(PhysicsObjectID id) {
     
     return true;
 }
-bool physics_get_object_position(PhysicsObjectID id, vec3 dest) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->body) {
-        return false;
-    }
 
-    const dReal* pos = dBodyGetPosition(obj->body);
-    glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
-    return true;
+/* ------------------------------------------------------------------------- */
+
+dSpaceID px_get_space() {
+    return self.space;
 }
 
+/* ------ px_static ------ */
+/* ------------------------------------------------------------------------- */
 
-void physics_set_object_position(PhysicsObjectID id, vec3 pos) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj) {
-        log_error("Physics object not found: %i", id);
-        return;
-    }
+void px_static_get_position(PhysicsObject* obj, vec3 dest) {
+    const dReal* pos = dGeomGetPosition(obj->geom);
+    glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
+}
+
+void px_static_set_position(PhysicsObject* obj, vec3 pos) {
     dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
 }
 
+/* ------ px_rigid ------ */
+/* ------------------------------------------------------------------------- */
 
-void physics_set_kinematic_position(PhysicsObjectID id, vec3 pos) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->body) {
-        log_error("Physics object not found or has no body: %i", id);
-        return;
-    }
+void px_rigid_get_position(PhysicsObject* obj, vec3 dest) {
+    const dReal* pos = dBodyGetPosition(obj->body);
+    glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
+}
+
+void px_rigid_set_position(PhysicsObject* obj, vec3 pos) {
     dBodySetPosition(obj->body, pos[0], -pos[2], pos[1]);
 }
 
-
-bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest) {
-    PhysicsObject* obj = find_physics_object(id);
-    if (!obj || !obj->body) {
-        return false;
-    }
-    
+void px_rigid_get_rotation(PhysicsObject* obj, vec3 dest) {
     const dReal* R = dBodyGetRotation(obj->body);
     
     mat3 rot_ = {R[0], R[1], R[2], R[4], R[5], R[6], R[8], R[9], R[10]};
@@ -356,97 +337,31 @@ bool physics_get_object_rotation(PhysicsObjectID id, vec3 dest) {
     dest[0] = rot_x;
     dest[1] = rot_z;
     dest[2] = -rot_y;
-    return true;
 }
 
-
-/* Player Physics */
+/* ------ px_kinematic ------ */
 /* ------------------------------------------------------------------------- */
 
-PhysicsObject* player_obj;
-bool player_is_grounded;
-bool player_is_ceiled;
-bool player_near_wall;
-
-
-void player_physics_set(PhysicsObjectID id) {
-    player_obj = find_physics_object(id);
+void px_kinematic_get_position(PhysicsObject* obj, vec3 dest) {
+    const dReal* pos = dBodyGetPosition(obj->body);
+    glm_vec3_copy((vec3){pos[0], pos[2], -pos[1]}, dest);
+}
+void px_kinematic_set_position(PhysicsObject* obj, vec3 pos) {
+    dBodySetPosition(obj->body, pos[0], -pos[2], pos[1]);
 }
 
-bool player_physics_is_grounded() {
-    return player_is_grounded;
-}
-
-bool player_physics_is_ceiled() {    
-    return player_is_ceiled;
-}
-
-static
-void _wall_collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
-    dGeomID player_geom = player_obj->geom;
-
-    if (geom1 != player_geom && geom2 != player_geom)  return;
+void px_kinematic_get_rotation(PhysicsObject* obj, vec3 dest) {
+    const dReal* R = dBodyGetRotation(obj->body);
     
-    dGeomID wall_geom = (geom1 == player_geom ? geom2 : geom1);
-
-    vec3 player_pos;
-    physics_get_object_position(player_obj->id, player_pos);
+    mat3 rot_ = {R[0], R[1], R[2], R[4], R[5], R[6], R[8], R[9], R[10]};
     
-    dContactGeom contact;
-    int n = dCollide(player_geom, wall_geom, 1, &contact, sizeof(dContactGeom));
-    if (n > 0) {
-        f32 normal_y = contact.normal[2];
-        f32 pos_y = contact.pos[2];
-        f32 player_pos_y = player_pos[1];
-
-        bool contact_near_floor = (pos_y - (player_pos_y - 1.7 / 2)) > 0.1;
-
-        if (normal_y > -0.1 && normal_y < 0.1 && contact_near_floor) {
-            player_near_wall = true;
-        }
-    }
-}
-
-static
-bool _check_wall_collision(vec3 orig_pos, vec3 test_pos) {
-    PhysicsObject* obj = player_obj;
-
-    // Move body to test position
-    dBodySetPosition(obj->body, test_pos[0], -test_pos[2], test_pos[1]);
-
-    // Check for collisions
-    player_near_wall = false;
-    dSpaceCollide(self.space, 0, _wall_collision_callback);
+    float rot_x = atan2(rot_[2][1], rot_[2][2]) * (180.0 / M_PI);
+    float rot_y = atan2(-rot_[2][0], sqrt(pow(rot_[2][1], 2) + pow(rot_[2][2], 2))) * (180.0 / M_PI);
+    float rot_z = atan2(rot_[1][0], rot_[0][0]) * (180.0 / M_PI);
     
-    // Restore original positions
-    dBodySetPosition(obj->body, orig_pos[0], -orig_pos[2], orig_pos[1]);
-    return player_near_wall;
-}
-
-void player_physics_transform(vec3 transform) {
-    vec3 orig_pos, x_test_pos, z_test_pos;
-
-    physics_get_object_position(player_obj->id, orig_pos);
-    glm_vec3_copy(orig_pos, x_test_pos);
-    glm_vec3_copy(orig_pos, z_test_pos);
-    x_test_pos[0] += transform[0];
-    z_test_pos[2] += transform[2];
-
-    if (_check_wall_collision(orig_pos, x_test_pos))
-        transform[0] = 0.0f;
-    
-    if (_check_wall_collision(orig_pos, z_test_pos))
-        transform[2] = 0.0f;
-}
-
-static inline
-void player_collision_callback(dGeomID geom, dContactGeom* contact, i32 n) {
-    if (contact->normal[2] > 0.7) {
-        player_is_grounded = true;
-    }
-    else if (contact->normal[2] < -0.7) {
-        player_is_ceiled = true;
-    }
+    dest[0] = rot_x;
+    dest[1] = rot_z;
+    dest[2] = -rot_y;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -511,25 +426,10 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
             dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
         }
     }
-    // log_info("G1: %i, G2: %i, n: %i", geom1, geom2, n);
-
-    assert(player_obj);
-    if (geom1 == player_obj->geom || geom2 == player_obj->geom) {
-        player_collision_callback(
-            geom1 == player_obj->geom ? geom2 : geom1,
-            &contact[0].geom,
-            n
-        );
-    }
 }
 
-
-void physics_update() {
-    player_is_grounded = false;
-    player_is_ceiled = false;
-
+void px_update() {
     dSpaceCollide(self.space, 0, collision_callback);
     dWorldQuickStep(self.world, TIMESTEP);
     dJointGroupEmpty(self.contact_group);
-    // log_info("<FRAME>");
 }

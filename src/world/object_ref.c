@@ -44,15 +44,15 @@ ObjectRef* object_ref_new(ObjectRefInfo* info) {
 
 
 void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
-    self->physics_ids = NULL;
+    self->physics = NULL;
     if (!infos)  return;
     
     int physics_count = tuple_size(infos);
     if (physics_count == 0) return;
     
-    int physics_size = sizeof(PhysicsObjectID) * (physics_count + 1);
-    self->physics_ids = malloc(physics_size);
-    memset(self->physics_ids, 0, physics_size);
+    int physics_size = sizeof(PhysicsObject) * (physics_count + 1);
+    self->physics = malloc(physics_size);
+    memset(self->physics, 0, physics_size);
     
     for (int i = 0; i < physics_count; i++) {
         PhysicsInfo* info = infos[i];
@@ -62,20 +62,20 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
         PhysicsBodyType body_type;
 
         if (info->shape == PHSHAPE_BOX) {
+            body_type = PHYSICS_BODY_BOX;
             glm_vec3_add(self->position, info->pos, pos);
             // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
             glm_vec3_copy(self->rotation, rot);
             glm_vec3_negate(rot);
             glm_vec3_copy(info->size, size);
-            body_type = PHYSICS_BODY_BOX;
         }
         else if (info->shape == PHSHAPE_AABB) {
+            body_type = PHYSICS_BODY_BOX;
             glm_vec3_add(self->position, self->obj->model->aabb.offset, pos);
             // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
             glm_vec3_copy(self->rotation, rot);
             glm_vec3_negate(rot);
             glm_vec3_copy(self->obj->model->aabb.size, size);
-            body_type = PHYSICS_BODY_BOX;
         }
         else if (info->shape == PHSHAPE_NULL) {
             log_error("Unknown physics shape in object: %s", self->obj->base_id);
@@ -86,18 +86,18 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
         }
 
         if (self->obj->type == OBJECT_STATIC)
-            self->physics_ids[i] = physics_create_static_object(body_type, pos, rot, size);
+            self->physics[i] = px_static_create(body_type, pos, rot, size);
 
         else if (self->obj->type == OBJECT_ITEM)
-            self->physics_ids[i] = physics_create_rigid_object(body_type, pos, rot, size, 1.0);
+            self->physics[i] = px_rigid_create(body_type, pos, rot, size, 1.0);
     }   
 }
 
 
 void object_ref_free(ObjectRef* self) {
-    if (self->node_positions)  free(self->node_positions);
-    if (self->node_rotations)  free(self->node_rotations);
-    if (self->physics_ids)     free(self->physics_ids);
+    if (self->node_positions)   free(self->node_positions);
+    if (self->node_rotations)   free(self->node_rotations);
+    if (self->physics)          free(self->physics);
     free(self);
 }
 
@@ -106,12 +106,9 @@ void object_ref_update(ObjectRef* self) {
     object_update(self->obj);
 
     if (self->obj->type == OBJECT_ITEM) {
-        vec3 pos, rot;
         // TODO: check on `object_ref_new` that there is only 1 physics body 
-        physics_get_object_position(self->physics_ids[0], pos);
-        physics_get_object_rotation(self->physics_ids[0], rot);
-        glm_vec3_copy(pos, self->position);
-        glm_vec3_copy(rot, self->rotation);
+        px_rigid_get_position(self->physics[0], self->position);
+        px_rigid_get_rotation(self->physics[0], self->rotation);
     }
 }
 

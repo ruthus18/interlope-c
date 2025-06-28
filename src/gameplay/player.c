@@ -4,13 +4,14 @@
 #include "core/log.h"
 #include "core/config.h"
 #include "platform/input.h"
+#include "physics/physics.h"
+#include "physics/player_physics.h"
 #include "platform/time.h"
 #include "render/camera.h"
 #include "render/gfx.h"
-#include "physics.h"
 
 #define PLAYER_WIDTH            0.4
-#define PLAYER_HEIGHT           1.7
+#define PLAYER_HEIGHT           1.8
 
 #define PLAYER_SPEED            4.0
 #define PLAYER_JUMP_FORCE       4.5
@@ -18,42 +19,33 @@
 #define PLAYER_CAM_SENSIVITY    130.0
 
 
-Player self;
+Player self = {};
 
 void player_init(vec3 position, vec2 direction) {
     glm_vec3_copy(position, self.position);
     glm_vec2_copy(direction, self.direction);
-    glm_vec3_zero(self.velocity);
-
     self.speed = PLAYER_SPEED;
 
     self.is_active = true;
     self.is_colliding = true;
     self.is_grounded = true;
-    self.is_ceiled = false;
 
-    self.camera_y_offset = PLAYER_HEIGHT;
-    self.physics_y_offset = PLAYER_HEIGHT / 2 + 0.15;
+    px_player_init(position, (vec3){0.0, 0.0, 0.0}, PLAYER_WIDTH, PLAYER_HEIGHT);
     
+    self.camera_y_offset = PLAYER_HEIGHT - 0.1;
     self.camera = camera_new(
         (vec3){position[0], position[1] + self.camera_y_offset, position[2]},
         self.direction
     );
     gfx_set_camera(self.camera);
 
-    self.physics_id = physics_create_kinematic_object(
-        PHYSICS_BODY_CAPSULE,
-        (vec3){position[0], position[1] + self.physics_y_offset, position[2]},
-        (vec3){0.0, 0.0, 0.0},
-        (vec3){PLAYER_WIDTH / 2, PLAYER_HEIGHT, 0.0}
-    );
-    player_physics_set(self.physics_id);
 }
-
 
 void player_destroy() {
     camera_free(self.camera);
+    px_player_destroy();
 }
+
 
 void player_print() {
     log_debug("--- Player ---");
@@ -61,13 +53,8 @@ void player_print() {
     log_debug("Pos: (%.4f  %.4f  %.4f)", self.position[0], self.position[1], self.position[2]);
 }
 
-void player_set_active(bool value) {
-    self.is_active = value;
-}
-
-void player_set_colliding(bool value) {
-    self.is_colliding = value;
-}
+void player_set_active(bool value) { self.is_active = value; }
+void player_set_colliding(bool value) { self.is_colliding = value; }
 
 
 static inline
@@ -106,7 +93,8 @@ void _calc_movement_vec() {
     // fwd movement
     glm_vec3_copy(self.camera->v_front, v_move_fwd);
     if (self.is_colliding)
-        v_move_fwd[1] = 0.0;  // restrict fly
+        // restrict vertical movement
+        v_move_fwd[1] = 0.0;
 
     // side movement
     glm_vec3_cross(v_move_fwd, V_UP_Y, v_move_side);
@@ -127,8 +115,8 @@ void _calc_vertical_velocity(f32 dt) {
     bool is_jump = input_is_keyp(IN_KEY_SPACE);
     bool apply_gravity = true;
 
-    self.is_grounded = player_physics_is_grounded();
-    self.is_ceiled = player_physics_is_ceiled();
+    self.is_grounded = px_player_get_grounded();
+    self.is_ceiled = px_player_get_ceiled();
 
     if (self.is_grounded) {
         if (is_jump)
@@ -151,6 +139,7 @@ void _calc_vertical_velocity(f32 dt) {
 
 void player_update_physics() {
     f32 dt = time_get_dt();
+    px_player_update();
 
     _update_camera_rotation();
     _calc_movement_vec();
@@ -168,7 +157,7 @@ void player_update_physics() {
 
     // Calc final movement
     if (self.is_colliding)
-        player_physics_transform(self.v_movement);
+        px_player_translate(self.v_movement);
     
     // Apply final movement
     glm_vec3_add(self.position, self.v_movement, self.position);
@@ -176,10 +165,8 @@ void player_update_physics() {
         self.camera,
         (vec3){self.position[0], self.position[1] + self.camera_y_offset, self.position[2]}
     );
-    physics_set_kinematic_position(
-        self.physics_id,
-        (vec3){self.position[0], self.position[1] + self.physics_y_offset, self.position[2]}
-    );
+
+    px_player_set_position(self.position);
 }
 
 
@@ -187,7 +174,6 @@ void player_update() {
     if (!self.is_active)  return;
 
     player_update_physics();
-    // gfx_update_camera(self.camera);
 }
 
 Player* player_get() {

@@ -54,9 +54,9 @@ static struct _Gfx {
     } shaders;
 
     struct CommandsStorage {
-        DrawObjectCommand* object;
-        DrawUIElementCommand* ui_element;
-        DrawGeometryCommand* geometry;
+        cvector(DrawObjectCommand) object;
+        cvector(DrawUIElementCommand) ui_element;
+        cvector(DrawGeometryCommand) geometry;
     } commands;
 } self;
 
@@ -93,17 +93,9 @@ void _destroy_shaders() {
 
 static inline
 void _init_command_storage() {
-    cvector(DrawObjectCommand) cmds_obj = NULL;
-    cvector_reserve(cmds_obj, 1024);
-    self.commands.object = cmds_obj;
-    
-    cvector(DrawUIElementCommand) cmds_ui = NULL;
-    cvector_reserve(cmds_ui, 1024);
-    self.commands.ui_element = cmds_ui;
-    
-    cvector(DrawGeometryCommand) cmds_geom = NULL;
-    cvector_reserve(cmds_geom, 1024);
-    self.commands.geometry = cmds_geom;
+    cvector_reserve(self.commands.object, 1024);
+    cvector_reserve(self.commands.ui_element, 1024);
+    cvector_reserve(self.commands.geometry, 1024);
 }
 
 static inline
@@ -193,7 +185,7 @@ void gfx_enqueue_ui_element(char* text, GfxMesh2D* ui_data, vec2 pos, vec3 color
     cmd.ui_data = ui_data;
     glm_vec2_copy(pos, cmd.pos);
     glm_vec3_copy(color, cmd.color);
-    
+
     cvector_push_back(self.commands.ui_element, cmd);
 }
 
@@ -201,7 +193,7 @@ void gfx_enqueue_geometry(GfxGeometry* geom, vec3 pos) {
     DrawGeometryCommand cmd;
     cmd.geom = geom;
     glm_vec3_copy(pos, cmd.pos);
-    
+
     cvector_push_back(self.commands.geometry, cmd);
 }
 
@@ -281,14 +273,13 @@ void gfx_draw_ui_elements() {
     }
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glEnable(GL_BLEND);
+    glDisable(GL_BLEND);
 }
 
 
 void gfx_draw_geometry() {
     shader_use(self.shaders.geometry);
-    glDisable(GL_DEPTH_TEST);
-    
+
     shader_set_mat4(self.shaders.geometry, "m_persp", self.camera->m_persp);
     shader_set_mat4(self.shaders.geometry, "m_view", self.camera->m_view);
     
@@ -304,9 +295,7 @@ void gfx_draw_geometry() {
         glBindVertexArray(cmd->geom->vao);
         glBindBuffer(GL_ARRAY_BUFFER, cmd->geom->vbo);
         glDrawArrays(GL_LINES, 0, cmd->geom->vtx_count);
-    }
-    
-    glEnable(GL_DEPTH_TEST);
+    }   
 }
 
 /* ------------------------------------------------------------------------- */

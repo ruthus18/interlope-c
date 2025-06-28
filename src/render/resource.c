@@ -79,10 +79,8 @@ GfxMesh* gfx_load_mesh(
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // log_success("Mesh loaded: %s", name);
     return mesh;
 }
-
 
 void gfx_unload_mesh(GfxMesh* mesh){
     if (!mesh) return;
@@ -94,7 +92,6 @@ void gfx_unload_mesh(GfxMesh* mesh){
     free((void*)mesh->name);
     free(mesh);
 }
-
 
 /* ------ GfxMesh2D ------ */
 /* ------------------------------------------------------------------------- */
@@ -128,7 +125,6 @@ void gfx_unload_mesh_2d(GfxMesh2D* ui_data) {
 
 /* ------ GfxTexture ------ */
 /* ------------------------------------------------------------------------- */
-
 
 GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
@@ -168,7 +164,6 @@ GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, i32 gl_format, u32
         h /= 2;
     }
 
-    // log_success("Texture loaded: %s", texture_relpath);
     return texture;
 }
 
@@ -190,14 +185,12 @@ GfxTexture* gfx_load_font_texture(u32 width, u32 height, void* data) {
     return texture;
 }
 
-
 void gfx_unload_texture(GfxTexture* texture) {
     if (!texture)  return;
 
     glDeleteTextures(1, &texture->id);
     free(texture);
 }
-
 
 /* ------ GfxGeometry ------ */
 /* ------------------------------------------------------------------------- */

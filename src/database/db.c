@@ -48,6 +48,7 @@ ObjectInfo* db_find_object(char* id) {
     ObjectInfo* obj = NULL;
 
     tuple_for_each(obj, self.objects) {
+        // FIXME migrate to map struct
         if (strcmp(obj->id, id) == 0)  return obj;
     }
     return NULL;

@@ -32,7 +32,6 @@ SOURCES = \
 	\
 	$(SRC_DIR)/core/cgm.c \
 	$(SRC_DIR)/core/log.c \
-	$(SRC_DIR)/core/memory.c \
 	\
 	$(SRC_DIR)/database/db.c \
 	$(SRC_DIR)/database/loader.c \
@@ -40,6 +39,9 @@ SOURCES = \
 	$(SRC_DIR)/editor/geometry.c \
 	\
 	$(SRC_DIR)/gameplay/player.c \
+	\
+	$(SRC_DIR)/physics/physics.c \
+	$(SRC_DIR)/physics/player_physics.c \
 	\
 	$(SRC_DIR)/platform/file.c \
 	$(SRC_DIR)/platform/input.c \
@@ -61,7 +63,6 @@ SOURCES = \
 	$(SRC_DIR)/world/world.c \
 	\
 	$(SRC_DIR)/engine.c \
-	$(SRC_DIR)/physics.c \
 	$(SRC_DIR)/main.c \
 	\
 	$(VENDOR_DIR)/src/toml.c \

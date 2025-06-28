@@ -5,9 +5,10 @@ Assets/Animation:
     * Basic rigs, bones and animations support
 
 Core:
-    * Memory allocator for list structures
-      (maybe combine the whole world in set of arena chunks ?)
     * Load config from .toml
+    * Migrate engine on new types, enhance type selection:
+      (just keep the `map`, `list` based on uthash and cvector)
+    * Chunk-expanding list structure
 
 Editor:
     * Need refactoring and state management
@@ -24,6 +25,10 @@ Gameplay/Player:
 Physics:
     * Move out to separate thread
     * Need refactoring
+
+Physics/Player:
+    * Improve wall collision handling - 
+        test collision once, translate in direction of contact normal
 
 Render:
     * Basic lighting

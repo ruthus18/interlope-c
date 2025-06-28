@@ -1,8 +1,9 @@
 #include <string.h>
 
 #include "scene.h"
-#include "core/memory.h"
 #include "core/utils.h"
+
+#define MEM_SCENE_OBJECTS   1024
 
 
 static inline
@@ -37,9 +38,6 @@ Scene* scene_new(SceneInfo* info) {
 
     glm_vec3_copy(info->player_init_pos, scene->player_init_pos);
     glm_vec2_copy(info->player_init_rot, scene->player_init_rot);
-
-    // TODO tmp, need to rm player collision offsets
-    scene->player_init_pos[1] += 0.5;
 
     return scene;
 }

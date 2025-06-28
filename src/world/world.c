@@ -4,7 +4,6 @@
 #include "world/object.h"
 #include "world/scene.h"
 
-#include "core/memory.h"
 #include "core/log.h"
 #include "core/utils.h"
 #include "database/db.h"
@@ -21,8 +20,6 @@ void world_init() {
     Database* db = db_get();
 
     /* --- Objects Loading --- */
-    self.objects = NULL;
-
     ObjectInfo* obj_info;
     Object* obj;
 
