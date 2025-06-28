@@ -18,14 +18,14 @@ void db_init() {
 
 void db_destroy() {
     ObjectInfo* obj;
-    for_each(obj, self.objects) {
+    tuple_for_each(obj, self.objects) {
         if (obj->model) {
             free(obj->model->textures);
             free(obj->model);
         }
         if (obj->physics) {
             PhysicsInfo* physics_info;
-            for_each(physics_info, obj->physics) {
+            tuple_for_each(physics_info, obj->physics) {
                 free(physics_info);
             }
             free(obj->physics);
@@ -47,7 +47,7 @@ Database* db_get() {
 ObjectInfo* db_find_object(char* id) {
     ObjectInfo* obj = NULL;
 
-    for_each(obj, self.objects) {
+    tuple_for_each(obj, self.objects) {
         if (strcmp(obj->id, id) == 0)  return obj;
     }
     return NULL;

@@ -8,7 +8,7 @@
 
 
 typedef struct ObjectRef {
-    // u32 ref_id;
+    u32 ref_id;
     Object* obj;
 
     vec3 position;
@@ -27,3 +27,7 @@ void object_ref_free(ObjectRef*);
 
 void object_ref_update(ObjectRef*);
 void object_ref_draw(ObjectRef*);
+
+// ObjectRef ID system
+ObjectRef* object_ref_find_by_id(u32 ref_id);
+u32 object_ref_get_next_id(void);

@@ -29,32 +29,42 @@ SOURCES = \
 	$(SRC_DIR)/assets/mesh_gltf.c \
 	$(SRC_DIR)/assets/model.c \
 	$(SRC_DIR)/assets/texture.c \
+	\
 	$(SRC_DIR)/core/cgm.c \
 	$(SRC_DIR)/core/log.c \
 	$(SRC_DIR)/core/memory.c \
+	\
 	$(SRC_DIR)/database/db.c \
 	$(SRC_DIR)/database/loader.c \
+	\
 	$(SRC_DIR)/editor/geometry.c \
+	\
 	$(SRC_DIR)/gameplay/player.c \
+	\
 	$(SRC_DIR)/platform/file.c \
 	$(SRC_DIR)/platform/input.c \
 	$(SRC_DIR)/platform/time.c \
 	$(SRC_DIR)/platform/window.c \
+	\
 	$(SRC_DIR)/render/camera.c \
 	$(SRC_DIR)/render/geometry.c \
 	$(SRC_DIR)/render/gfx_ui.c \
 	$(SRC_DIR)/render/gfx.c \
 	$(SRC_DIR)/render/resource.c \
 	$(SRC_DIR)/render/shader.c \
+	\
 	$(SRC_DIR)/ui/ui.c \
+	\
 	$(SRC_DIR)/world/object.c \
 	$(SRC_DIR)/world/object_ref.c \
 	$(SRC_DIR)/world/scene.c \
 	$(SRC_DIR)/world/world.c \
+	\
 	$(SRC_DIR)/engine.c \
 	$(SRC_DIR)/physics.c \
 	$(SRC_DIR)/main.c \
-	$(VENDOR_DIR)/src/toml.c
+	\
+	$(VENDOR_DIR)/src/toml.c \
 
 # Object files (replace .c with .o and place in build directory)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)/%.o)

@@ -2,14 +2,14 @@
 
 
 static inline
-int __count_(void** arr) {
+int __tuple_size(void** arr) {
     for (int i = 0; ; i++) {
         if (arr[i] == NULL)  return i;
     }
 }
 
-#define count_(arr)  __count_((void**)arr)
+#define tuple_size(tup)  __tuple_size((void**)tup)
 
 
-#define for_each(current, arr) \
-    for (int _i = 0; (current = arr[_i]) && (current != NULL); _i++)
+#define tuple_for_each(current, tup) \
+    for (int _i = 0; (current = tup[_i]) && (current != NULL); _i++)

@@ -6,6 +6,7 @@
 #include "gameplay/player.h"
 #include "platform/input.h"
 #include "ui/ui.h"
+#include "core/map.h"
 
 
 bool is_editor_visible = false;
@@ -19,6 +20,8 @@ void on_init() {
 
     editor_geometry_init();
     cursor_set_visible(is_cursor_visible);
+
+    map(int) int_mapper = NULL;
 }
 
 

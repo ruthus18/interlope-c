@@ -10,13 +10,18 @@
 #include "../core/log.h"
 #include "../core/utils.h"
 
+static u32 next_ref_id = 0x00000001;
+
 
 ObjectRef* object_ref_new(ObjectRefInfo* info) {
     ObjectRef* self = malloc(sizeof(ObjectRef));
     memset(self, 0, sizeof(ObjectRef));
 
+    /* --- Reference ID --- */
+    self->ref_id = next_ref_id++;
+
     /* --- Object --- */
-    Object* obj = world_find_object(info->id);
+    Object* obj = world_get_object(info->id);
     if (!obj)
         log_exit("[world] Object not found: %s", info->id);
     
@@ -25,7 +30,7 @@ ObjectRef* object_ref_new(ObjectRefInfo* info) {
     glm_vec3_copy(info->rot, self->rotation);
 
     /* --- Object Model --- */
-    int nodes_vec3_size = sizeof(vec3) * count_(obj->model->nodes);
+    int nodes_vec3_size = sizeof(vec3) * tuple_size(obj->model->nodes);
     if (obj->model) {
         self->node_positions = malloc(nodes_vec3_size);
         self->node_rotations = malloc(nodes_vec3_size);
@@ -42,7 +47,7 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
     self->physics_ids = NULL;
     if (!infos)  return;
     
-    int physics_count = count_(infos);
+    int physics_count = tuple_size(infos);
     if (physics_count == 0) return;
     
     int physics_size = sizeof(PhysicsObjectID) * (physics_count + 1);
@@ -118,7 +123,26 @@ void object_ref_draw(ObjectRef* self) {
     // TODO: concat ModelNode pos and rot
     cgm_model_mat(self->position, self->rotation, NULL, model_mat);
 
-    for_each(node, self->obj->model->nodes) {
+    tuple_for_each(node, self->obj->model->nodes) {
         gfx_enqueue_object(node->mesh, node->texture, model_mat);
     }
+}
+
+
+ObjectRef* object_ref_find_by_id(u32 ref_id) {
+    extern Scene* world_get_current_scene(void);  // Forward declaration
+    Scene* scene = world_get_current_scene();
+    if (!scene) return NULL;
+
+    ObjectRef* obj_ref;
+    tuple_for_each(obj_ref, scene->object_refs) {
+        if (obj_ref->ref_id == ref_id) {
+            return obj_ref;
+        }
+    }
+    return NULL;
+}
+
+u32 object_ref_get_next_id(void) {
+    return next_ref_id;
 }

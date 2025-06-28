@@ -33,7 +33,7 @@ Model* _model_alloc(int nodes_count) {
 static inline
 void _model_free(Model* model) {
     ModelNode* node;
-    for_each(node, model->nodes) {
+    tuple_for_each(node, model->nodes) {
         free(node);
     }
     free(model->nodes);
@@ -47,7 +47,7 @@ void _model_calc_aabb(Model* m) {
     glm_vec3_copy(AABB_MAX, m->aabb.max);
     
     ModelNode* n;
-    for_each(n, m->nodes) {
+    tuple_for_each(n, m->nodes) {
         if (n->aabb_min[0] < m->aabb.min[0])  m->aabb.min[0] = n->aabb_min[0];
         if (n->aabb_min[1] < m->aabb.min[1])  m->aabb.min[1] = n->aabb_min[1];
         if (n->aabb_min[2] < m->aabb.min[2])  m->aabb.min[2] = n->aabb_min[2];
@@ -87,7 +87,7 @@ Model* model_create_from_info(ModelInfo* info) {
 
     int i = 0;
     ModelNode* node;
-    for_each(node, model->nodes) {
+    tuple_for_each(node, model->nodes) {
         node->texture = texture_load_dds(info->textures[i]);
         
         if (!gltf_get_mesh_aabb(gltf, i, node->aabb_min, node->aabb_max)) {
@@ -106,7 +106,7 @@ Model* model_create_from_info(ModelInfo* info) {
 
 void model_destroy(Model* model) {
     ModelNode* node;
-    for_each(node, model->nodes) {
+    tuple_for_each(node, model->nodes) {
         gfx_unload_mesh(node->mesh);
         gfx_unload_texture(node->texture);
     };

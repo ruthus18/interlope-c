@@ -12,42 +12,32 @@
 
 
 static struct World {
-    Object** objects;
+    map(Object) objects;
     Scene* current_scene;
-} self;
-
-
-static inline
-void _world_new() {
-    int objects_size = sizeof(Object*) * (MEM_WORLD_OBJECTS + 1);
-
-    self.objects = malloc(objects_size);
-    memset(self.objects, 0, objects_size);
-}
-
-static inline
-void _world_free() {
-    free(self.objects);
-}
+} self = {};
 
 
 void world_init() {
-    _world_new();
     Database* db = db_get();
 
     /* --- Objects Loading --- */
-    int i = 0;
+    self.objects = NULL;
+
     ObjectInfo* obj_info;
-    for_each(obj_info, db->objects) {
-        self.objects[i++] = object_new(obj_info);
+    Object* obj;
+
+    tuple_for_each(obj_info, db->objects) {
+        obj = object_new(obj_info);
+        map_set(self.objects, base_id, obj);
     }
 
     /* --- Scene Loading --- */
     Scene* scene = scene_new(db->scene);
     self.current_scene = scene;
 
-    /* --- */
+    /* --- Player Loading */
     player_init(scene->player_init_pos, scene->player_init_rot);
+
     world_print();
 }
 
@@ -56,36 +46,25 @@ void world_destroy() {
     player_destroy();
 
     Object* obj;
-    for_each(obj, self.objects) {
+    map_for_each(obj, self.objects) {
+        map_delete(self.objects, obj);
         object_free(obj);
     }
     scene_free(self.current_scene);
-
-    _world_free();
 }
 
 
 void world_print() {
-    log_debug("total Object: %i", count_(self.objects));
-    log_debug("total ObjectRef: %i", count_(self.current_scene->object_refs));
+    log_debug("total Object: %i", map_size(self.objects));
+    log_debug("total ObjectRef: %i", tuple_size(self.current_scene->object_refs));
 }
 
 
-Object** world_get_objects() {
-    return self.objects;
-}
-
-
-Object* world_find_object(char* id) {
+Object* world_get_object(char* id) {
     Object* obj = NULL;
-
-    for_each(obj, self.objects) {
-        if (strcmp(obj->base_id, id) == 0)
-            return obj;
-    }
-    return NULL;
+    map_get(self.objects, id, obj);
+    return obj;
 }
-
 
 Scene* world_get_current_scene() {
     return self.current_scene;
@@ -96,7 +75,6 @@ void world_update() {
     scene_update(self.current_scene);
     player_update();
 }
-
 
 void world_draw() {
     scene_draw(self.current_scene);

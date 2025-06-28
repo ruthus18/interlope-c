@@ -30,7 +30,7 @@ Scene* scene_new(SceneInfo* info) {
     int i = 0;
     ObjectRefInfo* obj_ref_info;
 
-    for_each(obj_ref_info, info->object_refs) {
+    tuple_for_each(obj_ref_info, info->object_refs) {
         ObjectRef* obj_ref = object_ref_new(obj_ref_info);
         scene->object_refs[i++] = obj_ref;
     }
@@ -46,7 +46,7 @@ Scene* scene_new(SceneInfo* info) {
 
 void scene_free(Scene* scene) {
     ObjectRef* obj_ref;
-    for_each(obj_ref, scene->object_refs) {
+    tuple_for_each(obj_ref, scene->object_refs) {
         object_ref_free(obj_ref);
     }
 
@@ -55,14 +55,14 @@ void scene_free(Scene* scene) {
 
 void scene_update(Scene* scene) {
     ObjectRef* obj_ref;
-    for_each(obj_ref, scene->object_refs) {
+    tuple_for_each(obj_ref, scene->object_refs) {
         object_ref_update(obj_ref);
     }
 }
 
 void scene_draw(Scene* scene) {
     ObjectRef* ref;
-    for_each(ref, scene->object_refs) {
+    tuple_for_each(ref, scene->object_refs) {
         object_ref_draw(ref);
     }
 }
