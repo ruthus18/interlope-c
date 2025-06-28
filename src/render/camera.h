@@ -14,8 +14,8 @@ typedef struct Camera {
 } Camera;
 
 
-Camera* camera_create(vec3 position, vec2 direction);
-void camera_destroy(Camera*);
+Camera* camera_new(vec3 position, vec2 direction);
+void camera_free(Camera*);
 
 void camera_set_position(Camera*, vec3 pos);
 void camera_set_rotation(Camera*, vec2 direction);

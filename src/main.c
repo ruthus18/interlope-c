@@ -15,7 +15,7 @@ bool is_cursor_visible = false;
 static
 void on_init() {
     ui_enable_fps(true);
-    // ui_enable_interaction(true);
+    ui_enable_interaction(true);
 
     editor_geometry_init();
     cursor_set_visible(is_cursor_visible);

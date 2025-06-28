@@ -119,6 +119,6 @@ void object_ref_draw(ObjectRef* self) {
     cgm_model_mat(self->position, self->rotation, NULL, model_mat);
 
     for_each(node, self->obj->model->nodes) {
-        gfx_draw_object(node->mesh, node->texture, model_mat, 0);
+        gfx_enqueue_object(node->mesh, node->texture, model_mat);
     }
 }

@@ -19,7 +19,7 @@ typedef struct InteractionComponent {
 
 
 static struct UI {
-    GfxUI* gfx_data;
+    GfxMesh2D* gfx_data;
     Font* fonts;
 
     struct {
@@ -31,7 +31,7 @@ static struct UI {
 
 void ui_init() {
     font_load_default();
-    self.gfx_data = gfx_load_ui_data();
+    self.gfx_data = gfx_load_mesh_2d();
 
     self.components.fps.enabled = false;
     glm_vec3_copy(COLOR_YELLOW, self.components.fps.color);
@@ -41,7 +41,7 @@ void ui_init() {
 }
 
 void ui_destroy() {
-    gfx_unload_ui_data(self.gfx_data);
+    gfx_unload_mesh_2d(self.gfx_data);
     font_unload_default();
 }
 
@@ -62,7 +62,7 @@ void _draw_fps() {
     if (!comp->enabled)  return;
     
     sprintf(comp->value, "%d", time_get_fps());
-    gfx_draw_ui(comp->value, self.gfx_data, (vec2){0.97, 0.02}, comp->color);
+    gfx_enqueue_ui_element(comp->value, self.gfx_data, (vec2){0.97, 0.02}, comp->color);
 }
 
 static inline
@@ -70,15 +70,11 @@ void _draw_interaction_component() {
     InteractionComponent* comp = &self.components.interaction;
     if (!comp->enabled)  return;
 
-    gfx_draw_ui("Money", self.gfx_data, (vec2){0.46, 0.95}, comp->color);
-    gfx_draw_ui("[E]Take", self.gfx_data, (vec2){0.45, 0.92}, comp->color);
+    gfx_enqueue_ui_element("Money", self.gfx_data, (vec2){0.46, 0.95}, comp->color);
+    gfx_enqueue_ui_element("[E]Take", self.gfx_data, (vec2){0.45, 0.92}, comp->color);
 }
 
 void ui_draw() {
-    gfx_begin_draw_ui();
-
     _draw_interaction_component();
     _draw_fps();
-
-    gfx_end_draw_ui();
 }

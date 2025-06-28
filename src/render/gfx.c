@@ -1,14 +1,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define CVECTOR_LINEAR_GROWTH
+#include <cvector.h>
+#include <cvector_utils.h>
+
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <cglm/cglm.h>
 
 #include "gfx.h"
-#include "render/shader.h"
 #include "render/camera.h"
+#include "render/shader.h"
 
 #include "assets/font.h"
 #include "core/cgm.h"
@@ -18,20 +22,105 @@
 #include "platform/window.h"
 
 
+typedef struct DrawObjectCommand {
+    GfxMesh* mesh;
+    GfxTexture* texture;
+    mat4 m_model;
+} DrawObjectCommand;
+
+typedef struct DrawUIElementCommand {
+    char* text;
+    GfxMesh2D* ui_data;
+    vec2 pos;
+    vec3 color;
+} DrawUIElementCommand;
+
+typedef struct DrawGeometryCommand {
+    GfxGeometry* geom;
+    vec3 pos;
+} DrawGeometryCommand;
+
+
 static struct _Gfx {
     Window* window;
-    bool stop_;
-
-    struct {
+    Camera* camera;
+    bool _stop;
+    
+    struct ShaderStorage {
         Shader* sky;
         Shader* object;
         Shader* ui;
         Shader* geometry;
     } shaders;
 
-    int outline_id;
+    struct CommandsStorage {
+        DrawObjectCommand* object;
+        DrawUIElementCommand* ui_element;
+        DrawGeometryCommand* geometry;
+    } commands;
 } self;
 
+
+/* ------ Shaders ------ */
+/* ------------------------------------------------------------------------- */
+
+static inline
+void _init_shaders() {
+    self.shaders.sky = shader_new(
+        "sky", "sky.vert", "sky.frag"
+    );
+    self.shaders.object = shader_new(
+        "object", "object.vert", "object.frag"
+    );
+    self.shaders.ui = shader_new(
+        "ui", "ui.vert", "ui.frag"
+    );
+    self.shaders.geometry = shader_new(
+        "geometry", "geometry.vert", "geometry.frag"
+    );
+}
+
+static inline
+void _destroy_shaders() {
+    shader_free(self.shaders.sky);
+    shader_free(self.shaders.object);
+    shader_free(self.shaders.ui);
+    shader_free(self.shaders.geometry);
+}
+
+/* ------ Command Storage ------ */
+/* ------------------------------------------------------------------------- */
+
+static inline
+void _init_command_storage() {
+    cvector(DrawObjectCommand) cmds_obj = NULL;
+    cvector_reserve(cmds_obj, 1024);
+    self.commands.object = cmds_obj;
+    
+    cvector(DrawUIElementCommand) cmds_ui = NULL;
+    cvector_reserve(cmds_ui, 1024);
+    self.commands.ui_element = cmds_ui;
+    
+    cvector(DrawGeometryCommand) cmds_geom = NULL;
+    cvector_reserve(cmds_geom, 1024);
+    self.commands.geometry = cmds_geom;
+}
+
+static inline
+void _destroy_command_storage() {
+    cvector_free(self.commands.object);
+    cvector_free(self.commands.ui_element);
+    cvector_free(self.commands.geometry);
+}
+
+static inline
+void _clear_command_storage() {
+    cvector_clear(self.commands.object);
+    cvector_clear(self.commands.ui_element);
+    cvector_clear(self.commands.geometry);
+}
+
+/* ------------------------------------------------------------------------- */
 
 static inline
 void _log_startup_info() {
@@ -47,38 +136,13 @@ void _log_startup_info() {
 }
 
 
-static inline
-void _init_shaders() {
-    self.shaders.sky = shader_new(
-        "sky.vert", "sky.frag"
-    );
-    self.shaders.object = shader_new(
-        "object.vert", "object.frag"
-    );
-    self.shaders.ui = shader_new(
-        "ui.vert", "ui.frag"
-    );
-    self.shaders.geometry = shader_new(
-        "geometry.vert", "geometry.frag"
-    );
-}
-
-
-static inline
-void _destroy_shaders() {
-    shader_free(self.shaders.sky);
-    shader_free(self.shaders.object);
-    shader_free(self.shaders.ui);
-    shader_free(self.shaders.geometry);
-}
-
-
 void gfx_init() {
     self.window = window_get();
-    self.stop_ = false;
+    self._stop = false;
 
     _log_startup_info();
     _init_shaders();
+    _init_command_storage();
 
     glPointSize(6);
     glLineWidth(2);
@@ -87,303 +151,26 @@ void gfx_init() {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
-
 void gfx_destroy() {
     _destroy_shaders();
+    _destroy_command_storage();
+
     glfwDestroyWindow(self.window);
     glfwTerminate();
 }
 
 
 bool gfx_need_stop() {
-    return glfwWindowShouldClose(self.window) || self.stop_;
+    return glfwWindowShouldClose(self.window) || self._stop;
 }
 
 void gfx_stop() {
-    self.stop_ = true;
+    self._stop = true;
     log_info("Engine stopped. Bye!");
 }
 
-
-/* ------------------------------------------------------------------------- */
-/* Rendering Resources */
-/* ------------------------------------------------------------------------- */
-
-typedef struct GfxMesh {
-    const char* name;
-    u32 vao;
-    u32 vbo;
-    u32 ibo;
-
-    u64 vtx_count;
-    u64 ind_count;
-    
-    bool cw;  // vertex ordering (1 = clockwise ; 0 = counterwise)
-} GfxMesh;
-
-
-typedef struct GfxTexture {
-    unsigned int id;
-} GfxTexture;
-
-
-typedef struct GfxGeometry {
-    u32 vao;
-    u32 vbo;
-    u64 vtx_count;
-    vec3 color;
-} GfxGeometry;
-
-
-typedef struct GfxUI {
-    u32 vao;
-    u32 vbo;
-    mat4 persp_mat;
-} GfxUI;
-
-
-#define VEC3_SIZE (3 * sizeof(f32))
-#define VEC2_SIZE (2 * sizeof(f32))
-
-
-GfxMesh* gfx_load_mesh(
-    const char* name, f32* vtx_buf, u32* ind_buf, u64 vtx_count, u64 ind_count, bool cw
-) {
-    GfxMesh* mesh = malloc(sizeof(GfxMesh));
-    if (!mesh) {
-        log_error("Failed to allocate memory for GfxMesh");
-        return NULL;
-    }
-
-    mesh->name = strdup(name ? name : "[unnamed_mesh]");
-    if (!mesh->name) {
-        log_error("Failed to duplicate mesh name string");
-        free(mesh);
-        return NULL;
-    }
-
-    mesh->vtx_count = vtx_count;
-    mesh->ind_count = ind_count;
-    mesh->cw = cw;
-
-    shader_use(self.shaders.object);
-
-    /* ------ VAO ------ */
-    glGenVertexArrays(1, &(mesh->vao));
-    glBindVertexArray(mesh->vao);
-
-    /* ------ VBO ------ */
-    glGenBuffers(1, &(mesh->vbo));
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-
-    GLsizeiptr total_buffer_size = 
-        (VEC3_SIZE * vtx_count) + (VEC3_SIZE * vtx_count) + (VEC2_SIZE * vtx_count);
-
-    glBufferData(GL_ARRAY_BUFFER, total_buffer_size, vtx_buf, GL_STATIC_DRAW);
-
-    /* ------ IBO ------ */
-    glGenBuffers(1, &(mesh->ibo));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * ind_count, ind_buf, GL_STATIC_DRAW);
-
-    /* ------ Vertex Attributes ------ */
-    // Vertex buffer format is planar: (PPP...NNN...TTT...)
-    GLintptr pos_offset = 0;
-    GLintptr norm_offset = VEC3_SIZE * vtx_count;
-    GLintptr uv_offset = (VEC3_SIZE * vtx_count) + (VEC3_SIZE * vtx_count);
-
-    // vtx position (location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)pos_offset);
-    glEnableVertexAttribArray(0);
-
-    // vtx normal (location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)norm_offset);
-    glEnableVertexAttribArray(1);
-
-    // vtx texcoord (location = 2)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)uv_offset);
-    glEnableVertexAttribArray(2);
-
-    /* ------ Cleanup ------ */
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    shader_use(NULL);
-
-    // log_success("Mesh loaded: %s", name);
-    return mesh;
-}
-
-
-void gfx_unload_mesh(GfxMesh* mesh){
-    if (!mesh) return;
-
-    glDeleteVertexArrays(1, &mesh->vao);
-    glDeleteBuffers(1, &mesh->vbo);
-    glDeleteBuffers(1, &mesh->ibo);
-
-    free((void*)mesh->name);
-    free(mesh);
-}
-
-
-GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, int gl_format) {
-    GfxTexture* texture = malloc(sizeof(GfxTexture));
-    if (!texture) {
-        log_error("Failed to allocate memory for GfxTexture");
-        return NULL;
-    }
-
-    shader_use(self.shaders.object);
-    glGenTextures(1, &(texture->id));
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0, gl_format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    shader_use(NULL);
-    return texture;
-}
-
-
-GfxTexture* gfx_load_dds_texture(u8* data, u32 width, u32 height, i32 gl_format, u32 mipmap_cnt, u32 block_size) {
-    GfxTexture* texture = malloc(sizeof(GfxTexture));
-    if (!texture) {
-        log_error("Failed to allocate memory for GfxTexture (DDS)");
-        return NULL;
-    }
-
-    shader_use(self.shaders.object);
-    glGenTextures(1, &(texture->id));
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmap_cnt-1);
-
-    unsigned int offset = 0;
-    unsigned int size = 0;
-    unsigned int w = width;
-    unsigned int h = height;
-
-    for (unsigned int i=0; i < mipmap_cnt; i++) {
-        if(w == 0 || h == 0) {
-            // discard any odd mipmaps 0x1 0x2 resolutions
-            mipmap_cnt--;
-            continue;
-        }
-        size = ((w+3)/4) * ((h+3)/4) * block_size;
-        glCompressedTexImage2D(GL_TEXTURE_2D, i, gl_format, w, h, 0, size, data + offset);
-        offset += size;
-        w /= 2;
-        h /= 2;
-    }
-
-    // log_success("Texture loaded: %s", texture_relpath);
-    shader_use(NULL);
-    return texture;
-}
-
-GfxTexture* gfx_load_font_texture(u32 width, u32 height, void* data) {
-    GfxTexture* texture = malloc(sizeof(GfxTexture));
-    if (!texture) {
-        log_error("Failed to allocate memory for GfxTexture (Font)");
-        return NULL;
-    }
-    shader_use(self.shaders.ui);
-    
-    glGenTextures(1, &(texture->id));
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    shader_use(NULL);
-    return texture;
-}
-
-
-void gfx_unload_texture(GfxTexture* texture) {
-    if (!texture)  return;
-
-    glDeleteTextures(1, &texture->id);
-    free(texture);
-}
-
-
-GfxGeometry* gfx_load_geometry(f32* lines_buf, u64 vtx_count, vec3 color) {
-    GfxGeometry* geom = malloc(sizeof(GfxGeometry));
-    u32 VAO, VBO;
-    
-    shader_use(self.shaders.geometry);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vtx_count * 3, lines_buf, GL_STATIC_DRAW);
-
-    // Set vertex attribute pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(0);
-
-    geom->vao = VAO;
-    geom->vbo = VBO;
-    geom->vtx_count = vtx_count;
-    glm_vec3_copy(color, geom->color);
-
-    shader_use(NULL);
-    return geom;
-}
-
-void gfx_unload_geometry(GfxGeometry* geom) {
-    free(geom);
-}
-
-
-GfxUI* gfx_load_ui_data() {
-    GfxUI* ui_data = malloc(sizeof(GfxUI));
-    u32 VAO, VBO;
-
-    shader_use(self.shaders.ui);
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    ui_data->vao = VAO;
-    ui_data->vbo = VBO;
-    glm_ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, -1.0f, 1.0f, ui_data->persp_mat);
-
-    shader_use(NULL);
-    return ui_data;
-}
-
-void gfx_unload_ui_data(GfxUI* ui_data) {
-    free(ui_data);
+void gfx_set_camera(Camera* camera) {
+    self.camera = camera;
 }
 
 
@@ -391,134 +178,148 @@ void gfx_unload_ui_data(GfxUI* ui_data) {
 /* Rendering Cycle */
 /* ------------------------------------------------------------------------- */
 
+void gfx_enqueue_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
+    DrawObjectCommand cmd;
+    cmd.mesh = mesh;
+    cmd.texture = texture;
+    glm_mat4_copy(m_model, cmd.m_model);
 
-// TODO: save data to gfx, fill vars in shader loop
-void gfx_update_camera(Camera* cam) {
-    shader_use(self.shaders.object);
-    uniform_set_mat4(self.shaders.object, "m_persp", cam->m_persp);
-    uniform_set_mat4(self.shaders.object, "m_view", cam->m_view);
+    cvector_push_back(self.commands.object, cmd);
+}
 
-    shader_use(self.shaders.geometry);
-    uniform_set_mat4(self.shaders.geometry, "m_persp", cam->m_persp);
-    uniform_set_mat4(self.shaders.geometry, "m_view", cam->m_view);
+void gfx_enqueue_ui_element(char* text, GfxMesh2D* ui_data, vec2 pos, vec3 color) {
+    DrawUIElementCommand cmd;
+    cmd.text = text;
+    cmd.ui_data = ui_data;
+    glm_vec2_copy(pos, cmd.pos);
+    glm_vec3_copy(color, cmd.color);
+    
+    cvector_push_back(self.commands.ui_element, cmd);
+}
 
-    shader_use(NULL);
+void gfx_enqueue_geometry(GfxGeometry* geom, vec3 pos) {
+    DrawGeometryCommand cmd;
+    cmd.geom = geom;
+    glm_vec3_copy(pos, cmd.pos);
+    
+    cvector_push_back(self.commands.geometry, cmd);
 }
 
 
-void gfx_begin_draw_objects() {
+void gfx_draw_objects() {
+    shader_use(self.shaders.object);
+    shader_set_mat4(self.shaders.object, "m_persp", self.camera->m_persp);
+    shader_set_mat4(self.shaders.object, "m_view", self.camera->m_view);
+
+    DrawObjectCommand* cmd;
+
+    cvector_for_each_in(cmd, self.commands.object) {
+        shader_set_mat4(self.shaders.object, "m_model", cmd->m_model);
+        
+        glBindVertexArray(cmd->mesh->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, cmd->mesh->vbo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cmd->mesh->ibo);
+        
+        glBindTexture(GL_TEXTURE_2D, cmd->texture->id);
+        
+        glFrontFace(cmd->mesh->cw ? GL_CW : GL_CCW);
+        glDrawElements(GL_TRIANGLES, cmd->mesh->ind_count, GL_UNSIGNED_INT, NULL);
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
+
+void gfx_draw_ui_elements() {
+    shader_use(self.shaders.ui);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    Font* font = font_get_default();
+    f32 scale = 0.5;
+
+    DrawUIElementCommand* cmd;
+
+    cvector_for_each_in(cmd, self.commands.ui_element) {
+        f32 screen_x = cmd->pos[0] * WINDOW_WIDTH;
+        f32 screen_y = (1.0 - cmd->pos[1]) * WINDOW_HEIGHT;
+    
+        shader_set_mat4(self.shaders.ui, "projection", cmd->ui_data->persp_mat);
+        shader_set_vec3(self.shaders.ui, "text_color", cmd->color);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindVertexArray(cmd->ui_data->vao);
+
+        for (int i = 0; i < strlen(cmd->text); i++) {
+            char ch = cmd->text[i];
+            Glyph* glyph = &font->chars[(unsigned char)ch];
+            
+            f32 xpos = screen_x + glyph->bearing[0] * scale;
+            f32 ypos = screen_y - (glyph->size[1] - glyph->bearing[1]) * scale;
+            
+            f32 w = glyph->size[0] * scale;
+            f32 h = glyph->size[1] * scale;
+            
+            f32 verticles[6][4] = {
+                {xpos,      ypos + h,   0.0, 0.0},
+                {xpos,      ypos,       0.0, 1.0},
+                {xpos + w,  ypos,       1.0, 1.0},
+                
+                {xpos,      ypos + h,   0.0, 0.0},
+                {xpos + w,  ypos,       1.0, 1.0},
+                {xpos + w,  ypos + h,   1.0, 0.0}
+            };
+            glBindTexture(GL_TEXTURE_2D, glyph->texture->id);
+            glBindBuffer(GL_ARRAY_BUFFER, cmd->ui_data->vbo);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verticles), verticles);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            screen_x += (glyph->advance >> 6) * scale;
+        }
+        glBindVertexArray(0);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glEnable(GL_BLEND);
+}
+
+
+void gfx_draw_geometry() {
+    shader_use(self.shaders.geometry);
+    glDisable(GL_DEPTH_TEST);
+    
+    shader_set_mat4(self.shaders.geometry, "m_persp", self.camera->m_persp);
+    shader_set_mat4(self.shaders.geometry, "m_view", self.camera->m_view);
+    
+    DrawGeometryCommand* cmd;
+
+    cvector_for_each_in(cmd, self.commands.geometry) {
+        shader_set_vec3(self.shaders.geometry, "v_color", cmd->geom->color);
+        
+        mat4 m_model;
+        cgm_model_mat(cmd->pos, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
+        shader_set_mat4(self.shaders.geometry, "m_model", m_model);
+        
+        glBindVertexArray(cmd->geom->vao);
+        glBindBuffer(GL_ARRAY_BUFFER, cmd->geom->vbo);
+        glDrawArrays(GL_LINES, 0, cmd->geom->vtx_count);
+    }
+    
+    glEnable(GL_DEPTH_TEST);
+}
+
+/* ------------------------------------------------------------------------- */
+
+void gfx_draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(WINDOW_BG_COLOR);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    shader_use(self.shaders.object);
+    gfx_draw_objects();
+    gfx_draw_geometry();
+    gfx_draw_ui_elements();
+
+    _clear_command_storage();
 }
-
-void gfx_end_draw_objects() {
-    shader_use(NULL);
-}
-
-
-void gfx_draw_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model, i32 id) {
-    uniform_set_mat4(self.shaders.object, "m_model", m_model);
-    
-    glBindVertexArray(mesh->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ibo);
-
-    glBindTexture(GL_TEXTURE_2D, texture->id);
-    
-    glFrontFace(mesh->cw ? GL_CW : GL_CCW);
-    glDrawElements(GL_TRIANGLES, mesh->ind_count, GL_UNSIGNED_INT, NULL);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void gfx_set_outline_id(i32 value) {
-    self.outline_id = value;
-}
-
-/* ------------------------------------------------------------------------- */
-
-void gfx_begin_draw_ui() {
-    shader_use(self.shaders.ui);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void gfx_end_draw_ui() {
-    glEnable(GL_BLEND);
-    shader_use(NULL);
-}
-
-void gfx_draw_ui(char* text, GfxUI* ui_data, vec2 pos, vec3 color) {
-    Font* font = font_get_default();
-    f32 scale = 0.5;
-    
-    // Convert normalized coordinates [0.0-1.0] to screen pixels (top-left origin)
-    f32 screen_x = pos[0] * WINDOW_WIDTH;
-    f32 screen_y = (1.0 - pos[1]) * WINDOW_HEIGHT;
-
-    uniform_set_mat4(self.shaders.ui, "projection", ui_data->persp_mat);
-    uniform_set_vec3(self.shaders.ui, "text_color", color);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(ui_data->vao);
-
-    for (int i = 0; i < strlen(text); i++) {
-        char ch = text[i];
-        Glyph* glyph = &font->chars[(unsigned char)ch];
-
-        f32 xpos = screen_x + glyph->bearing[0] * scale;
-        f32 ypos = screen_y - (glyph->size[1] - glyph->bearing[1]) * scale;
-        
-        f32 w = glyph->size[0] * scale;
-        f32 h = glyph->size[1] * scale;
-
-        f32 verticles[6][4] = {
-            {xpos,      ypos + h,   0.0, 0.0},
-            {xpos,      ypos,       0.0, 1.0},
-            {xpos + w,  ypos,       1.0, 1.0},
-
-            {xpos,      ypos + h,   0.0, 0.0},
-            {xpos + w,  ypos,       1.0, 1.0},
-            {xpos + w,  ypos + h,   1.0, 0.0}
-        };
-        glBindTexture(GL_TEXTURE_2D, glyph->texture->id);
-        glBindBuffer(GL_ARRAY_BUFFER, ui_data->vbo);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verticles), verticles);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        screen_x += (glyph->advance >> 6) * scale;
-    }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-/* ------------------------------------------------------------------------- */
-
-void gfx_begin_draw_geometry() {
-    shader_use(self.shaders.geometry);
-    glDisable(GL_DEPTH_TEST);
-}
-
-void gfx_end_draw_geometry() {
-    glEnable(GL_DEPTH_TEST);
-    shader_use(NULL);
-}
-
-void gfx_draw_geometry(GfxGeometry* geom, vec3 pos) {
-    uniform_set_vec3(self.shaders.geometry, "v_color", geom->color);
-    
-    mat4 m_model;
-    cgm_model_mat(pos, (vec3){0.0, 0.0, 0.0}, (vec3){1.0, 1.0, 1.0}, m_model);
-    uniform_set_mat4(self.shaders.geometry, "m_model", m_model);
-    
-    glBindVertexArray(geom->vao);
-    glBindBuffer(GL_ARRAY_BUFFER, geom->vbo);
-    glDrawArrays(GL_LINES, 0, geom->vtx_count);
-}
-
-/* ------------------------------------------------------------------------- */

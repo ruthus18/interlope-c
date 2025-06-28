@@ -19,7 +19,7 @@ void editor_geometry_init() {
     axis_geom[1] = gfx_load_geometry(axis_y, 2, (vec3){0.0, 1.0, 0.0});
     axis_geom[2] = gfx_load_geometry(axis_z, 2, (vec3){0.0, 0.0, 1.0});
 
-    // cube_geom = geometry_create_cube(2.0, 2.0, 2.0);
+    cube_geom = geometry_create_cube(2.0, 2.0, 2.0);
 }
 
 
@@ -28,17 +28,14 @@ void editor_geometry_destroy() {
     gfx_unload_geometry(axis_geom[1]);
     gfx_unload_geometry(axis_geom[2]);
 
-    // gfx_geometry_unload(cube_geom);
+    gfx_unload_geometry(cube_geom);
 }
 
 
 void editor_geometry_draw() {
-    gfx_begin_draw_geometry();
+    gfx_enqueue_geometry(axis_geom[0], (vec3){0.0, 0.0, 0.0});
+    gfx_enqueue_geometry(axis_geom[1], (vec3){0.0, 0.0, 0.0});
+    gfx_enqueue_geometry(axis_geom[2], (vec3){0.0, 0.0, 0.0});
 
-    gfx_draw_geometry(axis_geom[0], (vec3){0.0, 0.0, 0.0});
-    gfx_draw_geometry(axis_geom[1], (vec3){0.0, 0.0, 0.0});
-    gfx_draw_geometry(axis_geom[2], (vec3){0.0, 0.0, 0.0});
-    // gfx_draw_geometry(cube_geom, (vec3){0.0, 1.0, 0.0});
-
-    gfx_end_draw_geometry();
+    gfx_enqueue_geometry(cube_geom, (vec3){-3.0, 1.0, 0.0});
 }

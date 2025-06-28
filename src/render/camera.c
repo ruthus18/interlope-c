@@ -21,7 +21,7 @@ void _update_view_mat(Camera* cam) {
     cgm_view_mat(cam->position, cam->v_front, cam->m_view);
 }
 
-Camera* camera_create(vec3 position, vec2 direction) {
+Camera* camera_new(vec3 position, vec2 direction) {
     Camera* cam = malloc(sizeof(Camera));
 
     if (position)     glm_vec3_copy(position, cam->position);
@@ -36,7 +36,7 @@ Camera* camera_create(vec3 position, vec2 direction) {
     return cam;
 }
 
-void camera_destroy(Camera* cam) {
+void camera_free(Camera* cam) {
     free(cam);
 }
 

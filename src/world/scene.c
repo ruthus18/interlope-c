@@ -3,7 +3,6 @@
 #include "scene.h"
 #include "core/memory.h"
 #include "core/utils.h"
-#include "render/gfx.h"
 
 
 static inline
@@ -62,12 +61,8 @@ void scene_update(Scene* scene) {
 }
 
 void scene_draw(Scene* scene) {
-    gfx_begin_draw_objects();
-
     ObjectRef* ref;
     for_each(ref, scene->object_refs) {
         object_ref_draw(ref);
     }
-
-    gfx_end_draw_objects();
 }

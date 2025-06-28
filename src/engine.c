@@ -60,8 +60,9 @@ void engine_run() {
         __on_update__();
 
         world_draw();
-        ui_draw();  
+        ui_draw();
         __on_draw__();
+        gfx_draw();
 
         window_swap_buffers();
         if (!WINDOW_VSYNC)  time_limit_framerate();

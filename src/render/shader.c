@@ -57,7 +57,7 @@ void _log_glprogram(uint32_t program) {
 
 
 static inline
-void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
+void compile_shader(i32 program, const char* rel_path, i32 shader_type) {
     u32 shader_id = glCreateShader(shader_type);
 
     const char* path;
@@ -84,13 +84,13 @@ void _shader_compile(i32 program, const char* rel_path, i32 shader_type) {
 }
 
 
-Shader* shader_new(const char* vert_path, const char* frag_path) {
+Shader* shader_new(const char* name, const char* vert_path, const char* frag_path) {
     i32 program;
     Shader* shader;
 
     program = glCreateProgram();
-    _shader_compile(program, vert_path, GL_VERTEX_SHADER);
-    _shader_compile(program, frag_path, GL_FRAGMENT_SHADER);
+    compile_shader(program, vert_path, GL_VERTEX_SHADER);
+    compile_shader(program, frag_path, GL_FRAGMENT_SHADER);
 
     shader = malloc(sizeof(Shader));
 
@@ -130,7 +130,7 @@ void shader_use(Shader* shader) {
 #define __NO_UNIFORM -1
 
 
-void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
+void shader_set_vec3(Shader* shader, const char* name, vec3 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
@@ -140,7 +140,7 @@ void uniform_set_vec3(Shader* shader, const char* name, vec3 data) {
 }
 
 
-void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
+void shader_set_mat4(Shader* shader, const char* name, mat4 data) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {
@@ -150,7 +150,7 @@ void uniform_set_mat4(Shader* shader, const char* name, mat4 data) {
 }
 
 
-void uniform_set_float(Shader* shader, const char* name, float value) {
+void shader_set_float(Shader* shader, const char* name, float value) {
     i32 uniform_id = glGetUniformLocation(shader->program_id, name);
 
     if (uniform_id == __NO_UNIFORM) {

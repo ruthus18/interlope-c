@@ -35,10 +35,12 @@ void player_init(vec3 position, vec2 direction) {
     self.camera_y_offset = PLAYER_HEIGHT;
     self.physics_y_offset = PLAYER_HEIGHT / 2 + 0.15;
     
-    self.camera = camera_create(
+    self.camera = camera_new(
         (vec3){position[0], position[1] + self.camera_y_offset, position[2]},
         self.direction
     );
+    gfx_set_camera(self.camera);
+
     self.physics_id = physics_create_kinematic_object(
         PHYSICS_BODY_CAPSULE,
         (vec3){position[0], position[1] + self.physics_y_offset, position[2]},
@@ -50,7 +52,7 @@ void player_init(vec3 position, vec2 direction) {
 
 
 void player_destroy() {
-    camera_destroy(self.camera);
+    camera_free(self.camera);
 }
 
 void player_print() {
@@ -66,6 +68,7 @@ void player_set_active(bool value) {
 void player_set_colliding(bool value) {
     self.is_colliding = value;
 }
+
 
 static inline
 void _update_camera_rotation() {
@@ -83,10 +86,6 @@ void _update_camera_rotation() {
     if (self.direction[1] < -89.0)   self.direction[1] = -89.0;
 
     camera_set_rotation(self.camera, self.direction);
-}
-
-static inline
-void _calc_input_vec() {
 }
 
 static inline
@@ -188,7 +187,7 @@ void player_update() {
     if (!self.is_active)  return;
 
     player_update_physics();
-    gfx_update_camera(self.camera);
+    // gfx_update_camera(self.camera);
 }
 
 Player* player_get() {

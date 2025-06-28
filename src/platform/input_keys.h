@@ -19,7 +19,9 @@
 #define IN_KEY_F11      GLFW_KEY_F11
 #define IN_KEY_F12      GLFW_KEY_F12
 
+#define IN_KEY_Q        GLFW_KEY_Q
 #define IN_KEY_W        GLFW_KEY_W
+#define IN_KEY_E        GLFW_KEY_E
 #define IN_KEY_S        GLFW_KEY_S
 #define IN_KEY_A        GLFW_KEY_A
 #define IN_KEY_D        GLFW_KEY_D
