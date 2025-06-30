@@ -6,8 +6,6 @@ Assets/Animation:
 
 Core:
     * Load config from .toml
-    * Migrate engine on new types, enhance type selection:
-      (just keep the `map`, `list` based on uthash and cvector)
     * Chunk-expanding list structure
 
 Editor:

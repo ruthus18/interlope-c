@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "scene.h"
-#include "core/utils.h"
+#include "core/containers/tuple.h"
 
 #define MEM_SCENE_OBJECTS   1024
 

@@ -16,7 +16,8 @@ LIBS = \
 	-lcglm \
 	-lode \
 	-lcjson \
-	-lfreetype
+	-lfreetype \
+	-ltommy
 
 TARGET = interlope
 BUILD_DIR = .build
@@ -30,6 +31,7 @@ SOURCES = \
 	$(SRC_DIR)/assets/model.c \
 	$(SRC_DIR)/assets/texture.c \
 	\
+	$(SRC_DIR)/core/containers/map.c \
 	$(SRC_DIR)/core/cgm.c \
 	$(SRC_DIR)/core/log.c \
 	\

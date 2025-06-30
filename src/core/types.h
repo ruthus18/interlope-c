@@ -1,5 +1,6 @@
 #pragma once
 
+
 typedef unsigned char u8;         // [0, 255]
 typedef unsigned short u16;       // [0, 65.535]
 typedef unsigned int u32;         // [0, 4.294.967.295]

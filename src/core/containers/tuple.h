@@ -1,11 +1,10 @@
 #pragma once
+#include <stdlib.h>
 
 
 static inline
-int __tuple_size(void** arr) {
-    for (int i = 0; ; i++) {
-        if (arr[i] == NULL)  return i;
-    }
+int __tuple_size(void** tup) {
+    for (int i = 0; ; i++) {if (tup[i] == NULL)  return i;}
 }
 
 #define tuple_size(tup)  __tuple_size((void**)tup)

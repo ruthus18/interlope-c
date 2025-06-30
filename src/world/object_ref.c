@@ -4,11 +4,11 @@
 #include <cglm/cglm.h>
 
 #include "object_ref.h"
-#include "./world.h"
+#include "world/world.h"
 
-#include "../core/cgm.h"
-#include "../core/log.h"
-#include "../core/utils.h"
+#include "core/containers/tuple.h"
+#include "core/cgm.h"
+#include "core/log.h"
 
 static u32 next_ref_id = 0x00000001;
 

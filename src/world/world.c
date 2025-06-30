@@ -1,11 +1,13 @@
 #include <string.h>
+#include <stdlib.h>
 
 #include "world.h"
 #include "world/object.h"
 #include "world/scene.h"
 
+#include "core/containers/map.h"
+#include "core/containers/tuple.h"
 #include "core/log.h"
-#include "core/utils.h"
 #include "database/db.h"
 #include "gameplay/player.h"
 
@@ -17,15 +19,16 @@ static struct World {
 
 
 void world_init() {
-    Database* db = db_get();
-
+    self.objects = map_new(MHASH_STR);
+    
     /* --- Objects Loading --- */
+    Database* db = db_get();
     ObjectInfo* obj_info;
     Object* obj;
 
     tuple_for_each(obj_info, db->objects) {
         obj = object_new(obj_info);
-        map_set(self.objects, base_id, obj);
+        map_set(self.objects, obj, obj->base_id);
     }
 
     /* --- Scene Loading --- */
@@ -41,25 +44,24 @@ void world_init() {
 
 void world_destroy() {
     player_destroy();
+    scene_free(self.current_scene);
 
     Object* obj;
     map_for_each(obj, self.objects) {
-        map_delete(self.objects, obj);
         object_free(obj);
     }
-    scene_free(self.current_scene);
+    map_free(self.objects);
 }
 
 
 void world_print() {
-    log_debug("total Object: %i", map_size(self.objects));
+    // log_debug("total Object: %i", map_size(self.objects));
     log_debug("total ObjectRef: %i", tuple_size(self.current_scene->object_refs));
 }
 
 
 Object* world_get_object(char* id) {
-    Object* obj = NULL;
-    map_get(self.objects, id, obj);
+    Object* obj = map_get(self.objects, id);
     return obj;
 }
 
