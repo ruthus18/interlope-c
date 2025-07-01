@@ -1,7 +1,7 @@
 #pragma once
 
 #include "database/schemas.h"
-#include "render/gfx.h"
+#include "graphics/gfx.h"
 
 
 typedef struct ModelNode {

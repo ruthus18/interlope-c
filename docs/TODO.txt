@@ -19,6 +19,7 @@ Gameplay/Player:
     * Sprinting
     * Interaction
     * Walking sound
+    * Fix ambiguous naming related to rotation (pitch/yaw/roll - ?, ODE direction (vec3))
 
 Physics:
     * Move out to separate thread

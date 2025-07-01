@@ -3,7 +3,7 @@
 #include "assets/font.h"
 #include "core/colors.h"
 #include "platform/time.h"
-#include "render/gfx.h"
+#include "graphics/gfx.h"
 
 
 typedef struct FPSComponent {

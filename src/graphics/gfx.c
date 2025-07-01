@@ -11,8 +11,8 @@
 #include <cglm/cglm.h>
 
 #include "gfx.h"
-#include "render/camera.h"
-#include "render/shader.h"
+#include "graphics/camera.h"
+#include "graphics/shader.h"
 
 #include "assets/font.h"
 #include "core/cgm.h"

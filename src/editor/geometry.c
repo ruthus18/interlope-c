@@ -3,8 +3,8 @@
 #include "geometry.h"
 
 #include "core/types.h"
-#include "render/gfx.h"
-#include "render/geometry.h"
+#include "graphics/gfx.h"
+#include "graphics/geometry.h"
 
 
 static GfxGeometry* axis_geom[3];

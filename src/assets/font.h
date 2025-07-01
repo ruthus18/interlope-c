@@ -1,5 +1,5 @@
 #pragma once
-#include "render/gfx.h"
+#include "graphics/gfx.h"
 
 typedef struct Glyph {
     u8 code;                // Character code

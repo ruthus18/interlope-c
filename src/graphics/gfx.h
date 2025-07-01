@@ -2,14 +2,12 @@
 #pragma once
 #include <cglm/cglm.h>
 
-#include "render/camera.h"
-#include "render/shader.h"
-#include "render/resource.h"
+#include "graphics/camera.h"
+#include "graphics/shader.h"
+#include "graphics/resource.h"
 
 #include "core/types.h"
 
-
-/* ------ High-Level Interface ------ */
 
 void gfx_init();
 void gfx_destroy();

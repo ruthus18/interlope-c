@@ -3,11 +3,12 @@
 #include "core/cgm.h"
 #include "core/log.h"
 #include "core/config.h"
+#include "graphics/camera.h"
+#include "graphics/gfx.h"
 #include "platform/input.h"
 #include "physics/px_player.h"
 #include "platform/time.h"
-#include "render/camera.h"
-#include "render/gfx.h"
+
 
 #define PLAYER_WIDTH            0.4
 #define PLAYER_HEIGHT           1.8

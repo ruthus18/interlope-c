@@ -1,5 +1,5 @@
 #include "geometry.h"
-#include "render/gfx.h"
+#include "graphics/gfx.h"
 
 #include "core/types.h"
 

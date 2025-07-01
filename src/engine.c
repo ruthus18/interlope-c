@@ -3,11 +3,11 @@
 #include "core/config.h"
 #include "core/log.h"
 #include "database/db.h"
+#include "graphics/gfx.h"
 #include "physics/px.h"
 #include "platform/input.h"
 #include "platform/time.h"
 #include "platform/window.h"
-#include "render/gfx.h"
 #include "ui/ui.h"
 #include "world/world.h"
 

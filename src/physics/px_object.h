@@ -4,12 +4,11 @@
 
 #include "core/types.h"
 
-
-typedef enum {
-    PXOBJ_STATIC,
-    PXOBJ_RIGID,
-    PX_OBJ_KINEMATIC,
-} PxObjectType;
+// typedef enum {
+//     PXOBJ_STATIC,
+//     PXOBJ_RIGID,
+//     PX_OBJ_KINEMATIC,
+// } PxObjectType;
 
 typedef enum {
     PXBODY_BOX,
@@ -22,7 +21,6 @@ typedef struct {
     dBodyID body;
     dGeomID geom;
 } PxObject;
-
 
 PxObject* px_static_create(PxBodyType type, vec3 pos, vec3 rot, vec3 size);
 void px_static_get_position(PxObject* obj, vec3 dest);

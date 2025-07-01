@@ -1,7 +1,7 @@
 #pragma once
 
+#include "graphics/camera.h"
 #include "physics/px.h"
-#include "render/camera.h"
 
 
 typedef struct Player {
