@@ -1,12 +1,13 @@
-#include "player_physics.h"
-#include "physics/physics.h"
+#include "px_player.h"
+#include "physics/px.h"
+#include "physics/px_object.h"
 
 #include "core/log.h"
 
 
-static struct PlayerPhysics {
+static struct PxPlayer {
     dSpaceID space;
-    PhysicsObject* obj;
+    PxObject* obj;
 
     bool is_grounded;
     bool is_ceiled;
@@ -20,7 +21,7 @@ void px_player_init(vec3 pos, vec3 rot, f32 width, f32 height) {
     self.y_offset = height / 2;
     
     self.obj = px_kinematic_create(
-        PHYSICS_BODY_CAPSULE,
+        PXBODY_CAPSULE,
         (vec3){pos[0], pos[1] + self.y_offset, pos[2]},
         rot,
         (vec3){width / 2, height, 0.0}

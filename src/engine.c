@@ -3,7 +3,7 @@
 #include "core/config.h"
 #include "core/log.h"
 #include "database/db.h"
-#include "physics/physics.h"
+#include "physics/px.h"
 #include "platform/input.h"
 #include "platform/time.h"
 #include "platform/window.h"

@@ -55,7 +55,7 @@ void world_destroy() {
 
 
 void world_print() {
-    // log_debug("total Object: %i", map_size(self.objects));
+    log_debug("total Object: %i", map_size(self.objects));
     log_debug("total ObjectRef: %i", tuple_size(self.current_scene->object_refs));
 }
 

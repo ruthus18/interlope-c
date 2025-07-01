@@ -42,8 +42,9 @@ SOURCES = \
 	\
 	$(SRC_DIR)/gameplay/player.c \
 	\
-	$(SRC_DIR)/physics/physics.c \
-	$(SRC_DIR)/physics/player_physics.c \
+	$(SRC_DIR)/physics/px_object.c \
+	$(SRC_DIR)/physics/px_player.c \
+	$(SRC_DIR)/physics/px.c \
 	\
 	$(SRC_DIR)/platform/file.c \
 	$(SRC_DIR)/platform/input.c \

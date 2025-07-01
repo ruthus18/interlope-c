@@ -154,11 +154,6 @@
  */
 typedef tommy_node tommy_hashdyn_node;
 
-typedef enum {
-    MHASH_STR,
-    MHASH_INT
-} map_hash_type;
-
 /**
  * Hashtable container type.
  * \note Don't use internal fields directly, but access the container only using functions.
@@ -169,7 +164,6 @@ typedef struct tommy_hashdyn_struct {
 	tommy_size_t bucket_mask; /**< Bit mask to access the buckets. */
 	tommy_size_t count; /**< Number of elements. */
 	tommy_uint_t bucket_bit; /**< Bits used in the bit mask. */
-	map_hash_type htype;
 } tommy_hashdyn;
 
 /**

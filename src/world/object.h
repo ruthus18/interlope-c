@@ -1,5 +1,4 @@
 #pragma once
-#include <uthash.h>
 
 #include "assets/model.h"
 #include "database/schemas.h"

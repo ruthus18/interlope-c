@@ -4,7 +4,7 @@
 
 #include "core/types.h"
 #include "database/schemas.h"
-#include "physics/physics.h"
+#include "physics/px.h"
 
 
 typedef struct ObjectRef {
@@ -16,7 +16,7 @@ typedef struct ObjectRef {
     vec3* node_positions;
     vec3* node_rotations;
 
-    PhysicsObject** physics;
+    PxObject** physics;
 } ObjectRef;
 
 

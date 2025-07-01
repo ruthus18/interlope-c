@@ -1,5 +1,7 @@
 #pragma once
-#include "physics/physics.h"
+#include <stdbool.h>
+#include <cglm/cglm.h>
+#include "physics/px.h"
 
 
 void px_player_init(vec3 pos, vec3 rot, f32 width, f32 height);

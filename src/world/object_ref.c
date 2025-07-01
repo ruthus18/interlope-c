@@ -50,7 +50,7 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
     int physics_count = tuple_size(infos);
     if (physics_count == 0) return;
     
-    int physics_size = sizeof(PhysicsObject) * (physics_count + 1);
+    int physics_size = sizeof(PxObject) * (physics_count + 1);
     self->physics = malloc(physics_size);
     memset(self->physics, 0, physics_size);
     
@@ -59,10 +59,10 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
         if (!info)  continue;
         
         vec3 pos, rot, size;
-        PhysicsBodyType body_type;
+        PxBodyType body_type;
 
         if (info->shape == PHSHAPE_BOX) {
-            body_type = PHYSICS_BODY_BOX;
+            body_type = PXBODY_BOX;
             glm_vec3_add(self->position, info->pos, pos);
             // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
             glm_vec3_copy(self->rotation, rot);
@@ -70,7 +70,7 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
             glm_vec3_copy(info->size, size);
         }
         else if (info->shape == PHSHAPE_AABB) {
-            body_type = PHYSICS_BODY_BOX;
+            body_type = PXBODY_BOX;
             glm_vec3_add(self->position, self->obj->model->aabb.offset, pos);
             // glm_vec3_add(self->rotation, info->rot, relative_rot);  // TODO: Not supported at now
             glm_vec3_copy(self->rotation, rot);
