@@ -55,6 +55,20 @@ void px_static_set_position(PxObject* obj, vec3 pos) {
     dGeomSetPosition(obj->geom, pos[0], -pos[2], pos[1]);
 }
 
+void px_static_get_rotation(PxObject* obj, vec3 dest) {
+    const dReal* R = dGeomGetRotation(obj->geom);
+    
+    mat3 rot_ = {R[0], R[1], R[2], R[4], R[5], R[6], R[8], R[9], R[10]};
+    
+    float rot_x = atan2(rot_[2][1], rot_[2][2]) * (180.0 / M_PI);
+    float rot_y = atan2(-rot_[2][0], sqrt(pow(rot_[2][1], 2) + pow(rot_[2][2], 2))) * (180.0 / M_PI);
+    float rot_z = atan2(rot_[1][0], rot_[0][0]) * (180.0 / M_PI);
+    
+    dest[0] = rot_x;
+    dest[1] = rot_z;
+    dest[2] = -rot_y;
+}
+
 /* ------ px_rigid ------ */
 /* ------------------------------------------------------------------------- */
 

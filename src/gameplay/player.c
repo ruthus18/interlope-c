@@ -8,6 +8,8 @@
 #include "platform/input.h"
 #include "physics/px_player.h"
 #include "platform/time.h"
+#include "ui/ui.h"
+#include "world/world.h"
 
 
 #define PLAYER_WIDTH            0.4
@@ -30,8 +32,6 @@ void player_init(vec3 position, vec2 direction) {
     self.is_colliding = true;
     self.is_grounded = true;
 
-    px_player_init(position, (vec3){0.0, 0.0, 0.0}, PLAYER_WIDTH, PLAYER_HEIGHT);
-    
     self.camera_y_offset = PLAYER_HEIGHT - 0.1;
     self.camera = camera_new(
         (vec3){position[0], position[1] + self.camera_y_offset, position[2]},
@@ -39,6 +39,8 @@ void player_init(vec3 position, vec2 direction) {
     );
     gfx_set_camera(self.camera);
 
+    px_player_init(position, (vec3){0.0, 0.0, 0.0}, PLAYER_WIDTH, PLAYER_HEIGHT);
+    px_player_set_interact_ray(self.camera->position, self.camera->v_front);
 }
 
 void player_destroy() {
@@ -166,7 +168,31 @@ void player_update_physics() {
         (vec3){self.position[0], self.position[1] + self.camera_y_offset, self.position[2]}
     );
 
+    // ---
     px_player_set_position(self.position);
+    px_player_set_interact_ray(self.camera->position, self.camera->v_front);
+}
+
+void player_update_interaction() {
+    /* --- init state---*/
+    self.interactor_oref = NULL;
+    ui_enable_interaction(false);
+
+    /* --- handle --- */
+    PxObject* interactor_px = px_player_get_interact_target();
+    if (!interactor_px)  return;
+
+    self.interactor_oref = world_get_oref_by_physics(interactor_px);
+    if (!self.interactor_oref) return;
+
+    if (self.interactor_oref->obj->type == OBJECT_ITEM)
+        ui_enable_interaction(true);
+        ui_set_interaction_text(self.interactor_oref->obj->base_id);
+
+        bool activate = input_is_keyp(IN_KEY_E);
+        if (activate) {
+            world_remove_oref(self.interactor_oref);
+        }
 }
 
 
@@ -174,6 +200,7 @@ void player_update() {
     if (!self.is_active)  return;
 
     player_update_physics();
+    player_update_interaction();
 }
 
 Player* player_get() {

@@ -25,6 +25,7 @@ typedef struct {
 PxObject* px_static_create(PxBodyType type, vec3 pos, vec3 rot, vec3 size);
 void px_static_get_position(PxObject* obj, vec3 dest);
 void px_static_set_position(PxObject* obj, vec3 pos);
+void px_static_get_rotation(PxObject* obj, vec3 dest);
 
 PxObject* px_rigid_create(PxBodyType type, vec3 pos, vec3 rot, vec3 size, f32 mass);
 void px_rigid_get_position(PxObject* obj, vec3 dest);

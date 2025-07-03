@@ -1,66 +1,77 @@
 #include <string.h>
 
 #include "scene.h"
+
 #include "core/containers/tuple.h"
-
-#define MEM_SCENE_OBJECTS   1024
-
-
-static inline
-Scene* _scene_alloc() {
-    Scene* scene = malloc(sizeof(Scene));
-    memset(scene, 0, sizeof(Scene));
-
-    int scene_size = sizeof(ObjectRef*) * (MEM_SCENE_OBJECTS + 1);
-    scene->object_refs = malloc(scene_size);
-    memset(scene->object_refs, 0, scene_size);
-
-    return scene;
-}
-
-static inline
-void _scene_free(Scene* scene) {
-    free(scene->object_refs);
-    free(scene);
-}
+#include "physics/px_object.h"
 
 
 Scene* scene_new(SceneInfo* info) {
-    Scene* scene = _scene_alloc();
+    Scene* self = malloc(sizeof(Scene));
+    memset(self, 0, sizeof(Scene));
+    
+    self->object_refs = map_new(MHASH_INT);
 
-    int i = 0;
-    ObjectRefInfo* obj_ref_info;
+    ObjectRefInfo* oref_info;
 
-    tuple_for_each(obj_ref_info, info->object_refs) {
-        ObjectRef* obj_ref = object_ref_new(obj_ref_info);
-        scene->object_refs[i++] = obj_ref;
+    tuple_for_each(oref_info, info->object_refs) {
+        ObjectRef* oref = object_ref_new(oref_info);
+        map_set(self->object_refs, oref, (void*)(intptr_t)oref->ref_id);
     }
 
-    glm_vec3_copy(info->player_init_pos, scene->player_init_pos);
-    glm_vec2_copy(info->player_init_rot, scene->player_init_rot);
+    glm_vec3_copy(info->player_init_pos, self->player_init_pos);
+    glm_vec2_copy(info->player_init_rot, self->player_init_rot);
 
-    return scene;
+    return self;
 }
 
-void scene_free(Scene* scene) {
-    ObjectRef* obj_ref;
-    tuple_for_each(obj_ref, scene->object_refs) {
-        object_ref_free(obj_ref);
+void scene_free(Scene* self) {
+    ObjectRef* oref;
+    map_for_each(oref, self->object_refs) {
+        object_ref_free(oref);
     }
 
-    _scene_free(scene);
+    map_free(self->object_refs);
+    free(self);
 }
 
-void scene_update(Scene* scene) {
-    ObjectRef* obj_ref;
-    tuple_for_each(obj_ref, scene->object_refs) {
-        object_ref_update(obj_ref);
+/* ------------------------------------------------------------------------- */
+
+ObjectRef* scene_get_oref_by_id(Scene* self, u32 ref_id) {
+    return map_get(self->object_refs, (void*)(intptr_t)ref_id);
+}
+
+ObjectRef* scene_get_oref_by_physics(Scene* self, PxObject* px_obj) {
+    ObjectRef* oref;
+    PxObject* i_obj;
+
+    // FIXME
+    map_for_each(oref, self->object_refs) {
+        tuple_for_each(i_obj, oref->physics) {
+            if (i_obj == px_obj)
+                return oref;
+        }
+    }
+    return NULL;
+}
+
+void scene_remove_oref(Scene* self, ObjectRef* oref) {
+    map_remove(self->object_refs, (void*)(intptr_t)oref->ref_id);
+    object_ref_free(oref);
+}
+
+/* ------------------------------------------------------------------------- */
+
+void scene_update(Scene* self) {
+    ObjectRef* oref;
+    map_for_each(oref, self->object_refs) {
+        object_ref_update(oref);
     }
 }
 
-void scene_draw(Scene* scene) {
-    ObjectRef* ref;
-    tuple_for_each(ref, scene->object_refs) {
-        object_ref_draw(ref);
+void scene_draw(Scene* self) {
+    ObjectRef* oref;
+    map_for_each(oref, self->object_refs) {
+        object_ref_draw(oref);
     }
 }

@@ -2,6 +2,7 @@
 
 #include "graphics/camera.h"
 #include "physics/px.h"
+#include "world/object_ref.h"
 
 
 typedef struct Player {
@@ -20,6 +21,8 @@ typedef struct Player {
     bool is_colliding;
     bool is_grounded;
     bool is_ceiled;
+
+    ObjectRef* interactor_oref;
 } Player;
 
 

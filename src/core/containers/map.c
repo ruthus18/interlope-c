@@ -26,7 +26,7 @@ int _compare_str(const void* arg, const void* item) {
 }
 
 int _compare_int(const void* arg, const void* item) {
-    return *(const int*)arg - (intptr_t)((_map_item*)item)->key;
+    return (intptr_t)arg - (intptr_t)((_map_item*)item)->key;
 }
 
 #define _hash_str(key)  tommy_strhash_u32(0, key)

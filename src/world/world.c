@@ -61,18 +61,29 @@ void world_print() {
 
 
 Object* world_get_object(char* id) {
-    Object* obj = map_get(self.objects, id);
-    return obj;
+    return map_get(self.objects, id);
 }
 
 Scene* world_get_current_scene() {
     return self.current_scene;
 }
 
+ObjectRef* world_get_oref_by_id(u32 ref_id) {
+    return scene_get_oref_by_id(self.current_scene, ref_id);
+}
+
+ObjectRef* world_get_oref_by_physics(PxObject* px_obj) {
+    return scene_get_oref_by_physics(self.current_scene, px_obj);
+}
+
+void world_remove_oref(ObjectRef* oref) {
+    scene_remove_oref(self.current_scene, oref);
+}
+
 
 void world_update() {
-    scene_update(self.current_scene);
     player_update();
+    scene_update(self.current_scene);
 }
 
 void world_draw() {

@@ -85,6 +85,16 @@ void px_delete_object(PxObject* obj) {
     map_remove(self.objects, (void*)(intptr_t)obj->id);
 }
 
+// FIXME
+PxObject* px_get_object_by_geom(dGeomID geom) {
+    PxObject* obj;
+    map_for_each(obj, self.objects) {
+        if (geom == obj->geom)  return obj;
+    }
+
+    return NULL;
+}
+
 u32 px_next_id() { return self.next_id++; }
 dWorldID px_get_world() { return self.world; }
 dSpaceID px_get_space() { return self.space; }
@@ -130,6 +140,9 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
     
     // Skip collisions between two static objects (both without bodies)
     if (!body1 && !body2) return;
+    
+    // Skip rigid-ray interactions
+    if (dGeomGetClass(geom1) == dRayClass || dGeomGetClass(geom2) == dRayClass) return;
 
     bool is_kinematic = false;
     if (body1 && dBodyIsKinematic(body1))  is_kinematic = true;
@@ -144,7 +157,7 @@ void collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
             _kinematic_contact_surface_params(contact[i]);
         }
         else {
-            _rigid_contact_surface_params(contact[i]);
+            // _rigid_contact_surface_params(contact[i]);
             dJointID c = dJointCreateContact(self.world, self.contact_group, &contact[i]);
             dJointAttach(c, dGeomGetBody(geom1), dGeomGetBody(geom2));
         }

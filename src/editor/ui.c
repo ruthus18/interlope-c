@@ -79,7 +79,6 @@ void editor_init() {
     self.selected_obj_id = -1;
 }
 
-
 void editor_destroy() {
     nk_glfw3_shutdown();
 }
@@ -96,9 +95,7 @@ void editor_switch_view_physics() {
     }
 }
 
-
 /* ------ UI Logic ------ */
-
 
 static inline
 void _update_objpan_data() {
@@ -127,7 +124,6 @@ void _update_objpan_data() {
     pan->rot_len[2] = snprintf(NULL, 0, "%.1f", rot[2]);    
 }
 
-
 static inline
 void _draw_scene_panel() {
     if (self.scene == NULL) {
@@ -151,7 +147,6 @@ void _draw_scene_panel() {
         }
     }
 }
-
 
 static inline
 void _draw_object_panel() {
@@ -250,7 +245,6 @@ void _draw_object_panel() {
         });
     }
 }
-
 
 void _draw_menu_bar() {
     struct nk_context* ctx = self.ctx;

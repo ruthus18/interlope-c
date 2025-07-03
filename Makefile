@@ -40,16 +40,8 @@ SOURCES = \
 	\
 	$(SRC_DIR)/editor/geometry.c \
 	\
+	$(SRC_DIR)/gameplay/item.c \
 	$(SRC_DIR)/gameplay/player.c \
-	\
-	$(SRC_DIR)/physics/px_object.c \
-	$(SRC_DIR)/physics/px_player.c \
-	$(SRC_DIR)/physics/px.c \
-	\
-	$(SRC_DIR)/platform/file.c \
-	$(SRC_DIR)/platform/input.c \
-	$(SRC_DIR)/platform/time.c \
-	$(SRC_DIR)/platform/window.c \
 	\
 	$(SRC_DIR)/graphics/camera.c \
 	$(SRC_DIR)/graphics/geometry.c \
@@ -57,6 +49,16 @@ SOURCES = \
 	$(SRC_DIR)/graphics/gfx.c \
 	$(SRC_DIR)/graphics/resource.c \
 	$(SRC_DIR)/graphics/shader.c \
+	\
+	$(SRC_DIR)/physics/px_object.c \
+	$(SRC_DIR)/physics/px_player.c \
+	$(SRC_DIR)/physics/px_ray.c \
+	$(SRC_DIR)/physics/px.c \
+	\
+	$(SRC_DIR)/platform/file.c \
+	$(SRC_DIR)/platform/input.c \
+	$(SRC_DIR)/platform/time.c \
+	$(SRC_DIR)/platform/window.c \
 	\
 	$(SRC_DIR)/ui/ui.c \
 	\

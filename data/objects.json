@@ -81,9 +81,15 @@
     },
 
     "Money": {
+        "type": "ITEM",
         "mesh": "items/money.glb",
         "textures": ["items/money.dds"],
+        "physics": {"shape": "AABB"}
+    },
+    "TestCube": {
         "type": "ITEM",
+        "mesh": "cube2.glb",
+        "textures": ["clutter/shooting_targets.dds"],
         "physics": {"shape": "AABB"}
     }
 }

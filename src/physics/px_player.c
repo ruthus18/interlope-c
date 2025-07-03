@@ -1,6 +1,7 @@
 #include "px_player.h"
 #include "physics/px.h"
 #include "physics/px_object.h"
+#include "physics/px_ray.h"
 
 #include "core/log.h"
 
@@ -8,6 +9,7 @@
 static struct PxPlayer {
     dSpaceID space;
     PxObject* obj;
+    PxRay* interact_ray;
 
     bool is_grounded;
     bool is_ceiled;
@@ -20,26 +22,33 @@ static struct PxPlayer {
 void px_player_init(vec3 pos, vec3 rot, f32 width, f32 height) {
     self.y_offset = height / 2;
     
+    self.space = px_get_space();
     self.obj = px_kinematic_create(
         PXBODY_CAPSULE,
         (vec3){pos[0], pos[1] + self.y_offset, pos[2]},
         rot,
         (vec3){width / 2, height, 0.0}
     );
-    self.space = px_get_space();
+    self.interact_ray = px_ray_new(2.0);
 }
 
-void px_player_destroy() {}
+void px_player_destroy() {
+    px_ray_free(self.interact_ray);
+}
 
 bool px_player_get_grounded()  { return self.is_grounded; }
 bool px_player_get_ceiled()    { return self.is_ceiled; }
+PxObject* px_player_get_interact_target() { return self.interact_ray->target; }
 
-
-bool px_player_set_position(vec3 pos) {
+void px_player_set_position(vec3 pos) {
     px_kinematic_set_position(
         self.obj,
         (vec3){pos[0], pos[1] + self.y_offset, pos[2]}
     );
+}
+
+void px_player_set_interact_ray(vec3 pos, vec3 dir) {
+    px_ray_set(self.interact_ray, pos, dir);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -51,6 +60,8 @@ void _wall_collision_callback(void* data, dGeomID geom1, dGeomID geom2) {
     if (geom1 != player_geom && geom2 != player_geom)  return;
     
     dGeomID wall_geom = (geom1 == player_geom ? geom2 : geom1);
+
+    if (wall_geom == self.interact_ray->geom)  return;
 
     vec3 player_pos;
     px_kinematic_get_position(self.obj, player_pos);
@@ -102,10 +113,25 @@ void px_player_translate(vec3 dest_pos) {
 
 /* ------------------------------------------------------------------------- */
 
+static inline
+void on_px_player_interact_ray_collision(dGeomID geom) {
+    self.interact_ray->target = px_get_object_by_geom(geom);
+}
+
+
 // TODO unify with collision logic above
+
 static
-void on_px_player_collision(void* data, dGeomID geom1, dGeomID geom2) {
+void on_px_player_collision(void* _, dGeomID geom1, dGeomID geom2) {
     dGeomID player_geom = self.obj->geom;
+    dGeomID interact_geom = self.interact_ray->geom;
+
+    if (geom1 == interact_geom || geom2 == interact_geom) {
+        dGeomID other_geom = (geom1 == interact_geom ? geom2 : geom1);
+        if (other_geom == player_geom)  return;
+
+        on_px_player_interact_ray_collision(other_geom);
+    }
 
     if (geom1 != player_geom && geom2 != player_geom)  return;
     
@@ -129,5 +155,7 @@ void on_px_player_collision(void* data, dGeomID geom1, dGeomID geom2) {
 void px_player_update() {
     self.is_grounded = false;
     self.is_ceiled = false;
+    self.interact_ray->target = NULL;
+
     dSpaceCollide(self.space, 0, on_px_player_collision);
 }

@@ -30,6 +30,7 @@ Camera* camera_new(vec3 position, vec2 direction) {
     if (direction)    glm_vec2_copy(direction, cam->direction);
     else              glm_vec2_zero(cam->direction);
 
+    cgm_front_vec(cam->direction[0], cam->direction[1], cam->v_front);
     _update_persp_mat(cam);
     _update_view_mat(cam);
 

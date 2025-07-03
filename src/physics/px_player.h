@@ -9,7 +9,10 @@ void px_player_destroy();
 
 bool px_player_get_grounded();
 bool px_player_get_ceiled();
-bool px_player_set_position(vec3 pos);
+PxObject* px_player_get_interact_target();
+
+void px_player_set_position(vec3 pos);
+void px_player_set_interact_ray(vec3 pos, vec3 dir);
 
 void px_player_translate(vec3 dest_pos);
 void px_player_update();

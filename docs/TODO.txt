@@ -22,8 +22,8 @@ Gameplay/Player:
     * Fix ambiguous naming related to rotation (pitch/yaw/roll - ?, ODE direction (vec3))
 
 Physics:
+    * Fix rigid-ray interaction (strange triggering, maybe invalid pos/dir setting)
     * Move out to separate thread
-    * Need refactoring
 
 Physics/Player:
     * Improve wall collision handling - 
@@ -36,6 +36,13 @@ Render:
     * Deffered Rendering, framebuffers support
     * Terrain
 
+World:
+    > Global storage of ObjectRef based on map
+    > Remove ObjectRef from scene
+
 UI:
-    * Font outlining
-    * Element aligning (centered, left, right)
+    * Refactoring
+    * Configuration (text scale, screen size-based autoscale)
+    * Text bg shadows
+    * Text aligning (centered, left, right)
+    * Crosshair rendering

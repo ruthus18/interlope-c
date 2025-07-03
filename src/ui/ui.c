@@ -4,6 +4,7 @@
 #include "core/colors.h"
 #include "platform/time.h"
 #include "graphics/gfx.h"
+#include <string.h>
 
 
 typedef struct FPSComponent {
@@ -15,6 +16,7 @@ typedef struct FPSComponent {
 typedef struct InteractionComponent {
     bool enabled;
     vec3 color;
+    char item_name[64];
 } InteractionComponent;
 
 
@@ -37,6 +39,7 @@ void ui_init() {
     glm_vec3_copy(COLOR_YELLOW, self.components.fps.color);
 
     self.components.interaction.enabled = false;
+    strcpy(self.components.interaction.item_name, "???");
     glm_vec3_copy(COLOR_AMBER, self.components.interaction.color);
 }
 
@@ -53,6 +56,9 @@ void ui_enable_interaction(bool value) {
     self.components.interaction.enabled = value;
 }
 
+void ui_set_interaction_text(char* value) {
+    sprintf(self.components.interaction.item_name, "%s", value);
+}
 
 /* ------------------------------------------------------------------------- */
 
@@ -70,7 +76,7 @@ void _draw_interaction_component() {
     InteractionComponent* comp = &self.components.interaction;
     if (!comp->enabled)  return;
 
-    gfx_enqueue_ui_element("Money", self.gfx_data, (vec2){0.46, 0.95}, comp->color);
+    gfx_enqueue_ui_element(comp->item_name, self.gfx_data, (vec2){0.46, 0.95}, comp->color);
     gfx_enqueue_ui_element("[E]Take", self.gfx_data, (vec2){0.45, 0.92}, comp->color);
 }
 

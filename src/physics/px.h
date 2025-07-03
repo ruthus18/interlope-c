@@ -17,6 +17,7 @@ void px_update();
 void px_add_object(PxObject* obj);
 // void px_create_object(PxObject* obj);
 void px_delete_object(PxObject* obj);
+PxObject* px_get_object_by_geom(dGeomID geom);
 
 u32 px_next_id();
 dWorldID px_get_world();

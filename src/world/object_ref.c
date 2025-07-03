@@ -7,11 +7,17 @@
 #include "world/world.h"
 
 #include "core/containers/tuple.h"
+#include "core/containers/map.h"
 #include "core/cgm.h"
 #include "core/log.h"
 
 static u32 next_ref_id = 0x00000001;
 
+/* ------------------------------------------------------------------------- */
+
+static inline void _create_physics(ObjectRef* self, PhysicsInfo** infos);
+
+/* ------------------------------------------------------------------------- */
 
 ObjectRef* object_ref_new(ObjectRefInfo* info) {
     ObjectRef* self = malloc(sizeof(ObjectRef));
@@ -37,13 +43,22 @@ ObjectRef* object_ref_new(ObjectRefInfo* info) {
     }
 
     /* --- Object Physics --- */
-    object_ref_create_physics(self, obj->info->physics);
+    _create_physics(self, obj->info->physics);
 
     return self;
 }
 
+void object_ref_free(ObjectRef* self) {
+    if (self->node_positions)   free(self->node_positions);
+    if (self->node_rotations)   free(self->node_rotations);
 
-void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
+    if (self->physics)          free(self->physics);
+    // FIXME: also need to remove related px_objects from px storage
+    free(self);
+}
+
+static inline
+void _create_physics(ObjectRef* self, PhysicsInfo** infos) {
     self->physics = NULL;
     if (!infos)  return;
     
@@ -87,59 +102,32 @@ void object_ref_create_physics(ObjectRef* self, PhysicsInfo** infos) {
 
         if (self->obj->type == OBJECT_STATIC)
             self->physics[i] = px_static_create(body_type, pos, rot, size);
-
+            
         else if (self->obj->type == OBJECT_ITEM)
-            self->physics[i] = px_rigid_create(body_type, pos, rot, size, 1.0);
-    }   
-}
-
-
-void object_ref_free(ObjectRef* self) {
-    if (self->node_positions)   free(self->node_positions);
-    if (self->node_rotations)   free(self->node_rotations);
-    if (self->physics)          free(self->physics);
-    free(self);
-}
-
-
-void object_ref_update(ObjectRef* self) {
-    object_update(self->obj);
-
-    if (self->obj->type == OBJECT_ITEM) {
-        // TODO: check on `object_ref_new` that there is only 1 physics body 
-        px_rigid_get_position(self->physics[0], self->position);
-        px_rigid_get_rotation(self->physics[0], self->rotation);
+            self->physics[i] = px_static_create(body_type, pos, rot, size);
     }
 }
 
+/* ------------------------------------------------------------------------- */
+
+void object_ref_update(ObjectRef* self) {
+    object_update(self->obj);
+    
+    if (self->obj->type == OBJECT_ITEM) {
+        // TODO: check on `object_ref_new` that there is only 1 physics body 
+        px_static_get_position(self->physics[0], self->position);
+        px_static_get_rotation(self->physics[0], self->rotation);
+    }
+}
 
 void object_ref_draw(ObjectRef* self) {
     ModelNode* node;
     mat4 model_mat;
-
+    
     // TODO: concat ModelNode pos and rot
     cgm_model_mat(self->position, self->rotation, NULL, model_mat);
-
+    
     tuple_for_each(node, self->obj->model->nodes) {
         gfx_enqueue_object(node->mesh, node->texture, model_mat);
     }
-}
-
-
-ObjectRef* object_ref_find_by_id(u32 ref_id) {
-    extern Scene* world_get_current_scene(void);  // Forward declaration
-    Scene* scene = world_get_current_scene();
-    if (!scene) return NULL;
-
-    ObjectRef* obj_ref;
-    tuple_for_each(obj_ref, scene->object_refs) {
-        if (obj_ref->ref_id == ref_id) {
-            return obj_ref;
-        }
-    }
-    return NULL;
-}
-
-u32 object_ref_get_next_id(void) {
-    return next_ref_id;
 }

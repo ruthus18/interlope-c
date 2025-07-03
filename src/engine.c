@@ -48,17 +48,19 @@ void engine_run() {
 
     db_init();
     world_init();
-
     __on_init__();
 
     while (!gfx_need_stop()) {
         window_poll_events();
+
+        /* --- Engine Update --- */
         time_update();
         input_update();
         px_update();
         world_update();
         __on_update__();
-
+        
+        /* --- Engine Draw --- */
         world_draw();
         ui_draw();
         __on_draw__();
