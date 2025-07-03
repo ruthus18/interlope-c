@@ -12,16 +12,16 @@ const char* _path_construct(const char* base, const char* child);
     free((void*) content);
 
 #define with_path_to_shader(path, rel_path, inner) \
-    path = _path_construct(DIR_SHADERS, rel_path); \
+    path = _path_construct(Config.DIR_SHADERS, rel_path); \
     inner \
     free((void*) path);
 
 #define with_path_to_mesh(path, rel_path, inner) \
-    path = _path_construct(DIR_MESHES, rel_path); \
+    path = _path_construct(Config.DIR_MESHES, rel_path); \
     inner \
     free((void*) path);
 
 #define with_path_to_texture(path, rel_path, inner) \
-    path = _path_construct(DIR_TEXTURES, rel_path); \
+    path = _path_construct(Config.DIR_TEXTURES, rel_path); \
     inner \
     free((void*) path);

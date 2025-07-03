@@ -1,15 +1,11 @@
 #include <assert.h>
 #include <stdio.h>
-#include <math.h>
 #include <ode/ode.h>
-#include <ode/threading_impl.h>
-#include <cglm/cglm.h>
 
 #include "px.h"
 #include "physics/px_object.h"
 
 #include "core/containers/map.h"
-#include "core/config.h"
 #include "core/types.h"
 #include "core/log.h"
 
@@ -17,7 +13,8 @@
 // Documentation: https://ode.org/wiki/index.php/Manual
 
 
-static const dReal TIMESTEP = (1.0 / PHYSICS_MAX_RATE);
+const i32 MAX_RATE = 120;
+static dReal TIMESTEP = 1.0 / MAX_RATE;
 
 
 static struct PxStorage {

@@ -39,6 +39,7 @@ void _validate_callbacks() {
 
 void engine_run() {
     _validate_callbacks();
+    config_load("econfig.toml");
 
     window_init();
     input_init();
@@ -67,7 +68,7 @@ void engine_run() {
         gfx_draw();
 
         window_swap_buffers();
-        if (!WINDOW_VSYNC)  time_limit_framerate();
+        if (!Config.WINDOW_VSYNC)  time_limit_framerate();
     }
     __on_destroy__();
 

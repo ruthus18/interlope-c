@@ -11,10 +11,9 @@ static Database self;
 
 
 void db_init() {
-    self.objects = db_load_objects_data(PATH_OBJECTS_DATA);
-    self.scene = db_load_scene_data(PATH_INIT_SCENE_DATA);
+    self.objects = db_load_objects_data(Config.PATH_OBJECTS_DATA);
+    self.scene = db_load_scene_data(Config.PATH_SCENES_DATA);
 }
-
 
 void db_destroy() {
     ObjectInfo* obj;
@@ -32,17 +31,14 @@ void db_destroy() {
         }
         free(obj);
     }
-
     free(self.objects);  
     free(self.scene->object_refs);
     free(self.scene);
 }
 
-
 Database* db_get() {
     return &self;
 }
-
 
 ObjectInfo* db_find_object(char* id) {
     ObjectInfo* obj = NULL;

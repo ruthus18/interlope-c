@@ -115,7 +115,7 @@ GfxMesh2D* gfx_load_mesh_2d() {
 
     ui_data->vao = VAO;
     ui_data->vbo = VBO;
-    glm_ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, -1.0f, 1.0f, ui_data->persp_mat);
+    glm_ortho(0.0f, (float)Config.WINDOW_WIDTH, 0.0f, (float)Config.WINDOW_HEIGHT, -1.0f, 1.0f, ui_data->persp_mat);
     return ui_data;
 }
 

@@ -36,34 +36,20 @@ void time_update() {
         fps = ceil(nbframes / timer_sec);
         timer_sec -= 1.0;
         nbframes = 0;
-
-        if (__DEBUG__PRINT_FPS)  printf("t: %f  FPS: %i\n", current_time, fps);
     }
     else if (second_passed)
         second_passed = false;
-
-    if (__DEBUG__PRINT_TIME_UPDATE)  printf(
-        "t_now=%f\tt_last=%f\tt_delta=%f\tt_timer[1s]=%f",
-        current_time, last_time, dt, timer_sec
-    );
 }
 
+f64 time_get_dt() { return dt; }
+int time_get_fps() { return fps; }
 
-f64 time_get_dt() {
-    return dt;
-}
 
-int time_get_fps() {
-    return fps;
-}
-
-/*
-// Temporary solution, not thread-safe
-*/
+/* Temporary solution, not thread-safe */
 void time_limit_framerate() {
-    if (WINDOW_MAX_FRAMERATE == 0.0)  return;
+    if (Config.WINDOW_MAX_FRAMERATE == 0.0)  return;
 
-    f64 min_frame_duration = 1.0 / WINDOW_MAX_FRAMERATE;
+    f64 min_frame_duration = 1.0 / Config.WINDOW_MAX_FRAMERATE;
     f64 frame_duration = glfwGetTime() - current_time;
 
     if (frame_duration < min_frame_duration) {

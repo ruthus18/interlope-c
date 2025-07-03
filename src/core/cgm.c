@@ -6,7 +6,7 @@
 
 
 void cgm_persp_mat(f32 fov, mat4 dest) {
-    f64 aspect = (f64)WINDOW_WIDTH / (f64)WINDOW_HEIGHT;
+    f64 aspect = (f64)Config.WINDOW_WIDTH / (f64)Config.WINDOW_HEIGHT;
     glm_perspective(radian(fov), aspect, 0.01, 1000.0, dest);
 }
 

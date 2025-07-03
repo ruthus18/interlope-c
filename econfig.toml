@@ -1,0 +1,22 @@
+
+[window]
+  title = "Interlope Engine"
+  width = 1680
+  height = 1050
+  fullsc = true
+  xpos = 0
+  ypos = 0
+  border = false
+  vsync = false
+  max_framerate = 120.0
+
+[graphics]
+  wireframe = false
+
+[path]
+  shaders = "shaders/"
+  meshes = "assets/meshes/"
+  textures = "assets/textures/"
+
+  objects_data = "data/objects.json"
+  scenes_data = "data/scenes/test.json"

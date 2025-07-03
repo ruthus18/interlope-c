@@ -5,7 +5,6 @@ Assets/Animation:
     * Basic rigs, bones and animations support
 
 Core:
-    * Load config from .toml
     * Chunk-expanding list structure
 
 Editor:
@@ -14,10 +13,10 @@ Editor:
     * Physics info support (w. multiple bodies)
 
 Gameplay/Player:
+    * Inventory
     * State machine
     * Crouching
     * Sprinting
-    * Interaction
     * Walking sound
     * Fix ambiguous naming related to rotation (pitch/yaw/roll - ?, ODE direction (vec3))
 

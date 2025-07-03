@@ -33,6 +33,7 @@ SOURCES = \
 	\
 	$(SRC_DIR)/core/containers/map.c \
 	$(SRC_DIR)/core/cgm.c \
+	$(SRC_DIR)/core/config.c \
 	$(SRC_DIR)/core/log.c \
 	\
 	$(SRC_DIR)/database/db.c \

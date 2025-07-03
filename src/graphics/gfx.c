@@ -122,8 +122,8 @@ void _log_startup_info() {
     log_info("GLEW VERSION: %s", glewGetString(GLEW_VERSION));
     log_info("GLFW VERSION: %u.%u.%u", GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION);
     log_info("VIDEO DEVICE: %s (%s)", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
-    log_info("WIN SIZE: %i x %i", WINDOW_WIDTH, WINDOW_HEIGHT);
-    log_info("WIN VSYNC: %i", WINDOW_VSYNC);
+    log_info("WIN SIZE: %i x %i", Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT);
+    log_info("WIN VSYNC: %i", Config.WINDOW_VSYNC);
     log_info("------");
 }
 
@@ -139,7 +139,7 @@ void gfx_init() {
     glPointSize(6);
     glLineWidth(2);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GFX_WIREFRAME_MODE ? GL_LINE : GL_POLYGON);
+    glPolygonMode(GL_FRONT_AND_BACK, Config.GRAPHICS_WIREFRAME ? GL_LINE : GL_POLYGON);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
@@ -233,8 +233,8 @@ void gfx_draw_ui_elements() {
     DrawUIElementCommand* cmd;
 
     cvector_for_each_in(cmd, self.commands.ui_element) {
-        f32 screen_x = cmd->pos[0] * WINDOW_WIDTH;
-        f32 screen_y = (1.0 - cmd->pos[1]) * WINDOW_HEIGHT;
+        f32 screen_x = cmd->pos[0] * Config.WINDOW_WIDTH;
+        f32 screen_y = (1.0 - cmd->pos[1]) * Config.WINDOW_HEIGHT;
     
         shader_set_mat4(self.shaders.ui, "projection", cmd->ui_data->persp_mat);
         shader_set_vec3(self.shaders.ui, "text_color", cmd->color);
@@ -300,9 +300,11 @@ void gfx_draw_geometry() {
 
 /* ------------------------------------------------------------------------- */
 
+#define BG_COLOR (f32)29 / 255, (f32)32 / 255, (f32)33 / 255, 1.0
+
 void gfx_draw() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(WINDOW_BG_COLOR);
+    glClearColor(BG_COLOR);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 

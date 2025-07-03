@@ -21,24 +21,24 @@ void window_init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    if (!WINDOW_BORDER) {
+    if (!Config.WINDOW_BORDER) {
         glfwWindowHint(GLFW_DECORATED, false);
     }
 
     GLFWmonitor* monitor = NULL;
-    if (WINDOW_FULLSC)
+    if (Config.WINDOW_FULLSC)
         monitor = glfwGetPrimaryMonitor();
 
     window = glfwCreateWindow(
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        WINDOW_TITLE,
+        Config.WINDOW_WIDTH,
+        Config.WINDOW_HEIGHT,
+        Config.WINDOW_TITLE,
         monitor,
         NULL
     );
     if (!window)  log_exit("Unable to create GLFW window");
 
-    glfwSetWindowPos(window, WINDOW_XPOS, WINDOW_YPOS);
+    glfwSetWindowPos(window, Config.WINDOW_XPOS, Config.WINDOW_YPOS);
     glfwMakeContextCurrent(window);
 
     int glew_status = glewInit();
@@ -46,7 +46,7 @@ void window_init() {
         log_exit("(window_init) GLEW Initialization Error!");
     }
 
-    glfwSwapInterval(WINDOW_VSYNC);
+    glfwSwapInterval(Config.WINDOW_VSYNC);
 }
 
 void window_destroy() {

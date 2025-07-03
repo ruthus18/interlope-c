@@ -48,8 +48,8 @@ void input_update() {
     double new_px, new_py, new_dx, new_dy;
 
     glfwGetCursorPos(self.window, &new_px, &new_py);
-    new_dx = (new_px - self.mouse_px) / WINDOW_WIDTH;
-    new_dy = (new_py - self.mouse_py) / WINDOW_HEIGHT;
+    new_dx = (new_px - self.mouse_px) / Config.WINDOW_WIDTH;
+    new_dy = (new_py - self.mouse_py) / Config.WINDOW_HEIGHT;
 
     if (!__1st_iter) {
         self.mouse_dx = new_dx;
