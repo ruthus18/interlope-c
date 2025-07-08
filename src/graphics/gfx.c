@@ -45,7 +45,8 @@ static struct _Gfx {
     Window* window;
     Camera* camera;
     bool _stop;
-    
+    GfxSkybox* skybox;
+
     struct ShaderStorage {
         Shader* sky;
         Shader* object;
@@ -58,7 +59,7 @@ static struct _Gfx {
         cvector(DrawUIElementCommand) ui_element;
         cvector(DrawGeometryCommand) geometry;
     } commands;
-} self;
+} self = {};
 
 
 /* ------ Shaders ------ */
@@ -161,13 +162,9 @@ void gfx_stop() {
     log_info("Engine stopped. Bye!");
 }
 
-void gfx_set_camera(Camera* camera) {
-    self.camera = camera;
-}
+void gfx_set_camera(Camera* camera) { self.camera = camera; }
+void gfx_set_skybox(GfxSkybox* skybox) { self.skybox = skybox; }
 
-
-/* ------------------------------------------------------------------------- */
-/* Rendering Cycle */
 /* ------------------------------------------------------------------------- */
 
 void gfx_enqueue_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
@@ -195,6 +192,31 @@ void gfx_enqueue_geometry(GfxGeometry* geom, vec3 pos) {
     glm_vec3_copy(pos, cmd.pos);
 
     cvector_push_back(self.commands.geometry, cmd);
+}
+
+
+/* ------------------------------------------------------------------------- */
+/* Rendering Cycle */
+/* ------------------------------------------------------------------------- */
+
+
+void gfx_draw_sky() {
+    if (!self.skybox)  return;
+    shader_use(self.shaders.sky);
+    shader_set_mat4(self.shaders.sky, "m_persp", self.camera->m_persp);
+
+    mat4 m_view;
+    cgm_view_mat((vec3){0.0}, self.camera->v_front, m_view);
+    shader_set_mat4(self.shaders.sky, "m_view", m_view);
+
+    glDepthMask(GL_FALSE);
+    glBindVertexArray(self.skybox->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, self.skybox->vbo);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, self.skybox->texture->id);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    glDepthMask(GL_TRUE);
 }
 
 
@@ -308,6 +330,7 @@ void gfx_draw() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    gfx_draw_sky();
     gfx_draw_objects();
     gfx_draw_geometry();
     gfx_draw_ui_elements();

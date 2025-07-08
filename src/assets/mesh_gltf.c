@@ -114,13 +114,10 @@ void gltf_load_model_nodes(GLTF_Asset* data, ModelNode** dest) {
             if (attr->type == cgltf_attribute_type_position) {
                 pos_attr = attr->data;
             }
-            
             else if (attr->type == cgltf_attribute_type_normal) {        
                 normal_attr = attr->data;
             }
-            
-            else if (attr->type == cgltf_attribute_type_texcoord) {
-                
+            else if (attr->type == cgltf_attribute_type_texcoord) {   
                 if (texcoord_attr != NULL) {
                     log_exit("Multiple texcoord attrs!");
                 }
@@ -205,7 +202,11 @@ void gltf_load_model_nodes(GLTF_Asset* data, ModelNode** dest) {
                     ind_buf[j] = ((u32*)ind_data_ptr)[j];
                     break;
                 default:
-                    log_error("Unsupported index component type: %d (Node: %s)", ind_attr->component_type, node.name ? node.name : "[unnamed]");
+                    log_error(
+                        "Unsupported index component type: %d (Node: %s)",
+                        ind_attr->component_type,
+                        node.name ? node.name : "[unnamed]"
+                    );
                     free(ind_buf);
                     free(vtx_buf);
                      // TODO: Consider freeing model data allocated so far before returning NULL
@@ -227,12 +228,10 @@ bool gltf_get_mesh_aabb(GLTF_Asset* data, int node_index, vec3 aabb_min, vec3 aa
     if (!data || node_index < 0 || node_index >= data->nodes_count) {
         return false;
     }
-
     cgltf_node* node = &data->nodes[node_index];
     if (!node->mesh) {
         return false;
     }
-
     cgltf_mesh* mesh = node->mesh;
     if (mesh->primitives_count == 0) {
         return false;

@@ -88,12 +88,10 @@ Model* model_create_from_info(ModelInfo* info) {
     int i = 0;
     ModelNode* node;
     tuple_for_each(node, model->nodes) {
-        node->texture = texture_load_dds(info->textures[i]);
+        node->texture = texture_load(info->textures[i]);
         
         if (!gltf_get_mesh_aabb(gltf, i, node->aabb_min, node->aabb_max)) {
-            log_info("Failed to extract AABB for node %d ('%s')", i, node->name);
-            glm_vec3_zero(node->aabb_min);
-            glm_vec3_zero(node->aabb_max);
+            log_error("Failed to extract AABB for node %d ('%s')", i, node->name);
         }
         i++;
     }

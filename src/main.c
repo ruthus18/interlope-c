@@ -7,24 +7,38 @@
 #include "ui/ui.h"
 #include "engine.h"
 
+#include "assets/texture.h"
+#include "graphics/gfx.h"
+
 
 bool is_editor_visible = false;
 bool is_cursor_visible = false;
 
+GfxSkybox* skybox;
 
 static
 void on_init() {
-    ui_enable_fps(true);
-    // ui_enable_interaction(true);
-
     editor_geometry_init();
     cursor_set_visible(is_cursor_visible);
+    ui_enable_fps(true);
+    /* ------------------- */
+
+    skybox = texture_load_skybox(
+        "skybox/clear_right.dds",
+        "skybox/clear_left.dds",
+        "skybox/clear_up.dds",
+        "skybox/clear_down.dds",
+        "skybox/clear_front.dds",
+        "skybox/clear_back.dds"
+    );
+    gfx_set_skybox(skybox);
 }
 
 
 static
 void on_destroy() {
     editor_geometry_destroy();
+    gfx_unload_skybox(skybox);
 }
 
 
