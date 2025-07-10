@@ -1,6 +1,6 @@
 #pragma once
 
-float skybox_vertices[] = {
+const float CUBEMAP_MESH[] = {
     // positions          
     -1.0f,  1.0f, -1.0f,
     -1.0f, -1.0f, -1.0f,

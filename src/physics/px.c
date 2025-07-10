@@ -78,8 +78,8 @@ void px_add_object(PxObject* obj) {
 void px_delete_object(PxObject* obj) {
     if (!obj)  return;
 
-    px_object_free(obj);
     map_remove(self.objects, (void*)(intptr_t)obj->id);
+    px_object_free(obj);
 }
 
 // FIXME

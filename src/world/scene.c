@@ -57,7 +57,8 @@ ObjectRef* scene_get_oref_by_physics(Scene* self, PxObject* px_obj) {
 
 void scene_remove_oref(Scene* self, ObjectRef* oref) {
     map_remove(self->object_refs, (void*)(intptr_t)oref->ref_id);
-    object_ref_free(oref);
+    // FIXME scene shouldn't manage object ref lifetime, control globally from world
+    // object_ref_free(oref);
 }
 
 /* ------------------------------------------------------------------------- */

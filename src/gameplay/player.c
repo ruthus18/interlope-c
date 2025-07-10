@@ -7,6 +7,7 @@
 #include "graphics/gfx.h"
 #include "platform/input.h"
 #include "physics/px_player.h"
+#include "physics/px_ray.h"
 #include "platform/time.h"
 #include "ui/ui.h"
 #include "world/world.h"
@@ -173,26 +174,43 @@ void player_update_physics() {
     px_player_set_interact_ray(self.camera->position, self.camera->v_front);
 }
 
+
+void player_interact() {
+    ui_enable_interaction(true);
+    ui_set_interaction_text(self.interactor_oref->obj->base_id);
+
+    bool activate = input_is_keyp(IN_KEY_E);
+    if (activate) {
+        world_remove_oref(self.interactor_oref);
+        px_delete_object(self.interactor_oref->physics[0]);
+    }
+}
+
 void player_update_interaction() {
-    /* --- init state---*/
+    /* --- Init state---*/
     self.interactor_oref = NULL;
     ui_enable_interaction(false);
 
-    /* --- handle --- */
-    PxObject* interactor_px = px_player_get_interact_target();
-    if (!interactor_px)  return;
+    /* --- Get collided targets---*/
+    cvector(PxRayTarget) px_targets = px_player_get_interact_target();
+    if (cvector_size(px_targets) == 0)
+        return;
 
-    self.interactor_oref = world_get_oref_by_physics(interactor_px);
-    if (!self.interactor_oref) return;
+    /* --- Find closest interactable object ref --- */
+    PxRayTarget* target;
+    f64 min_dist = FLT_MAX;
 
-    if (self.interactor_oref->obj->type == OBJECT_ITEM)
-        ui_enable_interaction(true);
-        ui_set_interaction_text(self.interactor_oref->obj->base_id);
+    cvector_for_each_in(target, px_targets) {
+        ObjectRef* oref = world_get_oref_by_physics(target->obj);
 
-        bool activate = input_is_keyp(IN_KEY_E);
-        if (activate) {
-            world_remove_oref(self.interactor_oref);
+        if (oref->obj->type == OBJECT_ITEM && target->dist < min_dist) {
+            self.interactor_oref = oref;
+            min_dist = target->dist;
         }
+    }
+
+    if (self.interactor_oref)
+        player_interact();
 }
 
 

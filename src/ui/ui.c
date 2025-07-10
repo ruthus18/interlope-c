@@ -72,7 +72,7 @@ void _draw_fps() {
 }
 
 static inline
-void _draw_interaction_component() {
+void _draw_interaction() {
     InteractionComponent* comp = &self.components.interaction;
     if (!comp->enabled)  return;
 
@@ -81,6 +81,6 @@ void _draw_interaction_component() {
 }
 
 void ui_draw() {
-    _draw_interaction_component();
+    _draw_interaction();
     _draw_fps();
 }

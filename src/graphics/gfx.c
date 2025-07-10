@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CVECTOR_LINEAR_GROWTH
 #include <cvector.h>
 #include <cvector_utils.h>
 
@@ -165,6 +164,9 @@ void gfx_stop() {
 void gfx_set_camera(Camera* camera) { self.camera = camera; }
 void gfx_set_skybox(GfxSkybox* skybox) { self.skybox = skybox; }
 
+
+/* ------------------------------------------------------------------------- */
+/* Draw Commands Interface */
 /* ------------------------------------------------------------------------- */
 
 void gfx_enqueue_object(GfxMesh* mesh, GfxTexture* texture, mat4 m_model) {
@@ -291,11 +293,17 @@ void gfx_draw_ui_elements() {
             glDrawArrays(GL_TRIANGLES, 0, 6);
             screen_x += (glyph->advance >> 6) * scale;
         }
-        glBindVertexArray(0);
     }
+    glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
-
     glDisable(GL_BLEND);
+
+    /* --- Center Point --- */
+    shader_use(NULL);
+    glBegin(GL_POINTS);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex2f(0.0, 0.0);
+    glEnd();
 }
 
 

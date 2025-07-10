@@ -167,6 +167,56 @@ GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, i32 gl_format, u32
     return texture;
 }
 
+static inline
+GfxTexture* _load_cubemap_texture(
+    u8* tex_x, u8* tex_nx, u8* tex_y, u8* tex_ny, u8* tex_z, u8* tex_nz,
+    u32 width, u32 height, i32 gl_format, u32 block_size
+) {
+    GfxTexture* texture = malloc(sizeof(GfxTexture));
+    if (!texture) {
+        log_error("Failed to allocate memory for GfxTexture (Cubemap)");
+        return NULL;
+    }
+
+    glGenTextures(1, &(texture->id));
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture->id);
+
+    u32 size = ((width+3)/4) * ((height+3)/4) * block_size;
+
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+        0, gl_format, width, height, 0, size, tex_x
+    );
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+        0, gl_format, width, height, 0, size, tex_nx
+    );
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+        0, gl_format, width, height, 0, size, tex_y
+    );
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+        0, gl_format, width, height, 0, size, tex_ny
+    );
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+        0, gl_format, width, height, 0, size, tex_z
+    );
+    glCompressedTexImage2D(
+        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+        0, gl_format, width, height, 0, size, tex_nz
+    );
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return texture;
+}
+
 GfxTexture* gfx_load_font_texture(u32 width, u32 height, void* data) {
     GfxTexture* texture = malloc(sizeof(GfxTexture));
     if (!texture) {
@@ -224,59 +274,8 @@ void gfx_unload_geometry(GfxGeometry* geom) {
 }
 
 
-/* ------ GfxTexture ------ */
+/* ------ GfxSkybox ------ */
 /* ------------------------------------------------------------------------- */
-
-static inline
-GfxTexture* _load_cubemap_texture(
-    u8* tex_x, u8* tex_nx, u8* tex_y, u8* tex_ny, u8* tex_z, u8* tex_nz,
-    u32 width, u32 height, i32 gl_format, u32 block_size
-) {
-    GfxTexture* texture = malloc(sizeof(GfxTexture));
-    if (!texture) {
-        log_error("Failed to allocate memory for GfxTexture (Cubemap)");
-        return NULL;
-    }
-
-    glGenTextures(1, &(texture->id));
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texture->id);
-
-    u32 size = ((width+3)/4) * ((height+3)/4) * block_size;
-
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-        0, gl_format, width, height, 0, size, tex_x
-    );
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        0, gl_format, width, height, 0, size, tex_nx
-    );
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-        0, gl_format, width, height, 0, size, tex_y
-    );
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        0, gl_format, width, height, 0, size, tex_ny
-    );
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-        0, gl_format, width, height, 0, size, tex_z
-    );
-    glCompressedTexImage2D(
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-        0, gl_format, width, height, 0, size, tex_nz
-    );
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    return texture;
-}
-
 
 GfxSkybox* gfx_load_skybox(
     u8* tex_x, u8* tex_nx, u8* tex_y, u8* tex_ny, u8* tex_z, u8* tex_nz,
@@ -290,7 +289,7 @@ GfxSkybox* gfx_load_skybox(
 
     glGenBuffers(1, &(skybox->vbo));
     glBindBuffer(GL_ARRAY_BUFFER, skybox->vbo);
-    glBufferData(GL_ARRAY_BUFFER, VEC3_SIZE * 36, skybox_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, VEC3_SIZE * 36, CUBEMAP_MESH, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VEC3_SIZE, 0);
     glEnableVertexAttribArray(0);

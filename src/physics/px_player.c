@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "px_player.h"
 #include "physics/px.h"
 #include "physics/px_object.h"
@@ -38,7 +40,7 @@ void px_player_destroy() {
 
 bool px_player_get_grounded()  { return self.is_grounded; }
 bool px_player_get_ceiled()    { return self.is_ceiled; }
-PxObject* px_player_get_interact_target() { return self.interact_ray->target; }
+cvector(PxRayTarget) px_player_get_interact_target() { return self.interact_ray->targets; }
 
 void px_player_set_position(vec3 pos) {
     px_kinematic_set_position(
@@ -115,7 +117,25 @@ void px_player_translate(vec3 dest_pos) {
 
 static inline
 void on_px_player_interact_ray_collision(dGeomID geom) {
-    self.interact_ray->target = px_get_object_by_geom(geom);
+    PxObject* obj = px_get_object_by_geom(geom);
+    if (!obj) return;
+    
+    vec3 obj_pos;
+    vec3 ray_pos;
+    vec3 v_dist;
+
+    if (obj->body)  px_rigid_get_position(obj, obj_pos);
+    else            px_static_get_position(obj, obj_pos);
+    
+    px_ray_get(self.interact_ray, ray_pos, NULL);
+
+    glm_vec3_sub(ray_pos, obj_pos, v_dist);
+    f64 dist = cbrt(fabs(v_dist[0] * v_dist[1] * v_dist[2]));
+
+    PxRayTarget ray_target;
+    ray_target.obj = obj;
+    ray_target.dist = dist;
+    px_ray_add_target(self.interact_ray, ray_target);
 }
 
 
@@ -125,7 +145,7 @@ static
 void on_px_player_collision(void* _, dGeomID geom1, dGeomID geom2) {
     dGeomID player_geom = self.obj->geom;
     dGeomID interact_geom = self.interact_ray->geom;
-
+    
     if (geom1 == interact_geom || geom2 == interact_geom) {
         dGeomID other_geom = (geom1 == interact_geom ? geom2 : geom1);
         if (other_geom == player_geom)  return;
@@ -155,7 +175,7 @@ void on_px_player_collision(void* _, dGeomID geom1, dGeomID geom2) {
 void px_player_update() {
     self.is_grounded = false;
     self.is_ceiled = false;
-    self.interact_ray->target = NULL;
+    px_ray_clear_targets(self.interact_ray);
 
     dSpaceCollide(self.space, 0, on_px_player_collision);
 }

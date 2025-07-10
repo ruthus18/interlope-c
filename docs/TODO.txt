@@ -4,9 +4,6 @@ Assets:
 Assets/Animation:
     * Basic rigs, bones and animations support
 
-Core:
-    * Chunk-expanding list structure
-
 Editor:
     * Need refactoring and state management
     * Assets viewer
@@ -28,10 +25,12 @@ Physics/Player:
     * Improve wall collision handling - 
         test collision once, translate in direction of contact normal
 
+Platform:
+    * Fix frame limiter (skip frames instead of sleep)
+
 Render:
     * Basic lighting
     * Shadows
-    * Skybox
     * Deffered Rendering, framebuffers support
     * Terrain
 

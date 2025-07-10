@@ -47,11 +47,6 @@ GfxTexture* gfx_load_texture(u8* data, u32 width, u32 height, i32 gl_format, u32
 GfxTexture* gfx_load_font_texture(u32 width, u32 height, void* data);
 void gfx_unload_texture(GfxTexture*);
 
-// GfxTexture* gfx_load_cubemap_texture(
-//     u8* tex_x, u8* tex_nx, u8* tex_y, u8* tex_ny, u8* tex_z, u8* tex_nz,
-//     u32 width, u32 height, i32 gl_format
-// );
-
 GfxGeometry* gfx_load_geometry(f32* lines_buf, u64 vtx_count, vec3 color);
 void gfx_unload_geometry(GfxGeometry* geom);
 
