@@ -29,7 +29,7 @@ void engine_set_callback(EngineCallback func, EngineCallbackType type) {
 }
 
 static
-void _validate_callbacks() {
+void _validate_engine_callbacks() {
     if (!__on_init__)       log_exit("`__on_init__` callback not set");
     if (!__on_destroy__)    log_exit("`__on_destroy__` callback not set");
     if (!__on_update__)     log_exit("`__on_update__` callback not set");
@@ -38,7 +38,7 @@ void _validate_callbacks() {
 
 
 void engine_run() {
-    _validate_callbacks();
+    _validate_engine_callbacks();
     config_load("econfig.toml");
 
     window_init();

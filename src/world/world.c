@@ -5,9 +5,11 @@
 #include "world/object.h"
 #include "world/scene.h"
 
+#include "assets/texture.h"
 #include "core/containers/map.h"
 #include "core/containers/tuple.h"
 #include "core/log.h"
+#include "graphics/gfx.h"
 #include "database/db.h"
 #include "gameplay/player.h"
 
@@ -15,6 +17,7 @@
 static struct World {
     map(Object) objects;
     Scene* current_scene;
+    GfxSkybox* skybox;
 } self = {};
 
 
@@ -38,6 +41,17 @@ void world_init() {
     /* --- Player Loading */
     player_init(scene->player_init_pos, scene->player_init_rot);
 
+    /* --- Skybox --- */
+    self.skybox = texture_load_skybox(
+        "skybox/vz_sinister_right.dds",
+        "skybox/vz_sinister_left.dds",
+        "skybox/vz_sinister_up.dds",
+        "skybox/vz_sinister_down.dds",
+        "skybox/vz_sinister_front.dds",
+        "skybox/vz_sinister_back.dds"
+    );
+    gfx_set_skybox(self.skybox);
+
     world_print();
 }
 
@@ -51,6 +65,8 @@ void world_destroy() {
         object_free(obj);
     }
     map_free(self.objects);
+
+    gfx_unload_skybox(self.skybox);
 }
 
 

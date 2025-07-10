@@ -64,7 +64,7 @@ void _create_physics(ObjectRef* self, PhysicsInfo** infos) {
     
     int physics_count = tuple_size(infos);
     if (physics_count == 0) return;
-    
+
     int physics_size = sizeof(PxObject) * (physics_count + 1);
     self->physics = malloc(physics_size);
     memset(self->physics, 0, physics_size);
